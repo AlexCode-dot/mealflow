@@ -1,0 +1,17 @@
+{
+  "name": "mealflow",
+  "private": true,
+  "scripts": {
+    "dev:mongo": "docker compose -f infra/docker-compose.dev.yml up -d",
+    "dev:mongo:down": "docker compose -f infra/docker-compose.dev.yml down",
+
+    "dev:identity": "set -a && [ -f .env.local ] && . .env.local; set +a && cd services/identity-service && SPRING_PROFILES_ACTIVE=dev SPRING_MONGODB_URI=\"$IDENTITY_MONGO_URI\" ./mvnw spring-boot:run",
+    "dev:app-api": "set -a && [ -f .env.local ] && . .env.local; set +a && cd services/app-api && SPRING_PROFILES_ACTIVE=dev SPRING_MONGODB_URI=\"$APP_API_MONGO_URI\" ./mvnw spring-boot:run",
+    "dev:all": "./infra/scripts/dev-all.macos.sh",
+    "dev:all:down": "./infra/scripts/dev-all.down.macos.sh",
+
+    "dev:expo": "cd apps/expo-app && npx expo start --port 8083",
+    "test:identity": "cd services/identity-service && ./mvnw test",
+    "test:app-api": "cd services/app-api && ./mvnw test"
+  }
+}
