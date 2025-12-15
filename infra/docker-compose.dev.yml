@@ -1,0 +1,30 @@
+name: mealflow
+
+services:
+  mongo-identity:
+    image: mongo:8.2
+    container_name: mealflow-mongo-identity
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: rootpass
+    volumes:
+      - mongo_identity_data:/data/db
+
+  mongo-app:
+    image: mongo:8.2
+    container_name: mealflow-mongo-app
+    restart: unless-stopped
+    ports:
+      - "27018:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: rootpass
+    volumes:
+      - mongo_app_data:/data/db
+
+volumes:
+  mongo_identity_data:
+  mongo_app_data:
