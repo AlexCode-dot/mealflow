@@ -10,7 +10,7 @@
     "dev:all": "./infra/scripts/dev-all.macos.sh",
     "dev:all:down": "./infra/scripts/dev-all.down.macos.sh",
 
-    "dev:expo": "cd apps/expo-app && npx expo start --port 8083",
+    "dev:expo": "cd apps/expo-app && npm start",
     "test:identity": "cd services/identity-service && ./mvnw test",
     "test:app-api": "cd services/app-api && ./mvnw test"
   }
