@@ -2,14 +2,14 @@
   "name": "expo-app",
   "main": "expo-router/entry",
   "version": "1.0.0",
-"scripts": {
-  "reset-project": "node ./scripts/reset-project.js",
-  "start": "expo start --lan --port 8083",
-  "ios": "expo start --ios --lan --port 8083",
-  "android": "expo start --android --lan --port 8083",
-  "web": "expo start --web --port 8083",
-  "lint": "expo lint"
-},
+  "scripts": {
+    "reset-project": "node ./scripts/reset-project.js",
+    "start": "expo start --lan --port 8083",
+    "ios": "expo start --ios --lan --port 8083",
+    "android": "expo start --android --lan --port 8083",
+    "web": "expo start --web --port 8083",
+    "lint": "expo lint"
+  },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",
     "@react-navigation/bottom-tabs": "^7.4.0",
@@ -41,7 +41,8 @@
     "@types/react": "~19.1.0",
     "typescript": "~5.9.2",
     "eslint": "^9.25.0",
-    "eslint-config-expo": "~10.0.0"
+    "eslint-config-expo": "~10.0.0",
+    "prettier": "^3.3.3"
   },
   "private": true
 }

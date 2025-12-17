@@ -4,8 +4,11 @@
   "scripts": {
     "format": "prettier -w .",
     "format:check": "prettier -c .",
+    
     "dev:mongo": "docker compose -f infra/docker-compose.dev.yml up -d",
     "dev:mongo:down": "docker compose -f infra/docker-compose.dev.yml down",
+    "dev:backend:docker": "docker compose -f infra/docker-compose.yml up --build",
+    "dev:backend:docker:down": "docker compose -f infra/docker-compose.yml down",
 
     "dev:identity": "set -a && [ -f .env.local ] && . .env.local; set +a && cd services/identity-service && SPRING_PROFILES_ACTIVE=dev SPRING_MONGODB_URI=\"$IDENTITY_MONGO_URI\" ./mvnw spring-boot:run",
     "dev:app-api": "set -a && [ -f .env.local ] && . .env.local; set +a && cd services/app-api && SPRING_PROFILES_ACTIVE=dev SPRING_MONGODB_URI=\"$APP_API_MONGO_URI\" ./mvnw spring-boot:run",

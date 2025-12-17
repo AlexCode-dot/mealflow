@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT="$(git rev-parse --show-toplevel)"
+
+run_spotless() {
+  local dir="$1"
+  pushd "$ROOT/$dir" >/dev/null
+  ./mvnw -q spotless:apply
+  popd >/dev/null
+}
+
+run_spotless services/identity-service
+run_spotless services/app-api
+
+echo "Spotless applied for backend services."
+
+# Lint Expo app (skip if npm not available or deps missing)
+if command -v npm >/dev/null 2>&1; then
+  echo "Linting Expo app..."
+  (cd "$ROOT/apps/expo-app" && npm run lint --silent) || {
+    echo "Expo lint failed. Install deps with 'npm install' in apps/expo-app if needed." >&2
+    exit 1
+  }
+
+  # Prettier check (only if installed)
+  if (cd "$ROOT/apps/expo-app" && npx --yes --quiet prettier --version) >/dev/null 2>&1; then
+    echo "Checking Expo formatting with Prettier..."
+    (cd "$ROOT/apps/expo-app" && npx --yes --quiet prettier --check .) || {
+      echo "Prettier check failed. Run 'npm install' and 'npx prettier --write .' in apps/expo-app." >&2
+      exit 1
+    }
+  else
+    echo "Prettier not installed in apps/expo-app; skipping format check." >&2
+  fi
+else
+  echo "npm not found; skipping Expo lint." >&2
+fi
