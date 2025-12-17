@@ -1,0 +1,46 @@
+name: mealflow
+
+services:
+  mongo-identity:
+    image: mongo:8.2
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USERNAME:-root}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:-rootpass}
+    volumes:
+      - mongo_identity_data:/data/db
+
+  mongo-app:
+    image: mongo:8.2
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USERNAME:-root}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:-rootpass}
+    volumes:
+      - mongo_app_data:/data/db
+
+  identity-service:
+    build:
+      context: ../services/identity-service
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      SPRING_MONGODB_URI: mongodb://root:rootpass@mongo-identity:27017/identity-db?authSource=admin
+    ports:
+      - "8081:8081"
+    depends_on:
+      - mongo-identity
+
+  app-api:
+    build:
+      context: ../services/app-api
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      SPRING_MONGODB_URI: mongodb://root:rootpass@mongo-app:27017/app-db?authSource=admin
+    ports:
+      - "8082:8082"
+    depends_on:
+      - mongo-app
+
+volumes:
+  mongo_identity_data:
+  mongo_app_data:
