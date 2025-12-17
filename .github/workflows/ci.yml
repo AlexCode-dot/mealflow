@@ -1,0 +1,83 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main, master]
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+
+    # Spin up the same two Mongo instances your dev setup uses
+    services:
+      mongo-identity:
+        image: mongo:8.2
+        env:
+          MONGO_INITDB_ROOT_USERNAME: root
+          MONGO_INITDB_ROOT_PASSWORD: rootpass
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd="mongosh --quiet --eval 'db.runCommand({ ping: 1 })'"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+
+      mongo-app:
+        image: mongo:8.2
+        env:
+          MONGO_INITDB_ROOT_USERNAME: root
+          MONGO_INITDB_ROOT_PASSWORD: rootpass
+        ports:
+          - 27018:27017
+        options: >-
+          --health-cmd="mongosh --quiet --eval 'db.runCommand({ ping: 1 })'"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+
+    strategy:
+      fail-fast: false
+      matrix:
+        service:
+          - name: identity-service
+            path: services/identity-service
+            mongo_uri: mongodb://root:rootpass@localhost:27017/identity-db?authSource=admin
+          - name: app-api
+            path: services/app-api
+            mongo_uri: mongodb://root:rootpass@localhost:27018/app-db?authSource=admin
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "25"
+          cache: maven
+
+      # Simple wait: make sure both mongo ports are open before running tests
+      - name: Wait for MongoDB ports
+        run: |
+          for p in 27017 27018; do
+            echo "Waiting for localhost:$p ..."
+            for i in {1..60}; do
+              (echo > /dev/tcp/127.0.0.1/$p) >/dev/null 2>&1 && break
+              sleep 1
+            done
+            (echo > /dev/tcp/127.0.0.1/$p) >/dev/null 2>&1 || (echo "Mongo port $p not reachable" && exit 1)
+          done
+
+      - name: Spotless check (${{ matrix.service.name }})
+        working-directory: ${{ matrix.service.path }}
+        run: ./mvnw -B spotless:check
+
+      - name: Tests (${{ matrix.service.name }})
+        working-directory: ${{ matrix.service.path }}
+        env:
+          SPRING_PROFILES_ACTIVE: test
+          SPRING_MONGODB_URI: ${{ matrix.service.mongo_uri }}
+        run: ./mvnw -B test
