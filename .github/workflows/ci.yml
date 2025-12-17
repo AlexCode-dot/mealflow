@@ -71,13 +71,9 @@ jobs:
             (echo > /dev/tcp/127.0.0.1/$p) >/dev/null 2>&1 || (echo "Mongo port $p not reachable" && exit 1)
           done
 
-      - name: Spotless check (${{ matrix.service.name }})
-        working-directory: ${{ matrix.service.path }}
-        run: ./mvnw -B spotless:check
-
-      - name: Tests (${{ matrix.service.name }})
+      - name: Verify (${{ matrix.service.name }})
         working-directory: ${{ matrix.service.path }}
         env:
           SPRING_PROFILES_ACTIVE: test
           SPRING_MONGODB_URI: ${{ matrix.service.mongo_uri }}
-        run: ./mvnw -B test
+        run: ./mvnw -B verify
