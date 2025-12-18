@@ -4,9 +4,10 @@
   "scripts": {
     "format": "prettier -w .",
     "format:check": "prettier -c .",
-    
+
     "dev:mongo": "docker compose -f infra/docker-compose.dev.yml up -d",
     "dev:mongo:down": "docker compose -f infra/docker-compose.dev.yml down",
+    "dev:mongo:reset": "docker compose -f infra/docker-compose.dev.yml down -v",
     "dev:backend:docker": "docker compose -f infra/docker-compose.yml up --build",
     "dev:backend:docker:down": "docker compose -f infra/docker-compose.yml down",
 
