@@ -1,4 +1,4 @@
-package com.mealflow.identity.security.token;
+package com.mealflow.identity.security.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 

@@ -1,9 +1,10 @@
-package com.mealflow.identity.security.token;
+package com.mealflow.identity.token.service;
 
-import com.mealflow.identity.common.error.InvalidRefreshTokenException;
-import com.mealflow.identity.common.error.RefreshTokenReplayException;
-import com.mealflow.identity.domain.token.RefreshToken;
-import com.mealflow.identity.repository.RefreshTokenRepository;
+import com.mealflow.identity.security.config.TokenProperties;
+import com.mealflow.identity.token.domain.RefreshToken;
+import com.mealflow.identity.token.error.InvalidRefreshTokenException;
+import com.mealflow.identity.token.error.RefreshTokenReplayException;
+import com.mealflow.identity.token.repository.RefreshTokenRepository;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.Optional;
@@ -43,7 +44,7 @@ public class RefreshTokenService {
 
         refreshTokenRepository.save(doc);
 
-        return new IssuedRefreshToken(rawToken, tokenHash, expiresAt);
+        return new IssuedRefreshToken(userId, rawToken, tokenHash, expiresAt);
     }
 
     public IssuedRefreshToken rotate(String rawToken) {
@@ -81,7 +82,7 @@ public class RefreshTokenService {
         refreshTokenRepository.save(existing);
         refreshTokenRepository.save(replacement);
 
-        return new IssuedRefreshToken(newRawToken, newTokenHash, newExpiresAt);
+        return new IssuedRefreshToken(existing.getUserId(), newRawToken, newTokenHash, newExpiresAt);
     }
 
     public void revoke(String rawToken) {

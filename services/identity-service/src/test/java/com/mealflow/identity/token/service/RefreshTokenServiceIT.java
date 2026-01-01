@@ -1,12 +1,12 @@
-package com.mealflow.identity.security.token;
+package com.mealflow.identity.token.service;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import com.mealflow.identity.common.error.InvalidRefreshTokenException;
-import com.mealflow.identity.common.error.RefreshTokenReplayException;
-import com.mealflow.identity.domain.token.RefreshToken;
-import com.mealflow.identity.repository.RefreshTokenRepository;
 import com.mealflow.identity.support.MongoTestContainerConfig;
+import com.mealflow.identity.token.domain.RefreshToken;
+import com.mealflow.identity.token.error.InvalidRefreshTokenException;
+import com.mealflow.identity.token.error.RefreshTokenReplayException;
+import com.mealflow.identity.token.repository.RefreshTokenRepository;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;

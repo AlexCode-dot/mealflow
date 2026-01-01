@@ -1,6 +1,6 @@
-package com.mealflow.identity.repository;
+package com.mealflow.identity.user.repository;
 
-import com.mealflow.identity.domain.user.User;
+import com.mealflow.identity.user.domain.User;
 import java.util.Optional;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
