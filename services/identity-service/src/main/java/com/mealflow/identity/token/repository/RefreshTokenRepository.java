@@ -1,6 +1,6 @@
-package com.mealflow.identity.repository;
+package com.mealflow.identity.token.repository;
 
-import com.mealflow.identity.domain.token.RefreshToken;
+import com.mealflow.identity.token.domain.RefreshToken;
 import java.util.Optional;
 import org.springframework.data.mongodb.repository.MongoRepository;
 

@@ -1,4 +1,4 @@
-package com.mealflow.identity.security.password;
+package com.mealflow.identity.auth;
 
 import org.springframework.security.crypto.argon2.Argon2PasswordEncoder;
 import org.springframework.stereotype.Service;

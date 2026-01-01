@@ -1,4 +1,4 @@
-package com.mealflow.identity.common.error;
+package com.mealflow.identity.token.error;
 
 public class RefreshTokenReplayException extends RuntimeException {
     public RefreshTokenReplayException(String message) {

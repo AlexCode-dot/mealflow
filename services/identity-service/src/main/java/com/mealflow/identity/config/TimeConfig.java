@@ -1,4 +1,4 @@
-package com.mealflow.identity.common;
+package com.mealflow.identity.config;
 
 import java.time.Clock;
 import org.springframework.context.annotation.Bean;

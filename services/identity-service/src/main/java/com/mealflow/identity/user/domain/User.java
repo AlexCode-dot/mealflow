@@ -1,4 +1,4 @@
-package com.mealflow.identity.domain.user;
+package com.mealflow.identity.user.domain;
 
 import java.time.Instant;
 import org.springframework.data.annotation.Id;

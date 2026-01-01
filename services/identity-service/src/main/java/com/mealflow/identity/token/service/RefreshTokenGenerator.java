@@ -1,4 +1,4 @@
-package com.mealflow.identity.security.token;
+package com.mealflow.identity.token.service;
 
 import java.security.SecureRandom;
 import java.util.Base64;
