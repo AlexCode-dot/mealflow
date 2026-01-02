@@ -4,7 +4,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.time.Instant;
+import java.time.Clock;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.security.access.AccessDeniedException;
@@ -18,9 +18,11 @@ import tools.jackson.databind.ObjectMapper;
 public class SecurityProblemSupport implements AuthenticationEntryPoint, AccessDeniedHandler {
 
     private final ObjectMapper objectMapper;
+    private final Clock clock;
 
-    public SecurityProblemSupport(ObjectMapper objectMapper) {
-        this.objectMapper = objectMapper;
+    public SecurityProblemSupport(ObjectMapper objectMapper, Clock clock) {
+      this.objectMapper = objectMapper;
+      this.clock = clock;
     }
 
     @Override
@@ -46,7 +48,7 @@ public class SecurityProblemSupport implements AuthenticationEntryPoint, AccessD
         ProblemDetail pd = ProblemDetail.forStatusAndDetail(status, message);
         pd.setTitle(status.getReasonPhrase());
         pd.setProperty("path", request.getRequestURI());
-        pd.setProperty("timestamp", Instant.now().toString());
+        pd.setProperty("timestamp", clock.instant().toString());
 
         response.setStatus(status.value());
         response.setContentType("application/problem+json");

@@ -5,7 +5,7 @@ import com.mealflow.identity.auth.error.InvalidCredentialsException;
 import com.mealflow.identity.token.error.InvalidRefreshTokenException;
 import com.mealflow.identity.token.error.RefreshTokenReplayException;
 import jakarta.servlet.http.HttpServletRequest;
-import java.time.Instant;
+import java.time.Clock;
 import java.util.Map;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
@@ -14,6 +14,12 @@ import org.springframework.web.bind.annotation.*;
 
 @RestControllerAdvice
 public class ApiExceptionHandler {
+
+    private final Clock clock;
+
+      public ApiExceptionHandler(Clock clock) {
+        this.clock = clock;
+      }
 
     @ExceptionHandler(EmailAlreadyInUseException.class)
     @ResponseStatus(HttpStatus.CONFLICT)
@@ -49,12 +55,12 @@ public class ApiExceptionHandler {
                                 .toList()));
     }
 
-    private static ProblemDetail problem(
+    private ProblemDetail problem(
             HttpStatus status, String message, HttpServletRequest req, Map<String, Object> extras) {
         ProblemDetail pd = ProblemDetail.forStatusAndDetail(status, message);
         pd.setTitle(status.getReasonPhrase());
         pd.setProperty("path", req.getRequestURI());
-        pd.setProperty("timestamp", Instant.now().toString());
+        pd.setProperty("timestamp", clock.instant().toString());
         if (extras != null) {
             extras.forEach(pd::setProperty);
         }

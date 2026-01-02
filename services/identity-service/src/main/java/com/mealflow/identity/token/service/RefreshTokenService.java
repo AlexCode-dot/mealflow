@@ -7,96 +7,135 @@ import com.mealflow.identity.token.error.RefreshTokenReplayException;
 import com.mealflow.identity.token.repository.RefreshTokenRepository;
 import java.time.Clock;
 import java.time.Instant;
-import java.util.Optional;
+import org.springframework.data.mongodb.core.FindAndModifyOptions;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class RefreshTokenService {
 
-    private final RefreshTokenRepository refreshTokenRepository;
-    private final RefreshTokenGenerator refreshTokenGenerator;
-    private final TokenHashService tokenHashService;
-    private final TokenProperties tokenProperties;
-    private final Clock clock;
+  private final RefreshTokenRepository refreshTokenRepository;
+  private final RefreshTokenGenerator refreshTokenGenerator;
+  private final TokenHashService tokenHashService;
+  private final TokenProperties tokenProperties;
+  private final Clock clock;
+  private final MongoTemplate mongoTemplate;
 
-    public RefreshTokenService(
-            RefreshTokenRepository refreshTokenRepository,
-            RefreshTokenGenerator refreshTokenGenerator,
-            TokenHashService tokenHashService,
-            TokenProperties tokenProperties,
-            Clock clock) {
-        this.refreshTokenRepository = refreshTokenRepository;
-        this.refreshTokenGenerator = refreshTokenGenerator;
-        this.tokenHashService = tokenHashService;
-        this.tokenProperties = tokenProperties;
-        this.clock = clock;
+  public RefreshTokenService(
+    RefreshTokenRepository refreshTokenRepository,
+    RefreshTokenGenerator refreshTokenGenerator,
+    TokenHashService tokenHashService,
+    TokenProperties tokenProperties,
+    Clock clock,
+    MongoTemplate mongoTemplate) {
+    this.refreshTokenRepository = refreshTokenRepository;
+    this.refreshTokenGenerator = refreshTokenGenerator;
+    this.tokenHashService = tokenHashService;
+    this.tokenProperties = tokenProperties;
+    this.clock = clock;
+    this.mongoTemplate = mongoTemplate;
+  }
+
+  public IssuedRefreshToken issueForUser(String userId) {
+    Instant now = clock.instant();
+
+    String rawToken = refreshTokenGenerator.generate();
+    String tokenHash = tokenHashService.sha256(rawToken);
+
+    Instant expiresAt = now.plusSeconds(tokenProperties.refreshTokenTtlDays() * 24L * 60L * 60L);
+
+    RefreshToken doc = new RefreshToken(userId, tokenHash, expiresAt, false, null, now);
+    refreshTokenRepository.save(doc);
+
+    return new IssuedRefreshToken(userId, rawToken, tokenHash, expiresAt);
+  }
+
+  /**
+   * Rotates a refresh token atomically.
+   *
+   * Guarantees single-use rotation even under concurrent requests:
+   * - only one request can flip revoked=false -> true for the old token
+   * - others will observe revoked/replacedBy and be treated as replay
+   */
+  @Transactional
+  public IssuedRefreshToken rotate(String rawToken) {
+    Instant now = clock.instant();
+    String oldTokenHash = tokenHashService.sha256(rawToken);
+
+    String newRawToken = refreshTokenGenerator.generate();
+    String newTokenHash = tokenHashService.sha256(newRawToken);
+    Instant newExpiresAt = now.plusSeconds(tokenProperties.refreshTokenTtlDays() * 24L * 60L * 60L);
+
+    Query q = new Query(new Criteria().andOperator(
+      Criteria.where("tokenHash").is(oldTokenHash),
+      Criteria.where("revoked").is(false),
+      Criteria.where("expiresAt").gt(now)
+    ));
+
+    Update u = new Update()
+      .set("revoked", true)
+      .set("replacedByTokenHash", newTokenHash);
+
+    RefreshToken previous = mongoTemplate.findAndModify(
+      q,
+      u,
+      FindAndModifyOptions.options().returnNew(false),
+      RefreshToken.class
+    );
+
+    if (previous == null) {
+      RefreshToken existing = refreshTokenRepository
+        .findByTokenHash(oldTokenHash)
+        .orElseThrow(() -> new InvalidRefreshTokenException("Refresh token is invalid"));
+
+      if (existing.isExpired(now)) {
+        throw new InvalidRefreshTokenException("Refresh token has expired");
+      }
+
+      if (existing.isRevoked()) {
+        if (existing.getReplacedByTokenHash() != null) {
+          throw new RefreshTokenReplayException("Refresh token replay detected");
+        }
+        throw new InvalidRefreshTokenException("Refresh token is revoked");
+      }
+
+      throw new InvalidRefreshTokenException("Refresh token is invalid");
     }
 
-    public IssuedRefreshToken issueForUser(String userId) {
-        Instant now = clock.instant();
+    RefreshToken replacement =
+      new RefreshToken(previous.getUserId(), newTokenHash, newExpiresAt, false, null, now);
 
-        String rawToken = refreshTokenGenerator.generate();
-        String tokenHash = tokenHashService.sha256(rawToken);
+    refreshTokenRepository.save(replacement);
 
-        Instant expiresAt = now.plusSeconds(tokenProperties.refreshTokenTtlDays() * 24L * 60L * 60L);
+    return new IssuedRefreshToken(previous.getUserId(), newRawToken, newTokenHash, newExpiresAt);
+  }
 
-        RefreshToken doc = new RefreshToken(userId, tokenHash, expiresAt, false, null, now);
+  /**
+   * Idempotent logout: marks refresh token as revoked (atomic).
+   * - If token doesn't exist: no-op
+   * - If already revoked: no-op
+   */
+  public void revoke(String rawToken) {
+    String tokenHash = tokenHashService.sha256(rawToken);
 
-        refreshTokenRepository.save(doc);
+    Query q = new Query(new Criteria().andOperator(
+      Criteria.where("tokenHash").is(tokenHash),
+      Criteria.where("revoked").is(false)
+    ));
 
-        return new IssuedRefreshToken(userId, rawToken, tokenHash, expiresAt);
-    }
+    Update u = new Update()
+      .set("revoked", true)
+      .set("replacedByTokenHash", null);
 
-    public IssuedRefreshToken rotate(String rawToken) {
-        Instant now = clock.instant();
-        String tokenHash = tokenHashService.sha256(rawToken);
-
-        RefreshToken existing = refreshTokenRepository
-                .findByTokenHash(tokenHash)
-                .orElseThrow(() -> new InvalidRefreshTokenException("Refresh token is invalid"));
-
-        if (existing.isExpired(now)) {
-            throw new InvalidRefreshTokenException("Refresh token has expired");
-        }
-
-        // Replay detection: token already rotated/revoked
-        if (existing.isRevoked()) {
-            // If it was replaced, this strongly indicates reuse (replay) of an old token.
-            if (existing.getReplacedByTokenHash() != null) {
-                throw new RefreshTokenReplayException("Refresh token replay detected");
-            }
-            throw new InvalidRefreshTokenException("Refresh token is revoked");
-        }
-
-        // Issue the new token
-        String newRawToken = refreshTokenGenerator.generate();
-        String newTokenHash = tokenHashService.sha256(newRawToken);
-        Instant newExpiresAt = now.plusSeconds(tokenProperties.refreshTokenTtlDays() * 24L * 60L * 60L);
-
-        RefreshToken replacement = new RefreshToken(existing.getUserId(), newTokenHash, newExpiresAt, false, null, now);
-
-        // Mark old token revoked and link it to the new token hash
-        existing.revoke(newTokenHash);
-
-        // Persist both changes
-        refreshTokenRepository.save(existing);
-        refreshTokenRepository.save(replacement);
-
-        return new IssuedRefreshToken(existing.getUserId(), newRawToken, newTokenHash, newExpiresAt);
-    }
-
-    public void revoke(String rawToken) {
-        String tokenHash = tokenHashService.sha256(rawToken);
-
-        Optional<RefreshToken> existing = refreshTokenRepository.findByTokenHash(tokenHash);
-        if (existing.isEmpty()) {
-            return; // idempotent logout
-        }
-
-        RefreshToken token = existing.get();
-        if (!token.isRevoked()) {
-            token.revoke(null);
-            refreshTokenRepository.save(token);
-        }
-    }
+    mongoTemplate.findAndModify(
+      q,
+      u,
+      FindAndModifyOptions.options().returnNew(false),
+      RefreshToken.class
+    );
+  }
 }

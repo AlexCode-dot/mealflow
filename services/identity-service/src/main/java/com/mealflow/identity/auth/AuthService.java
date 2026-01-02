@@ -9,6 +9,7 @@ import com.mealflow.identity.user.domain.User;
 import com.mealflow.identity.user.repository.UserRepository;
 import java.time.Clock;
 import java.time.Instant;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -44,7 +45,13 @@ public class AuthService {
         String passwordHash = passwordService.hash(password);
 
         User user = new User(normalizedEmail, passwordHash, now, now);
-        User saved = userRepository.save(user);
+        User saved;
+        try {
+          saved = userRepository.save(user);
+        } catch (DuplicateKeyException ex) {
+          // Covers race condition where another request created the same email after existsByEmail check.
+          throw new EmailAlreadyInUseException("Email is already in use");
+        }
 
         String accessToken = accessTokenService.issue(saved.getId());
         IssuedRefreshToken refresh = refreshTokenService.issueForUser(saved.getId());

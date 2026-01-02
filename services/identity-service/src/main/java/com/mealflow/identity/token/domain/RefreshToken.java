@@ -17,6 +17,8 @@ public class RefreshToken {
     @Indexed(unique = true)
     private String tokenHash;
 
+    // TTL cleanup: expire at the timestamp stored in expiresAt.
+    @Indexed(expireAfter = "0s")
     private Instant expiresAt;
 
     private boolean revoked;
