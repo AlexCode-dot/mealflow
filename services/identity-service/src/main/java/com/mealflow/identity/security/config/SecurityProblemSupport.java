@@ -21,8 +21,8 @@ public class SecurityProblemSupport implements AuthenticationEntryPoint, AccessD
     private final Clock clock;
 
     public SecurityProblemSupport(ObjectMapper objectMapper, Clock clock) {
-      this.objectMapper = objectMapper;
-      this.clock = clock;
+        this.objectMapper = objectMapper;
+        this.clock = clock;
     }
 
     @Override

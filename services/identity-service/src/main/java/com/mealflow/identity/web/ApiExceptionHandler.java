@@ -17,9 +17,9 @@ public class ApiExceptionHandler {
 
     private final Clock clock;
 
-      public ApiExceptionHandler(Clock clock) {
+    public ApiExceptionHandler(Clock clock) {
         this.clock = clock;
-      }
+    }
 
     @ExceptionHandler(EmailAlreadyInUseException.class)
     @ResponseStatus(HttpStatus.CONFLICT)

@@ -47,10 +47,10 @@ public class AuthService {
         User user = new User(normalizedEmail, passwordHash, now, now);
         User saved;
         try {
-          saved = userRepository.save(user);
+            saved = userRepository.save(user);
         } catch (DuplicateKeyException ex) {
-          // Covers race condition where another request created the same email after existsByEmail check.
-          throw new EmailAlreadyInUseException("Email is already in use");
+            // Covers race condition where another request created the same email after existsByEmail check.
+            throw new EmailAlreadyInUseException("Email is already in use");
         }
 
         String accessToken = accessTokenService.issue(saved.getId());
