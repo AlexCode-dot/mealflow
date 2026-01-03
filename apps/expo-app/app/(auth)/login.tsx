@@ -1,23 +1,27 @@
 import { Link, useRouter } from 'expo-router';
-import { Text, View, Button } from 'react-native';
-import { tokenStore } from '@/src/core/auth/tokenStore';
+import { Text, View } from 'react-native';
+import { Screen } from '@/src/shared/ui/Screen';
+import { LoginForm } from '@/src/features/auth/ui/LoginForm';
+import { useLogin } from '@/src/features/auth/hooks/useLogin';
 
 export default function LoginScreen() {
   const router = useRouter();
+  const { login, isLoading, error } = useLogin();
 
-  // TEMP: lets you verify navigation before wiring real login
-  const fakeLogin = () => {
-    tokenStore.setAccessToken('dev-access-token');
-    router.replace('/(app)/home');
+  const onSubmit = async (email: string, password: string) => {
+    const ok = await login(email, password);
+    if (ok) router.replace('/(app)/home');
   };
 
   return (
-    <View style={{ flex: 1, justifyContent: 'center', padding: 16, gap: 12 }}>
-      <Text style={{ fontSize: 22, fontWeight: '600' }}>Login</Text>
+    <Screen>
+      <View style={{ gap: 16 }}>
+        <Text style={{ fontSize: 28, fontWeight: '800' }}>Login</Text>
 
-      <Button title="Temporary fake login" onPress={fakeLogin} />
+        <LoginForm onSubmit={onSubmit} isLoading={isLoading} error={error} />
 
-      <Link href="/(auth)/register">Go to register</Link>
-    </View>
+        <Link href="/(auth)/register">Go to register</Link>
+      </View>
+    </Screen>
   );
 }
