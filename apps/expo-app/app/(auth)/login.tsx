@@ -1,6 +1,6 @@
 import { Link, useRouter } from 'expo-router';
 import { Text, View, Button } from 'react-native';
-import { tokenStore } from '../../src/core/auth/tokenStore';
+import { tokenStore } from '@/src/core/auth/tokenStore';
 
 export default function LoginScreen() {
   const router = useRouter();

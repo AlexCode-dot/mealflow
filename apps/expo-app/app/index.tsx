@@ -1,15 +1,9 @@
-import { Text, View } from 'react-native';
+import { Redirect } from 'expo-router';
+import { tokenStore } from '@/src/core/auth/tokenStore';
 
 export default function Index() {
-  return (
-    <View
-      style={{
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-      }}
-    >
-      <Text>Edit app/index.tsx to edit this screen.</Text>
-    </View>
-  );
+  // 1.1: access token lives only in memory, so most launches will go to login.
+  const isAuthed = tokenStore.hasAccessToken();
+
+  return <Redirect href={isAuthed ? '/(app)/home' : '/(auth)/login'} />;
 }
