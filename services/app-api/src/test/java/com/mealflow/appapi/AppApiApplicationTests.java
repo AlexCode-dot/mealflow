@@ -9,6 +9,6 @@ import org.springframework.test.context.ActiveProfiles;
 @SpringBootTest
 class AppApiApplicationTests extends MongoTestContainerConfig {
 
-  @Test
-  void contextLoads() {}
+    @Test
+    void contextLoads() {}
 }

@@ -11,13 +11,12 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api")
 public class MeController {
 
-  @GetMapping("/me")
-  public Map<String, Object> me(@AuthenticationPrincipal Jwt jwt) {
-    // userId comes from JWT "sub"
-    return Map.of(
-      "userId", jwt.getSubject(),
-      "issuer", jwt.getIssuer() != null ? jwt.getIssuer().toString() : null,
-      "expiresAt", jwt.getExpiresAt() != null ? jwt.getExpiresAt().toString() : null
-    );
-  }
+    @GetMapping("/me")
+    public Map<String, Object> me(@AuthenticationPrincipal Jwt jwt) {
+        // userId comes from JWT "sub"
+        return Map.of(
+                "userId", jwt.getSubject(),
+                "issuer", jwt.getIssuer() != null ? jwt.getIssuer().toString() : null,
+                "expiresAt", jwt.getExpiresAt() != null ? jwt.getExpiresAt().toString() : null);
+    }
 }

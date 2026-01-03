@@ -9,11 +9,11 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 @Testcontainers
 public abstract class MongoTestContainerConfig {
 
-  @Container
-  static final MongoDBContainer mongo = new MongoDBContainer("mongo:8.2");
+    @Container
+    static final MongoDBContainer mongo = new MongoDBContainer("mongo:8.2");
 
-  @DynamicPropertySource
-  static void mongoProps(DynamicPropertyRegistry registry) {
-    registry.add("spring.mongodb.uri", mongo::getReplicaSetUrl);
-  }
+    @DynamicPropertySource
+    static void mongoProps(DynamicPropertyRegistry registry) {
+        registry.add("spring.mongodb.uri", mongo::getReplicaSetUrl);
+    }
 }
