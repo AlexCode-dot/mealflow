@@ -76,6 +76,20 @@ Response example:
 
 ## System-level Auth E2E test
 
+### Test scope & intent
+
+This E2E test is a **system-level contract test**, not a unit or integration test.
+
+It intentionally:
+- runs against **real running services**
+- does **not** mock the Identity Service
+- does **not** share code or test utilities across services
+- verifies service-to-service trust via **JWKS**, exactly as in production
+
+The goal is to prove correct **service isolation and responsibility boundaries**:
+- Identity Service owns authentication and token issuance
+- App API only validates tokens and extracts `userId`
+
 A real end-to-end authentication test exists that verifies:
 
 1. Identity Service issues a JWT
@@ -118,6 +132,14 @@ This test is excluded from normal `mvn test` runs and must be explicitly enabled
 
 ```bash
 ./mvnw -Pe2e test
+```
+
+### Monorepo shortcut
+
+From the repository root, the system-level E2E test can also be run using:
+
+```bash
+npm run test:e2e
 ```
 
 ---

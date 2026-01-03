@@ -18,6 +18,7 @@
 
     "dev:expo": "cd apps/expo-app && npm start",
     "test:identity": "cd services/identity-service && ./mvnw test",
-    "test:app-api": "cd services/app-api && ./mvnw test"
+    "test:app-api": "cd services/app-api && ./mvnw test",
+    "test:e2e": "cd services/app-api && ./mvnw -Pe2e test"
   }
 }
