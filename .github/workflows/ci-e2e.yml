@@ -1,0 +1,143 @@
+name: CI - E2E
+
+on:
+  pull_request:
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+
+    services:
+      mongo-identity:
+        image: mongo:8.2
+        env:
+          MONGO_INITDB_ROOT_USERNAME: root
+          MONGO_INITDB_ROOT_PASSWORD: rootpass
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd="mongosh --quiet --eval 'db.runCommand({ ping: 1 })'"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+
+      mongo-app:
+        image: mongo:8.2
+        env:
+          MONGO_INITDB_ROOT_USERNAME: root
+          MONGO_INITDB_ROOT_PASSWORD: rootpass
+        ports:
+          - 27018:27017
+        options: >-
+          --health-cmd="mongosh --quiet --eval 'db.runCommand({ ping: 1 })'"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "25"
+          cache: maven
+
+      - name: Wait for MongoDB ports
+        run: |
+          set -e
+          for p in 27017 27018; do
+            echo "Waiting for localhost:$p ..."
+            for i in {1..60}; do
+              (echo > /dev/tcp/127.0.0.1/$p) >/dev/null 2>&1 && break
+              sleep 1
+            done
+            (echo > /dev/tcp/127.0.0.1/$p) >/dev/null 2>&1 || (echo "Mongo port $p not reachable" && exit 1)
+          done
+
+      - name: Generate RSA keys (Identity)
+        working-directory: services/identity-service
+        run: |
+          set -e
+          mkdir -p .secrets
+          openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:2048 -out .secrets/private.pem
+          openssl rsa -in .secrets/private.pem -pubout -out .secrets/public.pem
+
+      - name: Start Identity Service (background)
+        working-directory: services/identity-service
+        env:
+          SPRING_PROFILES_ACTIVE: dev
+          IDENTITY_MONGODB_URI: mongodb://root:rootpass@localhost:27017/identity-db?authSource=admin
+          JWT_PRIVATE_KEY_PATH: file:./.secrets/private.pem
+          JWT_PUBLIC_KEY_PATH: file:./.secrets/public.pem
+        run: |
+          set -e
+          ./mvnw -B spring-boot:run > identity.log 2>&1 &
+          echo $! > identity.pid
+
+      - name: Start App API (background)
+        working-directory: services/app-api
+        env:
+          SPRING_PROFILES_ACTIVE: dev
+          APP_API_MONGODB_URI: mongodb://root:rootpass@localhost:27018/app-db?authSource=admin
+          IDENTITY_JWKS_URI: http://localhost:8081/.well-known/jwks.json
+          IDENTITY_JWT_ISSUER: http://localhost:8081
+        run: |
+          set -e
+          ./mvnw -B spring-boot:run > app-api.log 2>&1 &
+          echo $! > app-api.pid
+
+      - name: Wait for services
+        run: |
+          set -e
+
+          echo "Waiting for Identity JWKS..."
+          for i in {1..60}; do
+            curl -fsS http://localhost:8081/.well-known/jwks.json >/dev/null && break
+            sleep 1
+          done
+          curl -fsS http://localhost:8081/.well-known/jwks.json >/dev/null
+
+          echo "Waiting for App API (/api/me should be 401 or 200)..."
+          ok=""
+          for i in {1..60}; do
+            code="$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8082/api/me || true)"
+            if [[ "$code" == "401" || "$code" == "200" ]]; then
+              ok="yes"
+              break
+            fi
+            sleep 1
+          done
+
+          if [[ "$ok" != "yes" ]]; then
+            echo "App API did not become ready in time"
+            exit 1
+          fi
+
+      - name: Run E2E suite (App API)
+        working-directory: services/app-api
+        env:
+          IDENTITY_BASE_URL: http://localhost:8081
+          APP_API_BASE_URL: http://localhost:8082
+        run: |
+          set -e
+          ./mvnw -B -Pe2e test
+
+      - name: Dump logs on failure
+        if: failure()
+        run: |
+          echo "===== identity.log ====="
+          sed -n '1,200p' services/identity-service/identity.log || true
+          echo "===== app-api.log ====="
+          sed -n '1,200p' services/app-api/app-api.log || true
+
+      - name: Stop services
+        if: always()
+        run: |
+          kill "$(cat services/identity-service/identity.pid)" 2>/dev/null || true
+          kill "$(cat services/app-api/app-api.pid)" 2>/dev/null || true

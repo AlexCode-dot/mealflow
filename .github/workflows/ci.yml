@@ -71,6 +71,14 @@ jobs:
             (echo > /dev/tcp/127.0.0.1/$p) >/dev/null 2>&1 || (echo "Mongo port $p not reachable" && exit 1)
           done
 
+      - name: Generate RSA keys for tests (identity-service only)
+        if: matrix.service.name == 'identity-service'
+        working-directory: ${{ matrix.service.path }}
+        run: |
+          mkdir -p .secrets
+          openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:2048 -out .secrets/private.pem
+          openssl rsa -in .secrets/private.pem -pubout -out .secrets/public.pem
+
       - name: Verify (${{ matrix.service.name }})
         working-directory: ${{ matrix.service.path }}
         env:

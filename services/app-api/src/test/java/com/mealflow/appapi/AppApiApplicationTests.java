@@ -1,12 +1,13 @@
 package com.mealflow.appapi;
 
+import com.mealflow.appapi.support.MongoTestContainerConfig;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
-@ActiveProfiles("dev")
+@ActiveProfiles("test")
 @SpringBootTest
-class AppApiApplicationTests {
+class AppApiApplicationTests extends MongoTestContainerConfig {
 
     @Test
     void contextLoads() {}

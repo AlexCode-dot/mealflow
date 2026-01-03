@@ -26,3 +26,8 @@ target
 .vscode
 .idea
 *.iml
+
+# Identity Service dev keys
+services/identity-service/.secrets/
+services/identity-service/*.pem
+services/identity-service/**/*.pem
