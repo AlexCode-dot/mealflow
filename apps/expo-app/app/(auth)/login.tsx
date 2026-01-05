@@ -6,7 +6,7 @@ import { useLogin } from '@/src/features/auth/hooks/useLogin';
 
 export default function LoginScreen() {
   const router = useRouter();
-  const { login, isLoading, error } = useLogin();
+  const { login, isLoading, error, clearError } = useLogin();
 
   const onSubmit = async (email: string, password: string) => {
     const ok = await login(email, password);
@@ -18,7 +18,12 @@ export default function LoginScreen() {
       <View style={{ gap: 16 }}>
         <Text style={{ fontSize: 28, fontWeight: '800' }}>Login</Text>
 
-        <LoginForm onSubmit={onSubmit} isLoading={isLoading} error={error} />
+        <LoginForm
+          onSubmit={onSubmit}
+          isLoading={isLoading}
+          error={error}
+          clearError={clearError}
+        />
 
         <Link href="/(auth)/register">Go to register</Link>
       </View>
