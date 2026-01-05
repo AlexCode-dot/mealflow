@@ -1,41 +1,41 @@
-import { useEffect, useState } from 'react';
-import { useRouter } from 'expo-router';
+import { useCallback, useEffect, useState } from 'react';
 import { Text, View } from 'react-native';
 import { Button } from '@/src/shared/ui/Button';
-import { tokenStore } from '@/src/core/auth/tokenStore';
-import { httpClient, HttpError } from '@/src/core/http/httpClient';
+import { httpClient } from '@/src/core/http/httpClient';
+import { forceLogout } from '@/src/features/auth/actions/forceLogout';
+import { toApiError } from '@/src/core/http/toApiError';
+import { mapCommonError } from '@/src/shared/errors/mapCommonError';
+
+type MeResponse = { userId: string };
 
 export default function HomeScreen() {
-  const router = useRouter();
   const [me, setMe] = useState<string>('Loading...');
+  const [error, setError] = useState<string | null>(null);
 
-  const forceLogout = async () => {
-    tokenStore.clearAccessToken();
-    await tokenStore.clearRefreshToken();
-    router.replace('/(auth)/login');
-  };
+  const loadMe = useCallback(async () => {
+    setError(null);
+
+    try {
+      const res = await httpClient.appApi.get<MeResponse>('/api/me');
+      setMe(`userId: ${res.userId}`);
+    } catch (e) {
+      const uiErr = mapCommonError(toApiError(e));
+      setError(uiErr.message);
+      setMe("Couldn't load your profile.");
+    }
+  }, []);
 
   useEffect(() => {
-    (async () => {
-      try {
-        const res = await httpClient.appApi.get<{ userId: string }>('/api/me');
-        setMe(`userId: ${res.userId}`);
-      } catch (e) {
-        // Minimal 401 handling (prep for 1.2)
-        if (e instanceof HttpError && e.status === 401) {
-          await forceLogout();
-          return;
-        }
-        setMe('Failed to call /api/me (check token / services)');
-      }
-    })();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    loadMe();
+  }, [loadMe]);
 
   return (
     <View style={{ flex: 1, justifyContent: 'center', padding: 16, gap: 12 }}>
-      <Text style={{ fontSize: 22, fontWeight: '600' }}>Home (authed)</Text>
+      <Text style={{ fontSize: 22, fontWeight: '600' }}>Home</Text>
+
+      {error ? <Text style={{ color: '#b00020' }}>{error}</Text> : null}
       <Text>{me}</Text>
+
       <Button title="Logout" onPress={forceLogout} />
     </View>
   );

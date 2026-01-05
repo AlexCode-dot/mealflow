@@ -1,83 +1,54 @@
 import { ENV } from '@/src/core/config/env';
 import { tokenStore } from '@/src/core/auth/tokenStore';
+import {
+  refreshSession,
+  logoutAndClearTokens,
+  isRefreshTokenInvalid,
+} from '@/src/core/auth/authSession';
+import { HttpError } from './HttpError';
+import { request } from './request';
 
 type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 
-export class HttpError extends Error {
-  status: number;
-  body?: unknown;
-
-  constructor(status: number, message: string, body?: unknown) {
-    super(message);
-    this.status = status;
-    this.body = body;
-  }
-}
-
-async function parseResponseBody(res: Response): Promise<unknown> {
-  const contentType = res.headers.get('content-type') ?? '';
-  const isJson = contentType.includes('json');
-
-  if (isJson) {
-    try {
-      return await res.json();
-    } catch {
-      const text = await res.text().catch(() => null);
-      if (typeof text === 'string') {
-        try {
-          return JSON.parse(text);
-        } catch {
-          return text;
-        }
-      }
-      return null;
-    }
-  }
-
-  return res.text().catch(() => null);
-}
-
-async function request<T>(
-  baseUrl: string,
+async function authedRequest<T>(
   path: string,
   method: HttpMethod,
-  options?: {
-    body?: unknown;
-    auth?: boolean;
-  },
+  options?: { body?: unknown; accessTokenOverride?: string },
 ): Promise<T> {
-  const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
-  };
+  const token = options?.accessTokenOverride ?? tokenStore.getAccessToken();
 
-  if (options?.auth) {
-    const token = tokenStore.getAccessToken();
-    if (token) {
-      headers.Authorization = `Bearer ${token}`;
-    }
-  }
-
-  const res = await fetch(`${baseUrl}${path}`, {
-    method,
-    headers,
-    body: options?.body ? JSON.stringify(options.body) : undefined,
+  return request<T>(ENV.APP_API_BASE_URL, path, method, {
+    body: options?.body,
+    headers: token ? { Authorization: `Bearer ${token}` } : undefined,
   });
+}
 
-  const data = await parseResponseBody(res);
+async function requestWithAutoRefresh<T>(
+  path: string,
+  method: HttpMethod,
+  options?: { body?: unknown },
+): Promise<T> {
+  try {
+    return await authedRequest<T>(path, method, { body: options?.body });
+  } catch (err) {
+    if (err instanceof HttpError && err.status === 401) {
+      try {
+        const newAccess = await refreshSession();
+        return await authedRequest<T>(path, method, {
+          body: options?.body,
+          accessTokenOverride: newAccess,
+        });
+      } catch (refreshErr) {
+        if (isRefreshTokenInvalid(refreshErr)) {
+          await logoutAndClearTokens(); // emits loggedOut internally
+          throw err; // keep original 401 semantics
+        }
+        throw refreshErr;
+      }
+    }
 
-  if (!res.ok) {
-    const message =
-      typeof data === 'object' &&
-      data !== null &&
-      'title' in data &&
-      typeof (data as { title?: unknown }).title === 'string'
-        ? String((data as { title: string }).title)
-        : `Request failed (${res.status})`;
-
-    throw new HttpError(res.status, message, data);
+    throw err;
   }
-
-  return data as T;
 }
 
 export const httpClient = {
@@ -87,9 +58,10 @@ export const httpClient = {
   },
 
   appApi: {
-    get: <T>(path: string) => request<T>(ENV.APP_API_BASE_URL, path, 'GET', { auth: true }),
-
-    post: <T>(path: string, body: unknown) =>
-      request<T>(ENV.APP_API_BASE_URL, path, 'POST', { body, auth: true }),
+    get: <T>(path: string) => requestWithAutoRefresh<T>(path, 'GET'),
+    post: <T>(path: string, body: unknown) => requestWithAutoRefresh<T>(path, 'POST', { body }),
+    put: <T>(path: string, body: unknown) => requestWithAutoRefresh<T>(path, 'PUT', { body }),
+    patch: <T>(path: string, body: unknown) => requestWithAutoRefresh<T>(path, 'PATCH', { body }),
+    delete: <T>(path: string) => requestWithAutoRefresh<T>(path, 'DELETE'),
   },
 };
