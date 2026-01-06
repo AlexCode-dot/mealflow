@@ -43,9 +43,18 @@ if command -v npm >/dev/null 2>&1; then
       exit 1
     }
 
-    # Re-stage ONLY previously staged files (never git add -A)
+    # Re-stage ONLY previously staged files (handle deleted/moved paths safely)
     if [ -n "$STAGED_FILES" ]; then
-      echo "$STAGED_FILES" | tr '\n' '\0' | xargs -0 git add --
+      while IFS= read -r f; do
+        [ -z "$f" ] && continue
+
+        if [ -e "$ROOT/$f" ]; then
+          git add -- "$f"
+        else
+          # File was deleted/moved: keep deletion staged without failing
+          git add -u -- "$f" || true
+        fi
+      done <<< "$STAGED_FILES"
     fi
   else
     echo "lint-staged not installed in apps/expo-app; skipping format-on-commit." >&2
