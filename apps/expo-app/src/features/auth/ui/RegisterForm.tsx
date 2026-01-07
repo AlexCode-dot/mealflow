@@ -1,7 +1,5 @@
 import { View, Text } from 'react-native';
-import { TextField } from '@/src/shared/ui/TextField';
-import { Button } from '@/src/shared/ui/Button';
-import { ErrorText } from '@/src/shared/ui/ErrorText';
+import { TextField, Button, ErrorText } from '@/src/shared/ui';
 import type { UiError } from '@/src/shared/errors/errorTypes';
 import { validateRegister } from '@/src/features/auth/validation/authValidation';
 import { useAuthForm } from '@/src/features/auth/hooks/useAuthForm';
