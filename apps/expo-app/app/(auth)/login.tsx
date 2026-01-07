@@ -1,8 +1,9 @@
-import { Link, useRouter } from 'expo-router';
-import { Text, View } from 'react-native';
-import { Screen } from '@/src/shared/ui/Screen';
+import { useRouter } from 'expo-router';
+import { View, StyleSheet } from 'react-native';
+import { AuthScreen, AuthBottomCta } from '@/src/shared/ui';
 import { LoginForm } from '@/src/features/auth/ui/LoginForm';
 import { useLogin } from '@/src/features/auth/hooks/useLogin';
+import { theme } from '@/src/shared/theme/theme';
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -10,23 +11,34 @@ export default function LoginScreen() {
 
   const onSubmit = async (email: string, password: string) => {
     const ok = await login(email, password);
-    if (ok) router.replace('/(app)/home');
+    if (ok) router.replace('/(app)/overview');
   };
 
   return (
-    <Screen>
-      <View style={{ gap: 16 }}>
-        <Text style={{ fontSize: 28, fontWeight: '800' }}>Login</Text>
-
+    <AuthScreen
+      variant="login"
+      bottomCta={
+        <AuthBottomCta
+          text="New here?"
+          buttonTitle="Create account"
+          onPress={() => router.push('/(auth)/register')}
+        />
+      }
+    >
+      <View style={styles.formWrap}>
         <LoginForm
           onSubmit={onSubmit}
           isLoading={isLoading}
           error={error}
           clearError={clearError}
         />
-
-        <Link href="/(auth)/register">Go to register</Link>
       </View>
-    </Screen>
+    </AuthScreen>
   );
 }
+
+const styles = StyleSheet.create({
+  formWrap: {
+    gap: theme.spacing.s4,
+  },
+});
