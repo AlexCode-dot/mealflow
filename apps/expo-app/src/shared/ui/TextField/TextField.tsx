@@ -1,4 +1,5 @@
-import { Text, TextInput, View, TextInputProps } from 'react-native';
+import { Text, TextInput, View, StyleSheet, type TextInputProps } from 'react-native';
+import { theme } from '@/src/shared/theme/theme';
 
 type Props = {
   label: string;
@@ -9,7 +10,6 @@ type Props = {
   secureTextEntry?: boolean;
   autoCapitalize?: TextInputProps['autoCapitalize'];
   keyboardType?: TextInputProps['keyboardType'];
-
   onBlur?: () => void;
 
   invalid?: boolean;
@@ -31,15 +31,12 @@ export function TextField({
   returnKeyType,
   onSubmitEditing,
 }: Props) {
-  const borderColor = invalid ? '#b00020' : '#ddd';
-  const backgroundColor = invalid ? '#fff5f5' : '#fff';
-
   const submitBehavior: TextInputProps['submitBehavior'] =
     returnKeyType === 'done' ? 'blurAndSubmit' : 'submit';
 
   return (
-    <View style={{ gap: 6 }}>
-      <Text style={{ fontSize: 14, fontWeight: '600' }}>{label}</Text>
+    <View style={styles.root}>
+      <Text style={styles.label}>{label}</Text>
 
       <TextInput
         value={value}
@@ -54,16 +51,31 @@ export function TextField({
         submitBehavior={returnKeyType ? submitBehavior : undefined}
         accessibilityLabel={label}
         accessibilityHint={invalid ? 'Invalid input' : undefined}
-        style={{
-          borderWidth: 1,
-          borderColor,
-          backgroundColor,
-          paddingHorizontal: 12,
-          paddingVertical: 10,
-          borderRadius: 10,
-          fontSize: 16,
-        }}
+        style={[styles.input, invalid ? styles.inputInvalid : null]}
       />
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  root: { gap: theme.spacing.s2 },
+  label: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: theme.colors.text,
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: theme.colors.borderNeutral,
+    backgroundColor: theme.colors.bgLight,
+    paddingHorizontal: theme.spacing.s3,
+    paddingVertical: 10,
+    borderRadius: theme.radius.sm,
+    fontSize: 16,
+    color: theme.colors.text,
+  },
+  inputInvalid: {
+    borderColor: theme.colors.error,
+    backgroundColor: theme.colors.errorBg,
+  },
+});
