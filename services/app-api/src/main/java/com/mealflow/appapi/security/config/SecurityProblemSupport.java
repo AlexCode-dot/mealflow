@@ -1,9 +1,9 @@
 package com.mealflow.appapi.security.config;
 
+import com.mealflow.appapi.error.ProblemDetails;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.time.Clock;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.security.access.AccessDeniedException;
@@ -17,37 +17,29 @@ import tools.jackson.databind.ObjectMapper;
 public class SecurityProblemSupport implements AuthenticationEntryPoint, AccessDeniedHandler {
 
     private final ObjectMapper objectMapper;
-    private final Clock clock;
+    private final ProblemDetails problems;
 
-    public SecurityProblemSupport(ObjectMapper objectMapper, Clock clock) {
+    public SecurityProblemSupport(ObjectMapper objectMapper, ProblemDetails problems) {
         this.objectMapper = objectMapper;
-        this.clock = clock;
+        this.problems = problems;
     }
 
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException ex)
             throws IOException {
 
-        writeProblem(response, request, HttpStatus.UNAUTHORIZED, "Unauthorized");
+        writeProblem(response, problems.build(HttpStatus.UNAUTHORIZED, "Unauthorized", request));
     }
 
     @Override
     public void handle(HttpServletRequest request, HttpServletResponse response, AccessDeniedException ex)
             throws IOException {
 
-        writeProblem(response, request, HttpStatus.FORBIDDEN, "Forbidden");
+        writeProblem(response, problems.build(HttpStatus.FORBIDDEN, "Forbidden", request));
     }
 
-    private void writeProblem(
-            HttpServletResponse response, HttpServletRequest request, HttpStatus status, String message)
-            throws IOException {
-
-        ProblemDetail pd = ProblemDetail.forStatusAndDetail(status, message);
-        pd.setTitle(status.getReasonPhrase());
-        pd.setProperty("path", request.getRequestURI());
-        pd.setProperty("timestamp", clock.instant().toString());
-
-        response.setStatus(status.value());
+    private void writeProblem(HttpServletResponse response, ProblemDetail pd) throws IOException {
+        response.setStatus(pd.getStatus());
         response.setContentType("application/problem+json");
         objectMapper.writeValue(response.getOutputStream(), pd);
     }
