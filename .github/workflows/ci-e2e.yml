@@ -126,7 +126,7 @@ jobs:
           APP_API_BASE_URL: http://localhost:8082
         run: |
           set -e
-          ./mvnw -B -Pe2e test
+          ./mvnw -B -Pe2e verify
 
       - name: Dump logs on failure
         if: failure()

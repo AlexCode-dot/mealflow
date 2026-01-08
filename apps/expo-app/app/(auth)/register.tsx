@@ -4,6 +4,7 @@ import { AuthScreen, AuthBottomCta } from '@/src/shared/ui';
 import { RegisterForm } from '@/src/features/auth/ui/RegisterForm';
 import { useRegister } from '@/src/features/auth/hooks/useRegister';
 import { theme } from '@/src/shared/theme/theme';
+import { routes } from '@/src/core/navigation/routes';
 
 export default function RegisterScreen() {
   const router = useRouter();
@@ -11,7 +12,7 @@ export default function RegisterScreen() {
 
   const onSubmit = async (email: string, password: string) => {
     const ok = await register(email, password);
-    if (ok) router.replace('/(app)/overview');
+    if (ok) router.replace(routes.overview);
   };
 
   return (
@@ -21,7 +22,7 @@ export default function RegisterScreen() {
         <AuthBottomCta
           text="Already have an account?"
           buttonTitle="Log in"
-          onPress={() => router.push('/(auth)/login')}
+          onPress={() => router.push(routes.login)}
         />
       }
     >

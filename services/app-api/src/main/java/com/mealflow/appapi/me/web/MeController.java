@@ -1,6 +1,6 @@
-package com.mealflow.appapi.web;
+package com.mealflow.appapi.me.web;
 
-import java.util.Map;
+import com.mealflow.appapi.me.web.dto.MeResponse;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,11 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class MeController {
 
     @GetMapping("/me")
-    public Map<String, Object> me(@AuthenticationPrincipal Jwt jwt) {
-        // userId comes from JWT "sub"
-        return Map.of(
-                "userId", jwt.getSubject(),
-                "issuer", jwt.getIssuer() != null ? jwt.getIssuer().toString() : null,
-                "expiresAt", jwt.getExpiresAt() != null ? jwt.getExpiresAt().toString() : null);
+    public MeResponse me(@AuthenticationPrincipal Jwt jwt) {
+        return new MeResponse(jwt.getSubject());
     }
 }

@@ -3,6 +3,7 @@ import { Text, View, StyleSheet } from 'react-native';
 import { router } from 'expo-router';
 import { Screen, Card, ListRow, ModalSheet, Button } from '@/src/shared/ui';
 import { theme } from '@/src/shared/theme/theme';
+import { routes } from '@/src/core/navigation/routes';
 
 export default function SettingsScreen() {
   const [aboutOpen, setAboutOpen] = useState(false);
@@ -15,7 +16,7 @@ export default function SettingsScreen() {
           <ListRow
             title="Profile"
             subtitle="View and manage your account"
-            onPress={() => router.push('/(app)/profile')}
+            onPress={() => router.push(routes.profile)}
           />
           <ListRow
             title="About"

@@ -22,44 +22,36 @@ else
 fi
 
 # -------------------------------------------------
-# Expo app lint + format (STAGED FILES ONLY)
+# Expo app lint + format (ONLY Expo staged files)
 # -------------------------------------------------
 if command -v npm >/dev/null 2>&1; then
-  echo "Linting Expo app..."
-
-  (cd "$ROOT/apps/expo-app" && npm run lint --silent) || {
-    echo "Expo lint failed. Install deps with 'npm install' in apps/expo-app if needed." >&2
-    exit 1
-  }
-
-  if (cd "$ROOT/apps/expo-app" && npx --yes --quiet lint-staged --version) >/dev/null 2>&1; then
-    echo "Formatting staged Expo files (lint-staged)..."
-
-    # Capture exactly what is staged BEFORE lint-staged runs (null-delimited)
-    STAGED_ADD="$(git diff --cached --name-only -z --diff-filter=ACMR)"
-    STAGED_DEL="$(git diff --cached --name-only -z --diff-filter=D)"
-
-    (cd "$ROOT/apps/expo-app" && npx --yes --quiet lint-staged) || {
-      echo "lint-staged failed. Fix errors and try again." >&2
+  if git diff --cached --name-only | grep -qE '^apps/expo-app/'; then
+    echo "Linting Expo app..."
+    (cd "$ROOT/apps/expo-app" && npm run lint --silent) || {
+      echo "Expo lint failed. Run 'npm install' in apps/expo-app if needed." >&2
       exit 1
     }
 
-    # Re-stage ONLY what was previously staged (never git add -A)
-    if [ -n "$STAGED_ADD" ]; then
-      printf '%s' "$STAGED_ADD" | xargs -0 git add --
+    echo "Formatting staged Expo files (prettier)..."
+
+    # Ensure Expo's local prettier is used
+    export PATH="$ROOT/apps/expo-app/node_modules/.bin:$PATH"
+
+    # Format ONLY staged files under apps/expo-app (ACMR)
+    git diff --cached --name-only -z --diff-filter=ACMR -- 'apps/expo-app' \
+      | xargs -0 -r prettier --write
+
+    # Re-stage ONLY those formatted files
+    git diff --cached --name-only -z --diff-filter=ACMR -- 'apps/expo-app' \
+      | xargs -0 -r git add --
+
+    # Re-stage deletions under apps/expo-app (safe)
+    if git diff --cached --name-only --diff-filter=D -- 'apps/expo-app' | grep -q .; then
+      git add -u -- 'apps/expo-app' || true
     fi
-# Re-stage deletions safely (never fail the hook on pathspec edge-cases)
-if [ -n "$STAGED_DEL" ]; then
-  while IFS= read -r -d '' f; do
-    # If Git can still "see" the path in index history, stage the deletion.
-    # If not, ignore (we don't want commits blocked by pathspec issues).
-    git add -u -- "$f" 2>/dev/null || true
-  done < <(printf '%s' "$STAGED_DEL")
-fi
   else
-    echo "lint-staged not installed in apps/expo-app; skipping format-on-commit." >&2
+    echo "No Expo changes staged; skipping Expo lint/format."
   fi
 else
   echo "npm not found; skipping Expo lint." >&2
 fi
-
