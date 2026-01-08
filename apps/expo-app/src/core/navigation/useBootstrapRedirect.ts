@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import type { RedirectProps } from 'expo-router';
 import { initSession } from '@/src/core/auth/authSession';
 import { tokenStore } from '@/src/core/auth/tokenStore';
+import { routes } from '@/src/core/navigation/routes';
 
 export function useBootstrapRedirect() {
   const [target, setTarget] = useState<RedirectProps['href'] | null>(null);
@@ -11,14 +12,15 @@ export function useBootstrapRedirect() {
 
     (async () => {
       if (tokenStore.hasAccessToken()) {
-        if (alive) setTarget('/(app)/overview');
+        if (alive) setTarget(routes.overview);
         return;
       }
+
       try {
         const ok = await initSession();
-        if (alive) setTarget(ok ? '/(app)/overview' : '/(auth)/login');
+        if (alive) setTarget(ok ? routes.overview : routes.login);
       } catch {
-        if (alive) setTarget('/(auth)/login');
+        if (alive) setTarget(routes.login);
       }
     })();
 

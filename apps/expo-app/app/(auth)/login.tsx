@@ -4,6 +4,7 @@ import { AuthScreen, AuthBottomCta } from '@/src/shared/ui';
 import { LoginForm } from '@/src/features/auth/ui/LoginForm';
 import { useLogin } from '@/src/features/auth/hooks/useLogin';
 import { theme } from '@/src/shared/theme/theme';
+import { routes } from '@/src/core/navigation/routes';
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -11,7 +12,7 @@ export default function LoginScreen() {
 
   const onSubmit = async (email: string, password: string) => {
     const ok = await login(email, password);
-    if (ok) router.replace('/(app)/overview');
+    if (ok) router.replace(routes.overview);
   };
 
   return (
@@ -21,7 +22,7 @@ export default function LoginScreen() {
         <AuthBottomCta
           text="New here?"
           buttonTitle="Create account"
-          onPress={() => router.push('/(auth)/register')}
+          onPress={() => router.push(routes.register)}
         />
       }
     >
