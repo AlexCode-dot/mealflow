@@ -28,7 +28,7 @@ The Identity Service handles:
 - Issuing **JWT access tokens**
 - Issuing and rotating **refresh tokens**
 - Logout by revoking refresh tokens
-- Publishing **JWKS** for token verification by the App API
+- Publishing JWKS at GET /.well-known/jwks.json for token verification by the App API
 
 ---
 
