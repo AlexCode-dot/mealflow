@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
@@ -93,55 +93,98 @@
       <artifactId>mongodb</artifactId>
       <scope>test</scope>
     </dependency>
+
+    <!-- Optional but nice with Spring Boot 4 + Testcontainers -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-testcontainers</artifactId>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
-<build>
-  <plugins>
-    <plugin>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-maven-plugin</artifactId>
-    </plugin>
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-maven-plugin</artifactId>
+      </plugin>
 
-    <!-- Formatting enforcement -->
-    <plugin>
-      <groupId>com.diffplug.spotless</groupId>
-      <artifactId>spotless-maven-plugin</artifactId>
-      <version>${spotless.version}</version>
-      <configuration>
-        <java>
-          <palantirJavaFormat>
-            <version>${palantir.javaformat.version}</version>
-          </palantirJavaFormat>
-          <removeUnusedImports />
-          <importOrder />
-        </java>
-      </configuration>
-      <executions>
-        <execution>
-          <phase>verify</phase>
-          <goals>
-            <goal>check</goal>
-          </goals>
-        </execution>
-      </executions>
-    </plugin>
-  </plugins>
-</build>
+      <!-- ✅ Default: run unit + IT tests, exclude E2E -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <includes>
+            <include>**/*Test.java</include>
+            <include>**/*Tests.java</include>
+            <include>**/*TestCase.java</include>
+            <include>**/*IT.java</include>
+          </includes>
+          <excludes>
+            <exclude>**/*E2EIT.java</exclude>
+          </excludes>
+        </configuration>
+      </plugin>
+
+      <!-- Formatting enforcement -->
+      <plugin>
+        <groupId>com.diffplug.spotless</groupId>
+        <artifactId>spotless-maven-plugin</artifactId>
+        <version>${spotless.version}</version>
+        <configuration>
+          <java>
+            <palantirJavaFormat>
+              <version>${palantir.javaformat.version}</version>
+            </palantirJavaFormat>
+            <removeUnusedImports />
+            <importOrder />
+          </java>
+        </configuration>
+        <executions>
+          <execution>
+            <phase>verify</phase>
+            <goals>
+              <goal>check</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
 
   <profiles>
     <profile>
       <id>e2e</id>
       <build>
         <plugins>
+          <!-- Don’t run the normal unit/IT test suite in e2e -->
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-surefire-plugin</artifactId>
             <configuration>
-              <!-- Run ONLY E2E ITs in this profile -->
+              <skipTests>true</skipTests>
+            </configuration>
+          </plugin>
+
+          <!-- ✅ Run E2E using Failsafe (correct lifecycle) -->
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-failsafe-plugin</artifactId>
+            <version>3.5.4</version>
+            <configuration>
               <includes>
                 <include>**/*E2EIT.java</include>
               </includes>
+              <failIfNoTests>true</failIfNoTests>
             </configuration>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>integration-test</goal>
+                  <goal>verify</goal>
+                </goals>
+              </execution>
+            </executions>
           </plugin>
         </plugins>
       </build>
