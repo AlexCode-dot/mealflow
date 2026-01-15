@@ -1,133 +1,263 @@
-import { View, Text, StyleSheet, TextInput } from 'react-native';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { StyleSheet, View } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
-import { Screen, Card, Button, ErrorText } from '@/src/shared/ui';
+import DraggableFlatList from 'react-native-draggable-flatlist';
+import { Screen, ErrorText, SectionEmpty, useBottomBarActions } from '@/src/shared/ui';
 import { theme } from '@/src/shared/theme/theme';
-import { useEditRecipe } from '@/src/features/recipes/hooks/useEditRecipe';
+import { routes } from '@/src/core/navigation/routes';
+import {
+  useEditRecipe,
+  useRecipeEditorUiState,
+  useRecipeIngredientEditor,
+  useRecipeStepEditor,
+  useStepReorderState,
+} from '@/src/features/recipes/hooks';
+import {
+  RecipeHero,
+  IngredientEditorSheet,
+  StepEditorSheet,
+  createRecipeEditorRenderers,
+  RecipeSheetLayout,
+  RecipeEditorBasics,
+  RecipeEditorListSection,
+  RecipeEditorShell,
+  RecipeEditorPickers,
+} from '@/src/features/recipes/ui';
+import { Plus, Download, XCircle } from 'lucide-react-native';
+import { TAB_BAR } from '@/src/shared/ui/layout/tabBar';
 
 export function EditRecipeScreen() {
   const params = useLocalSearchParams<{ id?: string }>();
   const id = typeof params.id === 'string' ? params.id : '';
-
   const form = useEditRecipe(id);
+  const { load } = form;
 
-  const onSave = async () => {
-    const ok = await form.save();
+  const [refreshing, setRefreshing] = useState(false);
+  const editorState = useRecipeEditorUiState();
+
+  const ingredientRows = useMemo(() => form.ingredients ?? [], [form.ingredients]);
+  const stepRows = useMemo(() => form.steps ?? [], [form.steps]);
+  const ingredientEditor = useRecipeIngredientEditor({
+    ingredients: ingredientRows,
+    setIngredients: form.setIngredients,
+  });
+  const stepEditor = useRecipeStepEditor({
+    steps: stepRows,
+    setSteps: form.setSteps,
+  });
+  const { items: stepItems, onDragEnd: onStepsDragEnd } = useStepReorderState({
+    steps: stepRows,
+    setSteps: form.setSteps,
+  });
+
+  const saveRef = useRef(form.save);
+  useEffect(() => {
+    saveRef.current = form.save;
+  }, [form.save]);
+
+  const onSave = useCallback(async () => {
+    const ok = await saveRef.current();
+    if (ok && id) {
+      router.navigate(`${routes.recipe(id)}?toast=saved`);
+      return;
+    }
     if (ok) router.back();
-  };
+  }, [id]);
 
-  const headerRight = (
-    <Button
-      title={form.isSaving ? 'Saving…' : 'Save'}
-      variant="primary"
-      onPress={onSave}
-      disabled={!form.canSave}
-    />
+  const onCancel = useCallback(() => {
+    router.back();
+  }, []);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await load();
+    setRefreshing(false);
+  }, [load]);
+
+  const heroHeight = 300;
+  const titleError = form.touched.title ? form.errors.title : null;
+  const descriptionError = form.touched.description ? form.errors.description : null;
+
+  const { renderIngredientItem, renderStepItem } = createRecipeEditorRenderers({
+    onEditIngredient: ingredientEditor.openEdit,
+    onEditStep: stepEditor.openEdit,
+  });
+
+  const actionItems = useMemo(
+    () => [
+      {
+        key: 'cancel',
+        label: 'Cancel',
+        icon: (
+          <XCircle color={theme.colors.textOnPrimary} size={TAB_BAR.ICON_SIZE} strokeWidth={2.25} />
+        ),
+        onPress: onCancel,
+      },
+      {
+        key: 'save',
+        label: form.isSaving ? 'Saving…' : 'Save recipe',
+        icon: (
+          <Download
+            color={theme.colors.textOnPrimary}
+            size={TAB_BAR.ICON_SIZE}
+            strokeWidth={2.25}
+          />
+        ),
+        onPress: onSave,
+        disabled: !form.canSave,
+      },
+    ],
+    [form.canSave, form.isSaving, onCancel, onSave],
   );
 
+  useBottomBarActions(actionItems);
+
   return (
-    <Screen title="Edit recipe" showBack showProfileIcon={false} rightSlot={headerRight} scroll>
-      <Card>
-        <Text style={styles.sectionTitle}>Basic</Text>
+    <Screen title="Edit Recipe" showBack scroll={false} contentStyle={styles.screenContent}>
+      <View style={styles.root}>
+        <RecipeSheetLayout
+          hero={<RecipeHero />}
+          heroHeight={heroHeight}
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+        >
+          <RecipeEditorShell tab={editorState.tab} onTabChange={editorState.setTab}>
+            {form.loadError ? <ErrorText>{form.loadError}</ErrorText> : null}
+            {form.saveError ? <ErrorText>{form.saveError}</ErrorText> : null}
 
-        <View style={{ gap: theme.spacing.s3 }}>
-          <View style={{ gap: theme.spacing.s2 }}>
-            <Text style={styles.label}>Title</Text>
-            <TextInput
-              value={form.title}
-              onChangeText={(v) => form.setTitle(v)}
-              onBlur={() => form.setTitleTouched(true)}
-              placeholder="e.g. Chicken pasta"
-              style={[styles.input, form.titleError ? styles.inputInvalid : null]}
-              autoCapitalize="sentences"
-              returnKeyType="next"
-            />
-            {form.titleError ? <ErrorText>{form.titleError}</ErrorText> : null}
-          </View>
+            {editorState.tab === 'basic' ? (
+              <RecipeEditorBasics
+                title={form.title}
+                onTitleChange={(v) => form.setTitle(v)}
+                onTitleBlur={() => form.setTouched((prev) => ({ ...prev, title: true }))}
+                titleError={titleError}
+                description={form.description}
+                onDescriptionChange={(v) => form.setDescription(v)}
+                onDescriptionBlur={() =>
+                  form.setTouched((prev) => ({ ...prev, description: true }))
+                }
+                descriptionError={descriptionError}
+                time={form.time}
+                portions={form.portions}
+                category={form.category}
+                onOpenPicker={editorState.setPickerOpen}
+              />
+            ) : null}
 
-          <View style={{ gap: theme.spacing.s2 }}>
-            <Text style={styles.label}>Description</Text>
-            <TextInput
-              value={form.description}
-              onChangeText={(v) => form.setDescription(v)}
-              placeholder="Short description (optional)"
-              style={[styles.input, styles.multiline]}
-              multiline
-              textAlignVertical="top"
-            />
-          </View>
-        </View>
-      </Card>
+            {editorState.tab === 'ingredients' ? (
+              <RecipeEditorListSection
+                itemsCount={ingredientRows.length}
+                list={
+                  <DraggableFlatList
+                    data={ingredientRows}
+                    keyExtractor={(item, index) => item.id ?? `${item.name}-${index}`}
+                    renderItem={renderIngredientItem}
+                    onDragEnd={({ data }) => form.setIngredients(data)}
+                    activationDistance={8}
+                    scrollEnabled={false}
+                    ItemSeparatorComponent={() => <View style={styles.listSeparator} />}
+                  />
+                }
+                empty={
+                  <SectionEmpty
+                    title="No ingredients yet"
+                    description="Add your first ingredient to start building your recipe."
+                    actionLabel="Add ingredient"
+                    onAction={ingredientEditor.openAdd}
+                    actionIcon={
+                      <Plus color={theme.colors.primaryDark} size={18} strokeWidth={2.5} />
+                    }
+                  />
+                }
+                addLabel="Add ingredient"
+                onAdd={ingredientEditor.openAdd}
+              />
+            ) : null}
 
-      <Card>
-        <Text style={styles.sectionTitle}>Ingredients</Text>
-        <Text style={styles.hint}>One ingredient per line (for now).</Text>
-
-        <TextInput
-          value={form.ingredientsText}
-          onChangeText={form.setIngredientsText}
-          placeholder={'e.g.\nChicken\nPasta\nCream'}
-          style={[styles.input, styles.multilineTall]}
-          multiline
-          textAlignVertical="top"
-        />
-      </Card>
-
-      <Card>
-        <Text style={styles.sectionTitle}>Steps</Text>
-        <Text style={styles.hint}>One step per line.</Text>
-
-        <TextInput
-          value={form.stepsText}
-          onChangeText={form.setStepsText}
-          placeholder={'e.g.\nBoil pasta\nCook chicken\nMix sauce'}
-          style={[styles.input, styles.multilineTall]}
-          multiline
-          textAlignVertical="top"
-        />
-      </Card>
-
-      {form.loadError ? (
-        <Card>
-          <ErrorText>{form.loadError}</ErrorText>
-          <View style={{ height: theme.spacing.s3 }} />
-          <Button title="Try again" onPress={form.load} />
-        </Card>
-      ) : null}
-
-      {form.saveError ? (
-        <Card>
-          <ErrorText>{form.saveError}</ErrorText>
-        </Card>
-      ) : null}
-
-      <View style={{ gap: theme.spacing.s3 }}>
-        <Button
-          title={form.isSaving ? 'Saving…' : 'Save changes'}
-          variant="primary"
-          onPress={onSave}
-          disabled={!form.canSave}
-        />
-        <Button title="Cancel" onPress={() => router.back()} />
+            {editorState.tab === 'steps' ? (
+              <RecipeEditorListSection
+                itemsCount={stepRows.length}
+                list={
+                  <DraggableFlatList
+                    data={stepItems}
+                    keyExtractor={(item, index) => `${item.id ?? index}`}
+                    renderItem={renderStepItem}
+                    onDragEnd={({ data }) => onStepsDragEnd(data)}
+                    activationDistance={8}
+                    scrollEnabled={false}
+                    ItemSeparatorComponent={() => <View style={styles.listSeparator} />}
+                  />
+                }
+                empty={
+                  <SectionEmpty
+                    title="No steps yet"
+                    description="Add your first step to start building your recipe."
+                    actionLabel="Add step"
+                    onAction={stepEditor.openAdd}
+                    actionIcon={
+                      <Plus color={theme.colors.primaryDark} size={18} strokeWidth={2.5} />
+                    }
+                  />
+                }
+                addLabel="Add step"
+                onAdd={stepEditor.openAdd}
+              />
+            ) : null}
+          </RecipeEditorShell>
+        </RecipeSheetLayout>
       </View>
+
+      <IngredientEditorSheet
+        visible={ingredientEditor.isOpen}
+        title={ingredientEditor.editingIndex === null ? 'Add Ingredient' : 'Edit Ingredient'}
+        name={ingredientEditor.draft.name}
+        unit={ingredientEditor.draft.unit}
+        amount={ingredientEditor.draft.amount}
+        onChangeName={ingredientEditor.setName}
+        onChangeUnit={ingredientEditor.setUnit}
+        onChangeAmount={ingredientEditor.setAmount}
+        nameError={ingredientEditor.errors.name}
+        unitError={ingredientEditor.errors.unit}
+        amountError={ingredientEditor.errors.amount}
+        onSave={ingredientEditor.save}
+        onCancel={ingredientEditor.close}
+        onDelete={ingredientEditor.editingIndex === null ? undefined : ingredientEditor.remove}
+      />
+
+      <StepEditorSheet
+        visible={stepEditor.isOpen}
+        title={stepEditor.editingIndex === null ? 'Add step' : 'Edit step'}
+        description={stepEditor.draft}
+        onChangeDescription={stepEditor.setDescription}
+        error={stepEditor.error}
+        onSave={stepEditor.save}
+        onCancel={stepEditor.close}
+        onDelete={stepEditor.editingIndex === null ? undefined : stepEditor.remove}
+      />
+
+      <RecipeEditorPickers
+        pickerOpen={editorState.pickerOpen}
+        time={form.time}
+        portions={form.portions}
+        category={form.category}
+        onTimeChange={form.setTime}
+        onPortionsChange={form.setPortions}
+        onCategoryChange={form.setCategory}
+        onClose={() => editorState.setPickerOpen(null)}
+      />
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  sectionTitle: { color: theme.colors.text, fontSize: 16, fontWeight: '900' },
-  label: { fontSize: 13, fontWeight: '800', color: theme.colors.text },
-  hint: { color: theme.colors.textMuted, fontSize: 12, fontWeight: '600', lineHeight: 16 },
-  input: {
-    borderWidth: 1,
-    borderColor: theme.colors.borderNeutral,
-    backgroundColor: theme.colors.bgLight,
-    paddingHorizontal: theme.spacing.s3,
-    paddingVertical: 10,
-    borderRadius: theme.radius.sm,
-    fontSize: 16,
-    color: theme.colors.text,
+  screenContent: {
+    padding: 0,
+    gap: 0,
   },
-  inputInvalid: { borderColor: theme.colors.error, backgroundColor: theme.colors.errorBg },
-  multiline: { minHeight: 90 },
-  multilineTall: { minHeight: 140 },
+  root: {
+    flex: 1,
+  },
+  listSeparator: {
+    height: theme.spacing.s2,
+  },
 });

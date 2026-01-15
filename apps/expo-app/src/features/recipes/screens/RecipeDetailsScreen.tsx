@@ -1,164 +1,410 @@
-import { Alert, View, Text, StyleSheet } from 'react-native';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { ActivityIndicator, InteractionManager, StyleSheet, Text, View } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
-import { Screen, Card, Button, ErrorText, Chip } from '@/src/shared/ui';
+import { useFocusEffect, useIsFocused } from '@react-navigation/native';
+import { Clock3, ShoppingBasket, Utensils, Users, Pencil, Trash2 } from 'lucide-react-native';
+import {
+  Screen,
+  ErrorText,
+  Button,
+  Shimmer,
+  IconStatRow,
+  ConfirmSheet,
+  ToastBanner,
+  useBottomBarActions,
+} from '@/src/shared/ui';
 import { theme } from '@/src/shared/theme/theme';
 import { routes } from '@/src/core/navigation/routes';
-import { useRecipeDetails } from '@/src/features/recipes/hooks/useRecipeDetails';
+import { useRecipeDetails } from '@/src/features/recipes/hooks';
+import {
+  RecipeIngredientRow,
+  RecipeStepRow,
+  RecipeSheetLayout,
+  RecipeDetailsTabs,
+  type RecipeDetailsTab,
+} from '@/src/features/recipes/ui';
+import { useToastState } from '@/src/shared/hooks/useToastState';
+import { TAB_BAR } from '@/src/shared/ui/layout/tabBar';
+import { formatDuration } from '@/src/features/recipes/utils/formatDuration';
 
 export function RecipeDetailsScreen() {
-  const params = useLocalSearchParams<{ id?: string }>();
+  const params = useLocalSearchParams<{ id?: string; toast?: string }>();
   const id = typeof params.id === 'string' ? params.id : '';
+  const toastParam = typeof params.toast === 'string' ? params.toast : null;
 
   const { recipe, isLoading, error, load, remove, isDeleting } = useRecipeDetails(id);
+  const [tab, setTab] = useState<RecipeDetailsTab>('ingredients');
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const [showToast, setShowToast] = useState(false);
+  const [isLeaving, setIsLeaving] = useState(false);
+  const { toast, show, clear } = useToastState();
+  const didInitialFocusLoad = useRef(false);
+  const isFocused = useIsFocused();
 
-  const onEdit = () => {
+  const stats = useMemo(() => {
+    const cookingMinutes = recipe?.cookingTimeMinutes;
+    const timeLabel =
+      cookingMinutes !== null && cookingMinutes !== undefined
+        ? formatDuration(cookingMinutes)
+        : '—';
+    const ingredientCount = recipe?.ingredients?.length ?? 0;
+    const categoryLabel = recipe?.category ?? '—';
+    const portionsLabel =
+      recipe?.portions !== null && recipe?.portions !== undefined
+        ? `${recipe.portions} Portions`
+        : '—';
+
+    return [
+      {
+        icon: <Clock3 color={theme.colors.primaryDark} size={34} strokeWidth={2.4} />,
+        label: timeLabel,
+      },
+      {
+        icon: <ShoppingBasket color={theme.colors.primaryDark} size={34} strokeWidth={2.4} />,
+        label: String(ingredientCount),
+      },
+      {
+        icon: <Utensils color={theme.colors.primaryDark} size={34} strokeWidth={2.4} />,
+        label: categoryLabel,
+      },
+      {
+        icon: <Users color={theme.colors.primaryDark} size={34} strokeWidth={2.4} />,
+        label: portionsLabel,
+      },
+    ];
+  }, [recipe]);
+
+  const onEdit = useCallback(() => {
     if (!id) return;
     router.push(routes.recipeEdit(id));
-  };
+  }, [id]);
+
+  const onAddToShoppingList = useCallback(() => {
+    show({ variant: 'success', message: 'Added to shopping list' });
+  }, [show]);
+
+  const onDelete = useCallback(() => {
+    setDeleteOpen(true);
+  }, []);
+
+  const actionItems = useMemo(
+    () => [
+      {
+        key: 'edit',
+        label: 'Edit',
+        icon: (
+          <Pencil color={theme.colors.textOnPrimary} size={TAB_BAR.ICON_SIZE} strokeWidth={2.25} />
+        ),
+        onPress: onEdit,
+      },
+      {
+        key: 'shopping-list',
+        label: 'Add to Shopping List',
+        icon: (
+          <ShoppingBasket
+            color={theme.colors.textOnPrimary}
+            size={TAB_BAR.ICON_SIZE}
+            strokeWidth={2.25}
+          />
+        ),
+        onPress: onAddToShoppingList,
+      },
+      {
+        key: 'delete',
+        label: 'Delete',
+        icon: (
+          <Trash2 color={theme.colors.textOnPrimary} size={TAB_BAR.ICON_SIZE} strokeWidth={2.25} />
+        ),
+        onPress: onDelete,
+      },
+    ],
+    [onAddToShoppingList, onDelete, onEdit],
+  );
+
+  useBottomBarActions(isLeaving ? null : actionItems);
+
+  useEffect(() => {
+    if (!toastParam || !isFocused) return;
+
+    const task = InteractionManager.runAfterInteractions(() => {
+      if (toastParam === 'saved') {
+        show({ variant: 'success', message: 'Saved successfully' });
+      }
+      if (toastParam === 'shopping-list') {
+        show({ variant: 'success', message: 'Added to shopping list' });
+      }
+      router.setParams({ toast: undefined });
+    });
+
+    return () => {
+      task.cancel?.();
+    };
+  }, [isFocused, show, toastParam]);
+
+  useEffect(() => {
+    if (!toast || !isFocused) {
+      setShowToast(false);
+      return undefined;
+    }
+
+    setShowToast(false);
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
+    const task = InteractionManager.runAfterInteractions(() => {
+      timeoutId = setTimeout(() => setShowToast(true), 90);
+    });
+
+    return () => {
+      task.cancel?.();
+      if (timeoutId) clearTimeout(timeoutId);
+    };
+  }, [isFocused, toast]);
 
   const doDelete = async () => {
+    setIsLeaving(true);
     const ok = await remove();
-    if (ok) router.replace(routes.recipes);
+    if (ok) {
+      router.replace(`${routes.recipes}?toast=deleted`);
+      return;
+    }
+    setIsLeaving(false);
+    show({
+      variant: 'error',
+      title: 'Delete failed',
+      message: 'Please try again.',
+    });
   };
 
-  const onDelete = () => {
-    Alert.alert(
-      'Delete recipe?',
-      'This cannot be undone.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Delete', style: 'destructive', onPress: doDelete },
-      ],
-      { cancelable: true },
-    );
-  };
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await load();
+    setRefreshing(false);
+  }, [load]);
 
-  const headerRight = (
-    <View style={{ flexDirection: 'row', gap: 10 }}>
-      <Button title="Edit" variant="secondary" onPress={onEdit} disabled={!recipe || isLoading} />
-    </View>
+  useFocusEffect(
+    useCallback(() => {
+      if (!didInitialFocusLoad.current) {
+        didInitialFocusLoad.current = true;
+        return;
+      }
+      load();
+    }, [load]),
   );
+
+  const heroHeight = 320;
+
+  const onBack = useCallback(() => {
+    router.replace(routes.recipes);
+  }, []);
 
   return (
     <Screen
       title={isLoading ? 'Recipe' : (recipe?.title ?? 'Recipe')}
       showBack
+      onBack={onBack}
       showProfileIcon={false}
-      rightSlot={headerRight}
-      scroll
+      scroll={false}
+      contentStyle={styles.screenContent}
     >
-      {error ? (
-        <Card>
-          <ErrorText>{error}</ErrorText>
-          <View style={{ height: theme.spacing.s3 }} />
-          <Button title="Try again" onPress={load} />
-        </Card>
-      ) : null}
+      <View style={styles.root}>
+        {toast && showToast ? (
+          <View style={styles.toast}>
+            <ToastBanner
+              variant={toast.variant}
+              title={toast.title}
+              message={toast.message}
+              onTimeout={clear}
+            />
+          </View>
+        ) : null}
 
-      {isLoading ? (
-        <Card>
-          <Text style={styles.muted}>Loading recipe…</Text>
-        </Card>
-      ) : null}
+        {error ? (
+          <View style={styles.errorCard}>
+            <ErrorText>{error}</ErrorText>
+            <View style={styles.errorSpacer} />
+            <Button title="Try again" onPress={load} />
+          </View>
+        ) : null}
 
-      {!isLoading && recipe ? (
-        <>
-          <Card>
-            <View style={styles.headerRow}>
-              <Text style={styles.title}>{recipe.title}</Text>
-              <View style={{ flexDirection: 'row', gap: 8 }}>
-                <Chip label={recipe.fromExternal ? 'External' : 'My recipe'} selected />
+        {isLeaving ? (
+          <View style={styles.leaving}>
+            <ActivityIndicator color={theme.colors.primaryDark} />
+          </View>
+        ) : (
+          <RecipeSheetLayout
+            hero={
+              <View style={styles.hero}>
+                <Shimmer height={heroHeight} borderRadius={0} />
               </View>
-            </View>
-
-            {recipe.description ? (
-              <Text style={styles.description}>{recipe.description}</Text>
-            ) : (
-              <Text style={styles.muted}>No description</Text>
-            )}
-          </Card>
-
-          <Card>
-            <Text style={styles.sectionTitle}>Ingredients</Text>
-
-            {recipe.ingredients?.length ? (
-              <View style={{ gap: 8 }}>
-                {recipe.ingredients.map((ing, idx) => (
-                  <View key={`${ing.name}-${idx}`} style={styles.bulletRow}>
-                    <Text style={styles.bullet}>•</Text>
-                    <Text style={styles.bulletText}>{ing.name}</Text>
-                  </View>
-                ))}
-              </View>
-            ) : (
-              <Text style={styles.muted}>No ingredients yet</Text>
-            )}
-          </Card>
-
-          <Card>
-            <Text style={styles.sectionTitle}>Steps</Text>
-
-            {recipe.steps?.length ? (
-              <View style={{ gap: 10 }}>
-                {recipe.steps.map((step, idx) => (
-                  <View key={`${idx}-${step.slice(0, 12)}`} style={styles.stepRow}>
-                    <View style={styles.stepIndex}>
-                      <Text style={styles.stepIndexText}>{idx + 1}</Text>
-                    </View>
-                    <Text style={styles.stepText}>{step}</Text>
-                  </View>
-                ))}
-              </View>
-            ) : (
-              <Text style={styles.muted}>No steps yet</Text>
-            )}
-          </Card>
-
-          <Card>
-            <Text style={styles.sectionTitle}>Actions</Text>
-            <View style={{ gap: 10 }}>
-              <Button title="Edit recipe" variant="secondary" onPress={onEdit} />
-              <Button
-                title={isDeleting ? 'Deleting…' : 'Delete recipe'}
-                variant="danger"
-                onPress={onDelete}
-                disabled={isDeleting}
+            }
+            heroHeight={heroHeight}
+            sheetOverlap={15}
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+          >
+            <View style={styles.summary}>
+              <IconStatRow
+                items={stats}
+                labelStyle={styles.statLabel}
+                iconWrapStyle={styles.statIcon}
+                rowStyle={styles.statRow}
               />
+
+              {recipe?.description?.trim() ? (
+                <Text style={[styles.summaryText, styles.summaryTextWide]}>
+                  {recipe.description}
+                </Text>
+              ) : (
+                <Text style={[styles.summaryText, styles.summaryTextWide, styles.summaryEmpty]}>
+                  No description yet
+                </Text>
+              )}
             </View>
-          </Card>
-        </>
-      ) : null}
+
+            <View style={styles.panel}>
+              <View style={styles.panelTabs}>
+                <RecipeDetailsTabs value={tab} onChange={setTab} />
+              </View>
+
+              <View style={styles.panelContent}>
+                {tab === 'ingredients' ? (
+                  recipe?.ingredients?.length ? (
+                    <View style={styles.list}>
+                      {recipe.ingredients.map((ing, idx) => (
+                        <RecipeIngredientRow
+                          key={`${ing.name}-${idx}`}
+                          name={ing.name}
+                          amount={
+                            ing.quantity !== undefined
+                              ? `${ing.quantity}${ing.unit ? ` ${ing.unit}` : ''}`
+                              : ''
+                          }
+                        />
+                      ))}
+                    </View>
+                  ) : (
+                    <Text style={styles.emptyText}>No ingredients yet</Text>
+                  )
+                ) : recipe?.steps?.length ? (
+                  <View style={styles.list}>
+                    {recipe.steps.map((step, idx) => (
+                      <RecipeStepRow
+                        key={`${idx}-${step.slice(0, 12)}`}
+                        index={idx + 1}
+                        text={step}
+                      />
+                    ))}
+                  </View>
+                ) : (
+                  <Text style={styles.emptyText}>No steps yet</Text>
+                )}
+              </View>
+            </View>
+          </RecipeSheetLayout>
+        )}
+      </View>
+
+      <ConfirmSheet
+        visible={deleteOpen}
+        title="Delete recipe?"
+        description={`You are deleting recipe ${recipe?.title ?? 'this recipe'}.`}
+        confirmLabel={isDeleting ? 'Deleting…' : 'Delete'}
+        confirmVariant="danger"
+        onConfirm={doDelete}
+        onCancel={() => setDeleteOpen(false)}
+        disabled={isDeleting}
+      />
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  headerRow: { gap: 10 },
-  title: { color: theme.colors.text, fontSize: 22, fontWeight: '900', lineHeight: 26 },
-  description: { color: theme.colors.text, fontSize: 14, fontWeight: '600', lineHeight: 20 },
-  muted: { color: theme.colors.textMuted, fontSize: 13, fontWeight: '600' },
-  sectionTitle: { color: theme.colors.text, fontSize: 16, fontWeight: '900' },
-  bulletRow: { flexDirection: 'row', gap: 8, alignItems: 'flex-start' },
-  bullet: { color: theme.colors.textMuted, fontSize: 16, lineHeight: 20, marginTop: 1 },
-  bulletText: {
-    flex: 1,
-    color: theme.colors.text,
-    fontSize: 14,
-    fontWeight: '700',
-    lineHeight: 20,
+  screenContent: {
+    padding: 0,
+    gap: 0,
   },
-  stepRow: { flexDirection: 'row', gap: 10, alignItems: 'flex-start' },
-  stepIndex: {
-    width: 26,
-    height: 26,
-    borderRadius: 13,
-    backgroundColor: theme.colors.bgLight,
+  root: {
+    flex: 1,
+    backgroundColor: theme.colors.bg,
+  },
+  errorCard: {
+    margin: theme.spacing.s4,
     borderWidth: 1,
     borderColor: theme.colors.borderNeutral,
+    backgroundColor: theme.colors.bgLight,
+    borderRadius: theme.radius.md,
+    padding: theme.spacing.s4,
+    gap: theme.spacing.s3,
+  },
+  toast: {
+    position: 'absolute',
+    top: -theme.spacing.s6 - theme.spacing.s4,
+    left: theme.spacing.s3,
+    right: theme.spacing.s3,
+    zIndex: 20,
+  },
+  leaving: {
+    flex: 1,
+    backgroundColor: theme.colors.bg,
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 1,
   },
-  stepIndexText: { color: theme.colors.text, fontSize: 12, fontWeight: '900' },
-  stepText: { flex: 1, color: theme.colors.text, fontSize: 14, fontWeight: '700', lineHeight: 20 },
+  errorSpacer: {
+    height: theme.spacing.s3,
+  },
+  hero: {
+    backgroundColor: theme.colors.bgLight,
+  },
+  summary: {
+    padding: theme.spacing.s4,
+    paddingTop: theme.spacing.s6,
+    gap: theme.spacing.s5,
+  },
+  summaryText: {
+    color: theme.colors.text,
+    fontSize: 18,
+    fontWeight: '500',
+    textAlign: 'center',
+    lineHeight: 24,
+  },
+  summaryTextWide: {
+    marginHorizontal: -theme.spacing.s2,
+  },
+  summaryEmpty: {
+    color: theme.colors.textMuted,
+  },
+  statLabel: {
+    color: theme.colors.textMuted,
+    fontSize: 11,
+    fontWeight: '600',
+  },
+  statIcon: {
+    minHeight: 38,
+    justifyContent: 'center',
+  },
+  statRow: {
+    justifyContent: 'center',
+    gap: theme.spacing.s6 + 14,
+  },
+  panel: {
+    backgroundColor: theme.colors.bg,
+  },
+  panelTabs: {
+    paddingTop: 20,
+  },
+  panelContent: {
+    padding: theme.spacing.s4,
+    paddingTop: theme.spacing.s3,
+    paddingBottom: theme.spacing.s4,
+    gap: theme.spacing.s3,
+  },
+  list: {
+    gap: theme.spacing.s2,
+  },
+  emptyText: {
+    color: theme.colors.textMuted,
+    fontSize: 14,
+    fontWeight: '600',
+    textAlign: 'center',
+  },
 });
