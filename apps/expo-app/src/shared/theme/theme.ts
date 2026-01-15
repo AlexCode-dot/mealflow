@@ -6,9 +6,9 @@ export const theme = {
     primaryLight: '#B9C7A8',
 
     // surfaces
-    bg: '#E9E4D6',
-    bgLight: '#F5F1E6',
-    surface: '#F7F3E8',
+    bg: '#EDE8D0',
+    bgLight: '#F7F5EB',
+    surface: '#F7F5EB',
 
     // text
     text: '#1C1C1C',
@@ -29,6 +29,7 @@ export const theme = {
     // feedback
     error: '#B04A4A',
     errorBg: '#F7E3E3',
+    successBanner: '#E3F3E6',
   },
 
   spacing: {
@@ -43,6 +44,7 @@ export const theme = {
   radius: {
     sm: 10,
     md: 14,
+    lg: 20,
     pill: 999,
   },
 
