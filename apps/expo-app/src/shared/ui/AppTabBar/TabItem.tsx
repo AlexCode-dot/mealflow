@@ -3,7 +3,8 @@ import { useMemo } from 'react';
 import { theme } from '@/src/shared/theme/theme';
 import { getTabIcon } from './tabIcons';
 import { useFocusAnim } from './useFocusAnim';
-import { styles, TAB_BAR } from './AppTabBar.styles';
+import { styles } from './AppTabBar.styles';
+import { TAB_BAR } from '@/src/shared/ui/layout/tabBar';
 
 type Props = {
   routeKey: string;

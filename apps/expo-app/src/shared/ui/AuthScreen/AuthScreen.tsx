@@ -10,7 +10,7 @@ type Props = {
   children: ReactNode;
   variant: 'login' | 'register';
   scroll?: boolean;
-  bottomCta?: React.ReactNode;
+  bottomCta?: ReactNode;
 };
 
 export function AuthScreen({ children, variant, scroll = true, bottomCta }: Props) {

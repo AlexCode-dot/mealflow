@@ -12,11 +12,23 @@ type Props = {
 export function ListRow({ title, subtitle, onPress, right }: Props) {
   const isPressable = Boolean(onPress);
 
+  if (!isPressable) {
+    return (
+      <View style={styles.root}>
+        <View style={styles.textBlock}>
+          <Text style={styles.title}>{title}</Text>
+          {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
+        </View>
+
+        {right ? <View style={styles.right}>{right}</View> : null}
+      </View>
+    );
+  }
+
   return (
     <Pressable
       onPress={onPress}
-      disabled={!isPressable}
-      style={({ pressed }) => [styles.root, isPressable && pressed ? styles.pressed : null]}
+      style={({ pressed }) => [styles.root, pressed ? styles.pressed : null]}
     >
       <View style={styles.textBlock}>
         <Text style={styles.title}>{title}</Text>

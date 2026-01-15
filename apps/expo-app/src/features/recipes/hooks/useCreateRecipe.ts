@@ -1,37 +1,35 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { recipesApi } from '@/src/features/recipes/api/recipesApi';
 import { toApiError } from '@/src/core/http/toApiError';
 import { mapCommonError } from '@/src/shared/errors/mapCommonError';
-import { validateRecipeBasics } from '@/src/features/recipes/validation/recipeValidation';
+import { useRecipeFormState } from '@/src/features/recipes/hooks/useRecipeFormState';
+import type { IngredientDto } from '@/src/features/recipes/types';
 
 export function useCreateRecipe() {
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
+  const form = useRecipeFormState();
+  const [ingredients, setIngredients] = useState<IngredientDto[]>([]);
+  const [steps, setSteps] = useState<string[]>([]);
 
-  const [touched, setTouched] = useState({ title: false, description: false });
   const [isSaving, setIsSaving] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
 
-  const errors = useMemo(() => validateRecipeBasics(title, description), [title, description]);
-
-  const canSubmit = !isSaving && !errors.title && !errors.description && title.trim().length > 0;
-
-  function markAllTouched() {
-    setTouched({ title: true, description: true });
-  }
+  const canSubmit =
+    !isSaving && !form.errors.title && !form.errors.description && form.title.trim().length > 0;
 
   async function submit(): Promise<string | null> {
     setServerError(null);
-    markAllTouched();
+    form.markAllTouched();
     if (!canSubmit) return null;
+
+    const basePayload = form.getApiValues();
+    const ingredientsPayload = ingredients.map(({ id: _id, ...rest }) => rest);
 
     setIsSaving(true);
     try {
       const created = await recipesApi.create({
-        title: title.trim(),
-        description: description.trim() ? description.trim() : null,
-        ingredients: [],
-        steps: [],
+        ...basePayload,
+        ingredients: ingredientsPayload,
+        steps,
         fromExternal: false,
       });
 
@@ -46,23 +44,32 @@ export function useCreateRecipe() {
   }
 
   return {
-    title,
+    title: form.title,
     setTitle: (v: string) => {
-      setTitle(v);
+      form.setTitle(v);
       setServerError(null);
     },
-    description,
+    description: form.description,
     setDescription: (v: string) => {
-      setDescription(v);
+      form.setDescription(v);
       setServerError(null);
     },
-    touched,
-    setTouched,
-    errors,
+    time: form.time,
+    setTime: form.setTime,
+    portions: form.portions,
+    setPortions: form.setPortions,
+    category: form.category,
+    setCategory: form.setCategory,
+    ingredients,
+    setIngredients,
+    steps,
+    setSteps,
+    touched: form.touched,
+    setTouched: form.setTouched,
+    errors: form.errors,
     isSaving,
     serverError,
     canSubmit,
     submit,
-    markAllTouched,
   };
 }

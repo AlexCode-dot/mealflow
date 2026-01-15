@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { Pressable, Text, View, StyleSheet } from 'react-native';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -8,7 +9,7 @@ type Props = {
   title?: string;
   showBack?: boolean;
   onBackPress?: () => void;
-  rightSlot?: React.ReactNode;
+  rightSlot?: ReactNode;
 };
 
 const HEADER_HEIGHT = 54;

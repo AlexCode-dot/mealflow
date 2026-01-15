@@ -22,7 +22,18 @@ public class RecipeMapper {
 
         boolean fromExternal = body.fromExternal() != null && body.fromExternal();
 
-        return new CreateArgs(userId, body.title().trim(), body.description(), ingredients, steps, fromExternal);
+        String category = body.category() == null ? null : body.category().trim();
+
+        return new CreateArgs(
+                userId,
+                body.title().trim(),
+                body.description(),
+                ingredients,
+                steps,
+                body.cookingTimeMinutes(),
+                body.portions(),
+                category,
+                fromExternal);
     }
 
     public PatchArgs toPatchArgs(String userId, String recipeId, UpdateRecipeRequest body) {
@@ -30,8 +41,19 @@ public class RecipeMapper {
                 ? null
                 : body.ingredients().stream().map(this::toDomain).toList();
 
+        String category = body.category() == null ? null : body.category().trim();
+
         return new PatchArgs(
-                userId, recipeId, body.title(), body.description(), ingredients, body.steps(), body.fromExternal());
+                userId,
+                recipeId,
+                body.title(),
+                body.description(),
+                ingredients,
+                body.steps(),
+                body.cookingTimeMinutes(),
+                body.portions(),
+                category,
+                body.fromExternal());
     }
 
     public RecipeResponse toResponse(Recipe r) {
@@ -41,13 +63,30 @@ public class RecipeMapper {
                 r.getDescription(),
                 r.getIngredients().stream().map(this::toDto).toList(),
                 r.getSteps(),
+                r.getCookingTimeMinutes(),
+                r.getPortions(),
+                r.getCategory(),
                 r.isFromExternal(),
                 r.getCreatedAt(),
                 r.getUpdatedAt());
     }
 
     public RecipeListItemResponse toListItem(Recipe r) {
-        return new RecipeListItemResponse(r.getId(), r.getTitle(), r.getDescription(), r.isFromExternal());
+        Integer ingredientCount =
+                r.getIngredients() == null ? 0 : r.getIngredients().size();
+        List<String> ingredientNames = r.getIngredients() == null
+                ? List.of()
+                : r.getIngredients().stream().map(Ingredient::getName).toList();
+        return new RecipeListItemResponse(
+                r.getId(),
+                r.getTitle(),
+                r.getDescription(),
+                r.getCookingTimeMinutes(),
+                ingredientCount,
+                r.getPortions(),
+                ingredientNames,
+                r.getCategory(),
+                r.isFromExternal());
     }
 
     private Ingredient toDomain(IngredientDto dto) {
@@ -66,6 +105,9 @@ public class RecipeMapper {
             String description,
             List<Ingredient> ingredients,
             List<String> steps,
+            Integer cookingTimeMinutes,
+            Integer portions,
+            String category,
             boolean fromExternal) {}
 
     public record PatchArgs(
@@ -75,5 +117,8 @@ public class RecipeMapper {
             String description,
             List<Ingredient> ingredients,
             List<String> steps,
+            Integer cookingTimeMinutes,
+            Integer portions,
+            String category,
             Boolean fromExternal) {}
 }

@@ -1,5 +1,5 @@
 // apps/expo-app/src/shared/ui/Screen/Screen.tsx
-import type { ReactNode } from 'react';
+import type { ReactElement, ReactNode } from 'react';
 import {
   ScrollView,
   View,
@@ -17,14 +17,15 @@ type Props = {
   scroll?: boolean;
   title?: string;
   showBack?: boolean;
+  onBack?: () => void;
   showProfileIcon?: boolean;
-  rightSlot?: React.ReactNode;
+  rightSlot?: ReactNode;
 
   /**
    * Optional pull-to-refresh control for the internal ScrollView
    * (only used when scroll=true).
    */
-  refreshControl?: React.ReactElement<RefreshControlProps>;
+  refreshControl?: ReactElement<RefreshControlProps>;
 
   /**
    * Optional extra styling for the content wrapper.
@@ -37,6 +38,7 @@ export function Screen({
   scroll = false,
   title,
   showBack = false,
+  onBack,
   showProfileIcon = true,
   rightSlot,
   refreshControl,
@@ -46,7 +48,7 @@ export function Screen({
 
   return (
     <View style={styles.root}>
-      <AppHeader title={title} showBack={showBack} rightSlot={headerRight} />
+      <AppHeader title={title} showBack={showBack} onBackPress={onBack} rightSlot={headerRight} />
 
       {scroll ? (
         <ScrollView contentContainerStyle={styles.scrollContainer} refreshControl={refreshControl}>

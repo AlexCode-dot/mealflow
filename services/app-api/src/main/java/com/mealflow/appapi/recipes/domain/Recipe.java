@@ -22,6 +22,10 @@ public class Recipe {
     private List<Ingredient> ingredients = new ArrayList<>();
     private List<String> steps = new ArrayList<>();
 
+    private Integer cookingTimeMinutes;
+    private Integer portions;
+    private String category;
+
     private boolean fromExternal = false;
 
     private Instant createdAt;
@@ -35,6 +39,9 @@ public class Recipe {
             String description,
             List<Ingredient> ingredients,
             List<String> steps,
+            Integer cookingTimeMinutes,
+            Integer portions,
+            String category,
             boolean fromExternal,
             Instant createdAt,
             Instant updatedAt) {
@@ -44,6 +51,9 @@ public class Recipe {
         this.description = description;
         this.ingredients = ingredients != null ? ingredients : new ArrayList<>();
         this.steps = steps != null ? steps : new ArrayList<>();
+        this.cookingTimeMinutes = cookingTimeMinutes;
+        this.portions = portions;
+        this.category = category;
         this.fromExternal = fromExternal;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
@@ -54,6 +64,9 @@ public class Recipe {
             String description,
             List<Ingredient> ingredients,
             List<String> steps,
+            Integer cookingTimeMinutes,
+            Integer portions,
+            String category,
             Boolean fromExternal,
             Instant now) {
         if (title != null) {
@@ -67,6 +80,15 @@ public class Recipe {
         }
         if (steps != null) {
             this.steps = steps;
+        }
+        if (cookingTimeMinutes != null) {
+            this.cookingTimeMinutes = cookingTimeMinutes;
+        }
+        if (portions != null) {
+            this.portions = portions;
+        }
+        if (category != null) {
+            this.category = category;
         }
         if (fromExternal != null) {
             this.fromExternal = fromExternal;
@@ -118,6 +140,30 @@ public class Recipe {
 
     public void setSteps(List<String> steps) {
         this.steps = steps != null ? steps : new ArrayList<>();
+    }
+
+    public Integer getCookingTimeMinutes() {
+        return cookingTimeMinutes;
+    }
+
+    public void setCookingTimeMinutes(Integer cookingTimeMinutes) {
+        this.cookingTimeMinutes = cookingTimeMinutes;
+    }
+
+    public Integer getPortions() {
+        return portions;
+    }
+
+    public void setPortions(Integer portions) {
+        this.portions = portions;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
     }
 
     public boolean isFromExternal() {
