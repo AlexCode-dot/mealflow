@@ -1,0 +1,1 @@
+export { IconStat } from './IconStat';
