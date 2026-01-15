@@ -9,6 +9,9 @@ public record RecipeResponse(
         String description,
         List<IngredientDto> ingredients,
         List<String> steps,
+        Integer cookingTimeMinutes,
+        Integer portions,
+        String category,
         boolean fromExternal,
         Instant createdAt,
         Instant updatedAt) {}

@@ -35,11 +35,25 @@ public class RecipeService {
             String description,
             List<Ingredient> ingredients,
             List<String> steps,
+            Integer cookingTimeMinutes,
+            Integer portions,
+            String category,
             boolean fromExternal) {
 
         Instant now = clock.instant();
 
-        Recipe recipe = new Recipe(userId, title, description, ingredients, steps, fromExternal, now, now);
+        Recipe recipe = new Recipe(
+                userId,
+                title,
+                description,
+                ingredients,
+                steps,
+                cookingTimeMinutes,
+                portions,
+                category,
+                fromExternal,
+                now,
+                now);
 
         return recipeRepository.save(recipe);
     }
@@ -51,6 +65,9 @@ public class RecipeService {
             String description,
             List<Ingredient> ingredients,
             List<String> steps,
+            Integer cookingTimeMinutes,
+            Integer portions,
+            String category,
             Boolean fromExternal) {
 
         // Domain rule for PATCH: if title is provided, it must not be blank after trimming.
@@ -60,7 +77,16 @@ public class RecipeService {
         }
 
         Recipe existing = getForUser(userId, recipeId);
-        existing.applyPatch(title, description, ingredients, steps, fromExternal, clock.instant());
+        existing.applyPatch(
+                title,
+                description,
+                ingredients,
+                steps,
+                cookingTimeMinutes,
+                portions,
+                category,
+                fromExternal,
+                clock.instant());
         return recipeRepository.save(existing);
     }
 

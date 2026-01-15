@@ -52,7 +52,15 @@ public class RecipeController {
         CreateArgs args = mapper.toCreateArgs(userId, body);
 
         Recipe created = recipeService.create(
-                args.userId(), args.title(), args.description(), args.ingredients(), args.steps(), args.fromExternal());
+                args.userId(),
+                args.title(),
+                args.description(),
+                args.ingredients(),
+                args.steps(),
+                args.cookingTimeMinutes(),
+                args.portions(),
+                args.category(),
+                args.fromExternal());
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .location(URI.create("/api/recipes/" + created.getId()))
@@ -72,6 +80,9 @@ public class RecipeController {
                 args.description(),
                 args.ingredients(),
                 args.steps(),
+                args.cookingTimeMinutes(),
+                args.portions(),
+                args.category(),
                 args.fromExternal());
 
         return mapper.toResponse(updated);
