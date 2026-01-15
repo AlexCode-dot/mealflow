@@ -72,7 +72,8 @@ public class RecipeMapper {
     }
 
     public RecipeListItemResponse toListItem(Recipe r) {
-        Integer ingredientCount = r.getIngredients() == null ? 0 : r.getIngredients().size();
+        Integer ingredientCount =
+                r.getIngredients() == null ? 0 : r.getIngredients().size();
         List<String> ingredientNames = r.getIngredients() == null
                 ? List.of()
                 : r.getIngredients().stream().map(Ingredient::getName).toList();
