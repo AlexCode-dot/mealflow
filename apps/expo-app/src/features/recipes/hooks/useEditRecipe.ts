@@ -1,20 +1,9 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import type { Recipe } from '@/src/features/recipes/types';
+import { useCallback, useEffect, useState } from 'react';
+import type { IngredientDto, Recipe } from '@/src/features/recipes/types';
 import { recipesApi } from '@/src/features/recipes/api/recipesApi';
 import { toApiError } from '@/src/core/http/toApiError';
 import { mapCommonError } from '@/src/shared/errors/mapCommonError';
-import { validateRecipeTitle } from '@/src/features/recipes/validation/recipeValidation';
-
-function linesToString(lines: string[]): string {
-  return lines.join('\n');
-}
-
-function stringToLines(value: string): string[] {
-  return value
-    .split('\n')
-    .map((s) => s.trim())
-    .filter(Boolean);
-}
+import { useRecipeFormState } from '@/src/features/recipes/hooks/useRecipeFormState';
 
 export function useEditRecipe(id: string) {
   const [isLoading, setIsLoading] = useState(true);
@@ -23,18 +12,35 @@ export function useEditRecipe(id: string) {
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
 
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [ingredientsText, setIngredientsText] = useState('');
-  const [stepsText, setStepsText] = useState('');
+  const form = useRecipeFormState();
+  const {
+    applyRecipe,
+    markAllTouched,
+    getApiValues,
+    title,
+    description,
+    time,
+    portions,
+    category,
+    errors,
+    touched,
+    setTouched,
+    setTitle,
+    setDescription,
+    setTime,
+    setPortions,
+    setCategory,
+  } = form;
+  const [ingredients, setIngredients] = useState<IngredientDto[]>([]);
+  const [steps, setSteps] = useState<string[]>([]);
 
-  const [titleTouched, setTitleTouched] = useState(false);
-  const titleError = useMemo(
-    () => (titleTouched ? validateRecipeTitle(title) : null),
-    [title, titleTouched],
-  );
-
-  const canSave = !isSaving && !isLoading && Boolean(id) && title.trim().length > 0;
+  const canSave =
+    !isSaving &&
+    !isLoading &&
+    Boolean(id) &&
+    !errors.title &&
+    !errors.description &&
+    title.trim().length > 0;
 
   const load = useCallback(async () => {
     if (!id) {
@@ -48,39 +54,37 @@ export function useEditRecipe(id: string) {
 
     try {
       const r: Recipe = await recipesApi.get(id);
-
-      setTitle(r.title ?? '');
-      setDescription(r.description ?? '');
-      setIngredientsText(linesToString((r.ingredients ?? []).map((i) => i.name).filter(Boolean)));
-      setStepsText(linesToString((r.steps ?? []).filter(Boolean)));
+      applyRecipe(r);
+      setIngredients(r.ingredients ?? []);
+      setSteps(r.steps ?? []);
     } catch (e) {
       const uiErr = mapCommonError(toApiError(e));
       setLoadError(uiErr.message);
     } finally {
       setIsLoading(false);
     }
-  }, [id]);
+  }, [applyRecipe, id]);
 
   useEffect(() => {
     load();
   }, [load]);
 
   const save = useCallback(async (): Promise<boolean> => {
-    setTitleTouched(true);
+    markAllTouched();
     setSaveError(null);
 
     if (!id) return false;
     if (!title.trim()) return false;
+    if (errors.title || errors.description) return false;
+
+    const basePayload = getApiValues();
+    const ingredientsPayload = ingredients.map(({ id: _id, ...rest }) => rest);
 
     setIsSaving(true);
     try {
-      const ingredients = stringToLines(ingredientsText).map((name) => ({ name }));
-      const steps = stringToLines(stepsText);
-
       await recipesApi.patch(id, {
-        title: title.trim(),
-        description: description.trim() ? description.trim() : null,
-        ingredients,
+        ...basePayload,
+        ingredients: ingredientsPayload,
         steps,
       });
 
@@ -92,7 +96,7 @@ export function useEditRecipe(id: string) {
     } finally {
       setIsSaving(false);
     }
-  }, [id, title, description, ingredientsText, stepsText]);
+  }, [id, title, errors, ingredients, steps, markAllTouched, getApiValues]);
 
   return {
     isLoading,
@@ -107,14 +111,20 @@ export function useEditRecipe(id: string) {
     setTitle,
     description,
     setDescription,
-    ingredientsText,
-    setIngredientsText,
-    stepsText,
-    setStepsText,
+    time,
+    setTime,
+    portions,
+    setPortions,
+    category,
+    setCategory,
+    ingredients,
+    setIngredients,
+    steps,
+    setSteps,
 
-    titleTouched,
-    setTitleTouched,
-    titleError,
+    touched,
+    setTouched,
+    errors,
 
     canSave,
   };
