@@ -1,19 +1,32 @@
-import { Pressable, Text, StyleSheet } from 'react-native';
+import {
+  Pressable,
+  StyleSheet,
+  Text,
+  type StyleProp,
+  type TextStyle,
+  type ViewStyle,
+} from 'react-native';
 import { theme } from '@/src/shared/theme/theme';
 
 type Variant = 'primary' | 'secondary' | 'danger';
+
+type Props = {
+  title: string;
+  onPress: () => void;
+  disabled?: boolean;
+  variant?: Variant;
+  containerStyle?: StyleProp<ViewStyle>;
+  textStyle?: StyleProp<TextStyle>;
+};
 
 export function Button({
   title,
   onPress,
   disabled,
   variant = 'secondary',
-}: {
-  title: string;
-  onPress: () => void;
-  disabled?: boolean;
-  variant?: Variant;
-}) {
+  containerStyle,
+  textStyle,
+}: Props) {
   return (
     <Pressable
       onPress={onPress}
@@ -21,11 +34,12 @@ export function Button({
       style={({ pressed }) => [
         styles.base,
         variantStyles[variant].container,
+        containerStyle,
         disabled ? styles.disabled : null,
         pressed && !disabled ? styles.pressed : null,
       ]}
     >
-      <Text style={[styles.text, variantStyles[variant].text]}>{title}</Text>
+      <Text style={[styles.text, variantStyles[variant].text, textStyle]}>{title}</Text>
     </Pressable>
   );
 }
@@ -79,4 +93,4 @@ const variantStyles = {
       color: theme.colors.error,
     },
   }),
-} satisfies Record<Variant, { container: any; text: any }>;
+} satisfies Record<Variant, { container: ViewStyle; text: TextStyle }>;
