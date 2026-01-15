@@ -134,6 +134,17 @@ All endpoints:
 **GET** `/api/recipes`  
 List all recipes belonging to the authenticated user.
 
+List item fields:
+- `id`
+- `title`
+- `description`
+- `cookingTimeMinutes`
+- `ingredientCount` (derived)
+- `portions`
+- `ingredientNames` (derived)
+- `category`
+- `fromExternal`
+
 **POST** `/api/recipes`  
 Create a new recipe (manual or saved from inspiration).
 
@@ -142,12 +153,28 @@ Fields:
 - `description`
 - `ingredients[]`
 - `steps[]`
+- `cookingTimeMinutes`
+- `portions`
+- `category`
 - `fromExternal` (optional)
 
 ---
 
 **GET** `/api/recipes/{id}`  
 Retrieve a single recipe.
+
+Response fields:
+- `id`
+- `title`
+- `description`
+- `ingredients[]`
+- `steps[]`
+- `cookingTimeMinutes`
+- `portions`
+- `category`
+- `fromExternal`
+- `createdAt`
+- `updatedAt`
 
 **PATCH** `/api/recipes/{id}`  
 Partial update (recommended).
