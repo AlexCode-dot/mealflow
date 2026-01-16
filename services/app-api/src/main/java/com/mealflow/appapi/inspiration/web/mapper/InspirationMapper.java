@@ -12,8 +12,7 @@ import org.springframework.stereotype.Component;
 public class InspirationMapper {
 
     public InspirationListItemResponse toListItem(MealDbMeal meal) {
-        return new InspirationListItemResponse(
-                meal.id(), meal.title(), meal.imageUrl(), meal.category(), meal.area());
+        return new InspirationListItemResponse(meal.id(), meal.title(), meal.imageUrl(), meal.category(), meal.area());
     }
 
     public InspirationRecipeResponse toResponse(MealDbMeal meal) {

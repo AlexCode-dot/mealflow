@@ -4,4 +4,5 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import java.util.List;
 
 public record MealDbResponse(
-        @JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY) List<MealDbMeal> meals) {}
+        @JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
+        List<MealDbMeal> meals) {}

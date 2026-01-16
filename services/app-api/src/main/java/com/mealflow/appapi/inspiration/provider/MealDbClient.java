@@ -11,16 +11,15 @@ public class MealDbClient {
 
     private final RestClient restClient;
 
-    public MealDbClient(
-            RestClient.Builder restClientBuilder,
-            @Value("${inspiration.mealdb.base-url}") String baseUrl) {
+    public MealDbClient(RestClient.Builder restClientBuilder, @Value("${inspiration.mealdb.base-url}") String baseUrl) {
         this.restClient = restClientBuilder.baseUrl(baseUrl).build();
     }
 
     public List<MealDbMeal> searchByName(String query) {
         MealDbResponse response = restClient
                 .get()
-                .uri(uriBuilder -> uriBuilder.path("/search.php").queryParam("s", query).build())
+                .uri(uriBuilder ->
+                        uriBuilder.path("/search.php").queryParam("s", query).build())
                 .retrieve()
                 .body(MealDbResponse.class);
         return toMeals(response);
@@ -29,7 +28,10 @@ public class MealDbClient {
     public List<MealDbMeal> filterByIngredient(String ingredient) {
         MealDbResponse response = restClient
                 .get()
-                .uri(uriBuilder -> uriBuilder.path("/filter.php").queryParam("i", ingredient).build())
+                .uri(uriBuilder -> uriBuilder
+                        .path("/filter.php")
+                        .queryParam("i", ingredient)
+                        .build())
                 .retrieve()
                 .body(MealDbResponse.class);
         return toMeals(response);
@@ -38,7 +40,8 @@ public class MealDbClient {
     public List<MealDbMeal> filterByCategory(String category) {
         MealDbResponse response = restClient
                 .get()
-                .uri(uriBuilder -> uriBuilder.path("/filter.php").queryParam("c", category).build())
+                .uri(uriBuilder ->
+                        uriBuilder.path("/filter.php").queryParam("c", category).build())
                 .retrieve()
                 .body(MealDbResponse.class);
         return toMeals(response);
@@ -47,7 +50,8 @@ public class MealDbClient {
     public List<MealDbMeal> filterByArea(String area) {
         MealDbResponse response = restClient
                 .get()
-                .uri(uriBuilder -> uriBuilder.path("/filter.php").queryParam("a", area).build())
+                .uri(uriBuilder ->
+                        uriBuilder.path("/filter.php").queryParam("a", area).build())
                 .retrieve()
                 .body(MealDbResponse.class);
         return toMeals(response);
@@ -56,21 +60,20 @@ public class MealDbClient {
     public MealDbMeal lookupById(String id) {
         MealDbResponse response = restClient
                 .get()
-                .uri(uriBuilder -> uriBuilder.path("/lookup.php").queryParam("i", id).build())
+                .uri(uriBuilder ->
+                        uriBuilder.path("/lookup.php").queryParam("i", id).build())
                 .retrieve()
                 .body(MealDbResponse.class);
         return toMeals(response).stream().findFirst().orElse(null);
     }
 
     public MealDbMeal random() {
-        MealDbResponse response =
-                restClient.get().uri("/random.php").retrieve().body(MealDbResponse.class);
+        MealDbResponse response = restClient.get().uri("/random.php").retrieve().body(MealDbResponse.class);
         return toMeals(response).stream().findFirst().orElse(null);
     }
 
     public List<MealDbMeal> latest() {
-        MealDbResponse response =
-                restClient.get().uri("/latest.php").retrieve().body(MealDbResponse.class);
+        MealDbResponse response = restClient.get().uri("/latest.php").retrieve().body(MealDbResponse.class);
         return toMeals(response);
     }
 
