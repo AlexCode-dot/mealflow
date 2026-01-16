@@ -15,4 +15,5 @@ export const routes = {
   // Dynamic
   recipe: (id: string) => `/recipes/${id}` as Href,
   recipeEdit: (id: string) => `/recipes/${id}/edit` as Href,
+  inspirationRecipe: (id: string) => `/recipes/inspiration/${id}` as Href,
 };

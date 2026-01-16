@@ -1,32 +1,29 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Bookmark, Heart, ShoppingBasket } from 'lucide-react-native';
 import { IconStat, Shimmer } from '@/src/shared/ui';
 import { theme } from '@/src/shared/theme/theme';
 
 type Props = {
   title: string;
-  timeLabel?: string;
-  caloriesLabel?: string;
+  subtitle?: string;
+  imageUrl?: string;
   likes?: number;
   saves?: number;
   onPress: () => void;
 };
 
-export function RecipeListCard({
-  title,
-  timeLabel = '–',
-  caloriesLabel = '–',
-  likes,
-  saves,
-  onPress,
-}: Props) {
+export function RecipeListCard({ title, subtitle = '–', imageUrl, likes, saves, onPress }: Props) {
   return (
     <Pressable
       onPress={onPress}
       style={({ pressed }) => [styles.card, pressed ? styles.pressed : null]}
     >
       <View style={styles.imageFrame}>
-        <Shimmer height={96} borderRadius={16} />
+        {imageUrl ? (
+          <Image source={{ uri: imageUrl }} style={styles.image} resizeMode="cover" />
+        ) : (
+          <Shimmer height={96} borderRadius={16} />
+        )}
       </View>
 
       <View style={styles.content}>
@@ -35,7 +32,7 @@ export function RecipeListCard({
         </Text>
 
         <Text style={styles.subtitle} numberOfLines={1}>
-          {timeLabel} · {caloriesLabel}
+          {subtitle}
         </Text>
 
         <View style={styles.metaRow}>
@@ -78,6 +75,10 @@ const styles = StyleSheet.create({
     borderColor: theme.colors.primaryDark,
     backgroundColor: theme.colors.bg,
     overflow: 'hidden',
+  },
+  image: {
+    width: '100%',
+    height: 96,
   },
 
   content: {

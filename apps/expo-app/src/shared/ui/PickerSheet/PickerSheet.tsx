@@ -8,6 +8,7 @@ type Props = {
   visible: boolean;
   title: string;
   onClose: () => void;
+  onDone?: () => void;
   children: ReactNode;
   doneLabel?: string;
 };
@@ -15,18 +16,27 @@ type Props = {
 type ContentProps = {
   title: string;
   onClose: () => void;
+  onDone?: () => void;
   children: ReactNode;
   doneLabel?: string;
 };
 
-export function PickerSheetContent({ title, onClose, children, doneLabel = 'Done' }: ContentProps) {
+export function PickerSheetContent({
+  title,
+  onClose,
+  onDone,
+  children,
+  doneLabel = 'Done',
+}: ContentProps) {
+  const handleDone = onDone ?? onClose;
+
   return (
     <View style={styles.root}>
       <Text style={styles.title}>{title}</Text>
       <View style={styles.pickerWrap}>{children}</View>
       <Button
         title={doneLabel}
-        onPress={onClose}
+        onPress={handleDone}
         variant="primary"
         containerStyle={styles.button}
       />
@@ -34,21 +44,34 @@ export function PickerSheetContent({ title, onClose, children, doneLabel = 'Done
   );
 }
 
-export function PickerSheetOverlay({ title, onClose, children, doneLabel = 'Done' }: ContentProps) {
+export function PickerSheetOverlay({
+  title,
+  onClose,
+  onDone,
+  children,
+  doneLabel = 'Done',
+}: ContentProps) {
   return (
     <View style={styles.overlaySheet}>
       <View style={styles.handle} />
-      <PickerSheetContent title={title} onClose={onClose} doneLabel={doneLabel}>
+      <PickerSheetContent title={title} onClose={onClose} onDone={onDone} doneLabel={doneLabel}>
         {children}
       </PickerSheetContent>
     </View>
   );
 }
 
-export function PickerSheet({ visible, title, onClose, children, doneLabel = 'Done' }: Props) {
+export function PickerSheet({
+  visible,
+  title,
+  onClose,
+  onDone,
+  children,
+  doneLabel = 'Done',
+}: Props) {
   return (
     <ModalSheet visible={visible} onClose={onClose}>
-      <PickerSheetContent title={title} onClose={onClose} doneLabel={doneLabel}>
+      <PickerSheetContent title={title} onClose={onClose} onDone={onDone} doneLabel={doneLabel}>
         {children}
       </PickerSheetContent>
     </ModalSheet>

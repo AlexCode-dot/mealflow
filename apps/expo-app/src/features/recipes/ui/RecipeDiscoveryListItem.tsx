@@ -1,19 +1,19 @@
 import { RecipeListCard } from '@/src/features/recipes/ui/RecipeListCard';
-import type { DiscoveryRecipe } from '@/src/features/recipes/hooks/useRecipeDiscovery';
+import type { InspirationListItem } from '@/src/features/recipes/types';
 
 type Props = {
-  item: DiscoveryRecipe;
+  item: InspirationListItem;
   onPress?: (id: string) => void;
 };
 
 export function RecipeDiscoveryListItem({ item, onPress }: Props) {
+  const subtitle = [item.category, item.area].filter(Boolean).join(' · ');
+
   return (
     <RecipeListCard
       title={item.title}
-      timeLabel={item.timeLabel}
-      caloriesLabel={item.caloriesLabel}
-      likes={item.likes}
-      saves={item.saves}
+      subtitle={subtitle || 'Discover recipe'}
+      imageUrl={item.imageUrl ?? undefined}
       onPress={() => onPress?.(item.id)}
     />
   );
