@@ -59,6 +59,7 @@ export function RecipesScreen() {
 
   const { load: loadSaved } = saved;
   const { load: loadDiscovery } = discovery;
+  const hasDiscoveryFilters = Boolean(view.query.trim() || view.activeFilterCount > 0);
 
   useFocusEffect(
     useCallback(() => {
@@ -250,6 +251,29 @@ export function RecipesScreen() {
                 ) : null}
 
                 {active.isLoading ? <Text style={styles.muted}>Loading recipes…</Text> : null}
+
+                {!active.isLoading && !active.error && discovery.items.length === 0 ? (
+                  <EmptyState
+                    title="No inspiration recipes"
+                    description={
+                      hasDiscoveryFilters
+                        ? 'Try clearing filters or search for something else.'
+                        : 'Try searching for a recipe or adjusting filters.'
+                    }
+                    action={
+                      hasDiscoveryFilters ? (
+                        <Button
+                          title="Clear filters"
+                          variant="secondary"
+                          onPress={() => {
+                            view.setQuery('');
+                            view.clearSelection();
+                          }}
+                        />
+                      ) : undefined
+                    }
+                  />
+                ) : null}
               </View>
             }
             renderItem={({ item }) => (

@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
-import { Bookmark, Heart, ShoppingBasket } from 'lucide-react-native';
+import { Bookmark } from 'lucide-react-native';
 import { IconStat, Shimmer } from '@/src/shared/ui';
 import { theme } from '@/src/shared/theme/theme';
 
@@ -13,8 +13,6 @@ type Props = {
   title: string;
   subtitle?: string;
   imageUrl?: string;
-  likes?: number;
-  saves?: number;
   onPress: () => void;
   metaLeft?: MetaStat | null;
   metaMiddle?: MetaStat | null;
@@ -27,8 +25,6 @@ export function RecipeListCard({
   title,
   subtitle = '–',
   imageUrl,
-  likes,
-  saves,
   onPress,
   metaLeft,
   metaMiddle,
@@ -36,20 +32,8 @@ export function RecipeListCard({
   saveLabel = 'Save',
   saveDisabled = false,
 }: Props) {
-  const leftMeta =
-    metaLeft === undefined
-      ? {
-          icon: <Heart color={theme.colors.primaryDark} size={26} strokeWidth={2.4} />,
-          label: String(likes ?? '–'),
-        }
-      : metaLeft;
-  const middleMeta =
-    metaMiddle === undefined
-      ? {
-          icon: <ShoppingBasket color={theme.colors.primaryDark} size={26} strokeWidth={2.4} />,
-          label: String(saves ?? '–'),
-        }
-      : metaMiddle;
+  const leftMeta = metaLeft ?? null;
+  const middleMeta = metaMiddle ?? null;
 
   return (
     <Pressable

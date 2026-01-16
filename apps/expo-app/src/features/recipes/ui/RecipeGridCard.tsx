@@ -5,6 +5,8 @@ import { IconStat, Shimmer } from '@/src/shared/ui';
 import { theme } from '@/src/shared/theme/theme';
 import { formatDuration } from '@/src/features/recipes/utils/formatDuration';
 
+const IMAGE_HEIGHT = 166;
+
 type Props = {
   title: string;
   imageUrl?: string | null;
@@ -70,7 +72,7 @@ export function RecipeGridCard({
         {imageUrl ? (
           <Image source={{ uri: imageUrl }} style={styles.image} resizeMode="cover" />
         ) : (
-          <Shimmer height={150} borderRadius={0} />
+          <Shimmer height={IMAGE_HEIGHT} borderRadius={0} />
         )}
       </View>
 
@@ -104,7 +106,7 @@ const styles = StyleSheet.create({
 
   imageWrap: {
     width: '100%',
-    height: 166,
+    height: IMAGE_HEIGHT,
     backgroundColor: theme.colors.bg,
   },
   image: {

@@ -13,9 +13,9 @@ type Props = {
 export function RecipeDiscoveryListItem({ item, onPress, onSave, saveDisabled }: Props) {
   const subtitle = [item.category, item.area].filter(Boolean).join(' · ');
   const ingredientLabel =
-    item.ingredientCount === null || item.ingredientCount === undefined
-      ? '–'
-      : String(item.ingredientCount);
+    item.ingredientCount !== null && item.ingredientCount !== undefined && item.ingredientCount > 0
+      ? String(item.ingredientCount)
+      : null;
 
   return (
     <RecipeListCard
@@ -24,10 +24,14 @@ export function RecipeDiscoveryListItem({ item, onPress, onSave, saveDisabled }:
       imageUrl={item.imageUrl ?? undefined}
       onPress={() => onPress?.(item.id)}
       metaLeft={null}
-      metaMiddle={{
-        icon: <ShoppingBasket color={theme.colors.primaryDark} size={26} strokeWidth={2.4} />,
-        label: ingredientLabel,
-      }}
+      metaMiddle={
+        ingredientLabel
+          ? {
+              icon: <ShoppingBasket color={theme.colors.primaryDark} size={26} strokeWidth={2.4} />,
+              label: ingredientLabel,
+            }
+          : null
+      }
       onSave={onSave ? () => onSave(item) : undefined}
       saveDisabled={saveDisabled}
     />
