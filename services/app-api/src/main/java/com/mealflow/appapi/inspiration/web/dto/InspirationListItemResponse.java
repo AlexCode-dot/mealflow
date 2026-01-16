@@ -1,9 +1,4 @@
 package com.mealflow.appapi.inspiration.web.dto;
 
 public record InspirationListItemResponse(
-        String id,
-        String title,
-        String imageUrl,
-        String category,
-        String area,
-        Integer ingredientCount) {}
+        String id, String title, String imageUrl, String category, String area, Integer ingredientCount) {}
