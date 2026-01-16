@@ -1,8 +1,8 @@
 export { useCreateRecipe } from './useCreateRecipe';
 export { useEditRecipe } from './useEditRecipe';
+export { useInspirationDetails } from './useInspirationDetails';
 export { useRecipeDetails } from './useRecipeDetails';
 export { useRecipeDiscovery } from './useRecipeDiscovery';
-export type { DiscoveryRecipe } from './useRecipeDiscovery';
 export { useRecipeEditorUiState } from './useRecipeEditorState';
 export type { RecipePickerKey } from './useRecipeEditorState';
 export { useRecipeIngredientEditor } from './useRecipeIngredientEditor';

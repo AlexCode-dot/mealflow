@@ -27,7 +27,6 @@ import {
 import { useToastState } from '@/src/shared/hooks/useToastState';
 import { useFocusEffect, useIsFocused } from '@react-navigation/native';
 import { ArrowUp } from 'lucide-react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export function RecipesScreen() {
   const params = useLocalSearchParams<{ toast?: string }>();
@@ -44,7 +43,6 @@ export function RecipesScreen() {
   const toastState = useToastState();
   const [showToast, setShowToast] = useState(false);
   const isFocused = useIsFocused();
-  const insets = useSafeAreaInsets();
   const discoveryListRef = useRef<FlatList<InspirationListItem> | null>(null);
   const [showScrollTop, setShowScrollTop] = useState(false);
 
