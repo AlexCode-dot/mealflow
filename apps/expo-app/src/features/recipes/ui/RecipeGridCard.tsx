@@ -1,4 +1,4 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Clock3, ShoppingBasket, Utensils } from 'lucide-react-native';
 import { IconStat, Shimmer } from '@/src/shared/ui';
 import { theme } from '@/src/shared/theme/theme';
@@ -6,6 +6,7 @@ import { formatDuration } from '@/src/features/recipes/utils/formatDuration';
 
 type Props = {
   title: string;
+  imageUrl?: string | null;
   cookingTimeMinutes?: number | null;
   ingredientCount?: number | null;
   category?: string | null;
@@ -14,6 +15,7 @@ type Props = {
 
 export function RecipeGridCard({
   title,
+  imageUrl,
   cookingTimeMinutes,
   ingredientCount,
   category,
@@ -33,7 +35,11 @@ export function RecipeGridCard({
       style={({ pressed }) => [styles.card, pressed ? styles.pressed : null]}
     >
       <View style={styles.imageFrame}>
-        <Shimmer height={132} borderRadius={16} />
+        {imageUrl ? (
+          <Image source={{ uri: imageUrl }} style={styles.image} resizeMode="cover" />
+        ) : (
+          <Shimmer height={132} borderRadius={16} />
+        )}
       </View>
 
       <Text style={styles.cardTitle} numberOfLines={2}>
@@ -75,6 +81,10 @@ const styles = StyleSheet.create({
     borderColor: theme.colors.primaryDark,
     backgroundColor: theme.colors.bg,
     overflow: 'hidden',
+  },
+  image: {
+    width: '100%',
+    height: 132,
   },
 
   cardTitle: {

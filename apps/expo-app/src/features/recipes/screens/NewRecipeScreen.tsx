@@ -100,7 +100,7 @@ export function NewRecipeScreen() {
   return (
     <Screen title="Add Recipe" showBack scroll={false} contentStyle={styles.screenContent}>
       <View style={styles.root}>
-        <RecipeSheetLayout hero={<RecipeHero />} heroHeight={heroHeight}>
+        <RecipeSheetLayout hero={<RecipeHero imageUrl={form.imageUrl} />} heroHeight={heroHeight}>
           <RecipeEditorShell tab={editorState.tab} onTabChange={editorState.setTab}>
             {form.serverError ? <ErrorText>{form.serverError}</ErrorText> : null}
             {editorState.tab === 'basic' ? (

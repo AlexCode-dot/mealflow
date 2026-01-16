@@ -116,7 +116,7 @@ export function EditRecipeScreen() {
     <Screen title="Edit Recipe" showBack scroll={false} contentStyle={styles.screenContent}>
       <View style={styles.root}>
         <RecipeSheetLayout
-          hero={<RecipeHero />}
+          hero={<RecipeHero imageUrl={form.imageUrl} />}
           heroHeight={heroHeight}
           refreshing={refreshing}
           onRefresh={onRefresh}

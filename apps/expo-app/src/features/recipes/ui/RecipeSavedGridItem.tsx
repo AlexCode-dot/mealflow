@@ -12,6 +12,7 @@ export function RecipeSavedGridItem({ item, onPress }: Props) {
     <View style={styles.item}>
       <RecipeGridCard
         title={item.title}
+        imageUrl={item.imageUrl}
         cookingTimeMinutes={item.cookingTimeMinutes}
         ingredientCount={item.ingredientCount}
         category={item.category}

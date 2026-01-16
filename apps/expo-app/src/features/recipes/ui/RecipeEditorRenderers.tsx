@@ -23,9 +23,8 @@ export function createRecipeEditorRenderers({ onEditIngredient, onEditStep }: Ar
       <Pressable onPress={() => onEditIngredient(currentIndex)} disabled={isActive}>
         <RecipeIngredientRow
           name={item.name}
-          amount={
-            item.quantity !== undefined ? `${item.quantity}${item.unit ? ` ${item.unit}` : ''}` : ''
-          }
+          quantity={item.quantity}
+          unit={item.unit}
           onDrag={drag}
         />
       </Pressable>
