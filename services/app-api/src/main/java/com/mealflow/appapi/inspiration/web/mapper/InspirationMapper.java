@@ -12,7 +12,9 @@ import org.springframework.stereotype.Component;
 public class InspirationMapper {
 
     public InspirationListItemResponse toListItem(MealDbMeal meal) {
-        return new InspirationListItemResponse(meal.id(), meal.title(), meal.imageUrl(), meal.category(), meal.area());
+        Integer ingredientCount = countIngredients(meal);
+        return new InspirationListItemResponse(
+                meal.id(), meal.title(), meal.imageUrl(), meal.category(), meal.area(), ingredientCount);
     }
 
     public InspirationRecipeResponse toResponse(MealDbMeal meal) {
@@ -81,6 +83,38 @@ public class InspirationMapper {
             result.add(new InspirationIngredientResponse(name, measure));
         }
         return result;
+    }
+
+    private Integer countIngredients(MealDbMeal meal) {
+        List<String> names = List.of(
+                meal.ingredient1(),
+                meal.ingredient2(),
+                meal.ingredient3(),
+                meal.ingredient4(),
+                meal.ingredient5(),
+                meal.ingredient6(),
+                meal.ingredient7(),
+                meal.ingredient8(),
+                meal.ingredient9(),
+                meal.ingredient10(),
+                meal.ingredient11(),
+                meal.ingredient12(),
+                meal.ingredient13(),
+                meal.ingredient14(),
+                meal.ingredient15(),
+                meal.ingredient16(),
+                meal.ingredient17(),
+                meal.ingredient18(),
+                meal.ingredient19(),
+                meal.ingredient20());
+
+        int count = 0;
+        for (String name : names) {
+            if (trimToNull(name) != null) {
+                count += 1;
+            }
+        }
+        return count > 0 ? count : null;
     }
 
     private List<String> toSteps(String instructions) {

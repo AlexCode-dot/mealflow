@@ -63,6 +63,7 @@ export type InspirationListItem = {
   imageUrl?: string | null;
   category?: string | null;
   area?: string | null;
+  ingredientCount?: number | null;
 };
 
 export type InspirationIngredient = {

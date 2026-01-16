@@ -1,7 +1,13 @@
+import type { ReactNode } from 'react';
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Bookmark, Heart, ShoppingBasket } from 'lucide-react-native';
 import { IconStat, Shimmer } from '@/src/shared/ui';
 import { theme } from '@/src/shared/theme/theme';
+
+type MetaStat = {
+  icon: ReactNode;
+  label: string;
+};
 
 type Props = {
   title: string;
@@ -10,9 +16,41 @@ type Props = {
   likes?: number;
   saves?: number;
   onPress: () => void;
+  metaLeft?: MetaStat | null;
+  metaMiddle?: MetaStat | null;
+  onSave?: () => void;
+  saveLabel?: string;
+  saveDisabled?: boolean;
 };
 
-export function RecipeListCard({ title, subtitle = '–', imageUrl, likes, saves, onPress }: Props) {
+export function RecipeListCard({
+  title,
+  subtitle = '–',
+  imageUrl,
+  likes,
+  saves,
+  onPress,
+  metaLeft,
+  metaMiddle,
+  onSave,
+  saveLabel = 'Save',
+  saveDisabled = false,
+}: Props) {
+  const leftMeta =
+    metaLeft === undefined
+      ? {
+          icon: <Heart color={theme.colors.primaryDark} size={26} strokeWidth={2.4} />,
+          label: String(likes ?? '–'),
+        }
+      : metaLeft;
+  const middleMeta =
+    metaMiddle === undefined
+      ? {
+          icon: <ShoppingBasket color={theme.colors.primaryDark} size={26} strokeWidth={2.4} />,
+          label: String(saves ?? '–'),
+        }
+      : metaMiddle;
+
   return (
     <Pressable
       onPress={onPress}
@@ -27,7 +65,7 @@ export function RecipeListCard({ title, subtitle = '–', imageUrl, likes, saves
       </View>
 
       <View style={styles.content}>
-        <Text style={styles.title} numberOfLines={2}>
+        <Text style={styles.title} numberOfLines={1} ellipsizeMode="tail">
           {title}
         </Text>
 
@@ -36,20 +74,31 @@ export function RecipeListCard({ title, subtitle = '–', imageUrl, likes, saves
         </Text>
 
         <View style={styles.metaRow}>
-          <IconStat
-            icon={<Heart color={theme.colors.primaryDark} size={26} strokeWidth={2.4} />}
-            label={String(likes ?? '–')}
-          />
-          <IconStat
-            icon={<ShoppingBasket color={theme.colors.primaryDark} size={26} strokeWidth={2.4} />}
-            label={String(saves ?? '–')}
-          />
-          <View style={styles.saveWrap}>
-            <IconStat
-              icon={<Bookmark color={theme.colors.primaryDark} size={26} strokeWidth={2.4} />}
-              label="Save"
-            />
-          </View>
+          {leftMeta ? <IconStat icon={leftMeta.icon} label={leftMeta.label} /> : null}
+          {middleMeta ? <IconStat icon={middleMeta.icon} label={middleMeta.label} /> : null}
+          {onSave ? (
+            <Pressable
+              style={({ pressed }) => [
+                styles.saveWrap,
+                pressed ? styles.savePressed : null,
+                saveDisabled ? styles.saveDisabled : null,
+              ]}
+              onPress={onSave}
+              disabled={saveDisabled}
+            >
+              <IconStat
+                icon={<Bookmark color={theme.colors.primaryDark} size={26} strokeWidth={2.4} />}
+                label={saveLabel}
+              />
+            </Pressable>
+          ) : (
+            <View style={styles.saveWrap}>
+              <IconStat
+                icon={<Bookmark color={theme.colors.primaryDark} size={26} strokeWidth={2.4} />}
+                label={saveLabel}
+              />
+            </View>
+          )}
         </View>
       </View>
     </Pressable>
@@ -89,8 +138,8 @@ const styles = StyleSheet.create({
 
   title: {
     color: theme.colors.text,
-    fontSize: 20,
-    fontWeight: '900',
+    fontSize: 18,
+    fontWeight: '700',
     lineHeight: 24,
   },
 
@@ -110,6 +159,12 @@ const styles = StyleSheet.create({
   saveWrap: {
     marginLeft: 'auto',
     alignItems: 'center',
+  },
+  savePressed: {
+    opacity: 0.8,
+  },
+  saveDisabled: {
+    opacity: 0.45,
   },
 
   pressed: {

@@ -23,10 +23,17 @@ import {
   RecipeSavedGridItem,
   RecipeDiscoveryListItem,
   RecipeListHeader,
+  RecipePickerSheet,
 } from '@/src/features/recipes/ui';
 import { useToastState } from '@/src/shared/hooks/useToastState';
 import { useFocusEffect, useIsFocused } from '@react-navigation/native';
 import { ArrowUp } from 'lucide-react-native';
+import { inspirationApi } from '@/src/features/recipes/api/inspirationApi';
+import { recipesApi } from '@/src/features/recipes/api/recipesApi';
+import { buildInspirationCreatePayload } from '@/src/features/recipes/utils/inspiration';
+import { toApiError } from '@/src/core/http/toApiError';
+import { mapCommonError } from '@/src/shared/errors/mapCommonError';
+import { RECIPE_CATEGORY_OPTIONS } from '@/src/features/recipes/constants/recipePickerOptions';
 
 export function RecipesScreen() {
   const params = useLocalSearchParams<{ toast?: string }>();
@@ -45,6 +52,10 @@ export function RecipesScreen() {
   const isFocused = useIsFocused();
   const discoveryListRef = useRef<FlatList<InspirationListItem> | null>(null);
   const [showScrollTop, setShowScrollTop] = useState(false);
+  const [saveTarget, setSaveTarget] = useState<InspirationListItem | null>(null);
+  const [savePickerOpen, setSavePickerOpen] = useState(false);
+  const [saveCategory, setSaveCategory] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
 
   const { load: loadSaved } = saved;
   const { load: loadDiscovery } = discovery;
@@ -102,6 +113,37 @@ export function RecipesScreen() {
   const handleScrollTop = useCallback(() => {
     discoveryListRef.current?.scrollToOffset({ offset: 0, animated: true });
   }, []);
+
+  const handleSavePress = useCallback((item: InspirationListItem) => {
+    setSaveTarget(item);
+    setSaveCategory('');
+    setSavePickerOpen(true);
+  }, []);
+
+  const handleSaveConfirm = useCallback(async () => {
+    if (!saveCategory) {
+      toastState.show({ variant: 'error', message: 'Choose a category before saving.' });
+      return;
+    }
+    if (!saveTarget) return;
+
+    setIsSaving(true);
+    try {
+      const detail = await inspirationApi.get(saveTarget.id);
+      const payload = buildInspirationCreatePayload(detail, saveCategory);
+      await recipesApi.create(payload);
+      toastState.show({ variant: 'success', message: 'Recipe saved.' });
+      setSavePickerOpen(false);
+      setSaveTarget(null);
+      setSaveCategory('');
+      await loadSaved();
+    } catch (e) {
+      const uiErr = mapCommonError(toApiError(e));
+      toastState.show({ variant: 'error', title: 'Save failed', message: uiErr.message });
+    } finally {
+      setIsSaving(false);
+    }
+  }, [loadSaved, saveCategory, saveTarget, toastState]);
 
   return (
     <Screen title="Recipes" scroll={false} contentStyle={styles.screenContent}>
@@ -214,6 +256,8 @@ export function RecipesScreen() {
               <RecipeDiscoveryListItem
                 item={item}
                 onPress={(id) => router.push(routes.inspirationRecipe(id))}
+                onSave={handleSavePress}
+                saveDisabled={isSaving && saveTarget?.id === item.id}
               />
             )}
           />
@@ -233,6 +277,16 @@ export function RecipesScreen() {
           onClear={view.clearSelection}
           onApply={() => view.setFiltersOpen(false)}
           onClose={() => view.setFiltersOpen(false)}
+        />
+
+        <RecipePickerSheet
+          visible={savePickerOpen}
+          title="Meal type"
+          value={saveCategory}
+          options={RECIPE_CATEGORY_OPTIONS}
+          onChange={setSaveCategory}
+          onClose={() => setSavePickerOpen(false)}
+          onDone={handleSaveConfirm}
         />
       </View>
     </Screen>
