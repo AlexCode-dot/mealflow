@@ -1,5 +1,6 @@
 package com.mealflow.appapi.error;
 
+import com.mealflow.appapi.inspiration.service.InspirationNotFoundException;
 import com.mealflow.appapi.recipes.service.RecipeNotFoundException;
 import com.mealflow.appapi.recipes.service.RecipeValidationException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -30,6 +31,12 @@ public class ApiExceptionHandler {
     @ExceptionHandler(RecipeNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ProblemDetail handleRecipeNotFound(RecipeNotFoundException ex, HttpServletRequest req) {
+        return problems.build(HttpStatus.NOT_FOUND, ex.getMessage(), req);
+    }
+
+    @ExceptionHandler(InspirationNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ProblemDetail handleInspirationNotFound(InspirationNotFoundException ex, HttpServletRequest req) {
         return problems.build(HttpStatus.NOT_FOUND, ex.getMessage(), req);
     }
 
