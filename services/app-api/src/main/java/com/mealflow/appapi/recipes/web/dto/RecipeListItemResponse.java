@@ -4,6 +4,7 @@ public record RecipeListItemResponse(
         String id,
         String title,
         String description,
+        String imageUrl,
         Integer cookingTimeMinutes,
         Integer ingredientCount,
         Integer portions,

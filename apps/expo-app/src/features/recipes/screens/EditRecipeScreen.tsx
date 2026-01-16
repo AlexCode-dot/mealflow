@@ -16,6 +16,7 @@ import {
   RecipeHero,
   IngredientEditorSheet,
   StepEditorSheet,
+  RecipeAddButton,
   createRecipeEditorRenderers,
   RecipeSheetLayout,
   RecipeEditorBasics,
@@ -112,11 +113,27 @@ export function EditRecipeScreen() {
 
   useBottomBarActions(actionItems);
 
+  const stickyAdd = useMemo(() => {
+    if (editorState.tab === 'ingredients' && ingredientRows.length) {
+      return { label: 'Add ingredient', onPress: ingredientEditor.openAdd };
+    }
+    if (editorState.tab === 'steps' && stepRows.length) {
+      return { label: 'Add step', onPress: stepEditor.openAdd };
+    }
+    return null;
+  }, [
+    editorState.tab,
+    ingredientEditor.openAdd,
+    ingredientRows.length,
+    stepEditor.openAdd,
+    stepRows.length,
+  ]);
+
   return (
     <Screen title="Edit Recipe" showBack scroll={false} contentStyle={styles.screenContent}>
       <View style={styles.root}>
         <RecipeSheetLayout
-          hero={<RecipeHero />}
+          hero={<RecipeHero imageUrl={form.imageUrl} />}
           heroHeight={heroHeight}
           refreshing={refreshing}
           onRefresh={onRefresh}
@@ -171,6 +188,7 @@ export function EditRecipeScreen() {
                 }
                 addLabel="Add ingredient"
                 onAdd={ingredientEditor.openAdd}
+                showInlineAdd={false}
               />
             ) : null}
 
@@ -201,10 +219,22 @@ export function EditRecipeScreen() {
                 }
                 addLabel="Add step"
                 onAdd={stepEditor.openAdd}
+                showInlineAdd={false}
               />
             ) : null}
           </RecipeEditorShell>
         </RecipeSheetLayout>
+
+        {stickyAdd ? (
+          <View style={styles.stickyAdd}>
+            <RecipeAddButton
+              label={stickyAdd.label}
+              onPress={stickyAdd.onPress}
+              compact
+              variant="solid"
+            />
+          </View>
+        ) : null}
       </View>
 
       <IngredientEditorSheet
@@ -259,5 +289,12 @@ const styles = StyleSheet.create({
   },
   listSeparator: {
     height: theme.spacing.s2,
+  },
+  stickyAdd: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: TAB_BAR.BOX_HEIGHT + TAB_BAR.PADDING_TOP - 42,
+    alignItems: 'center',
   },
 });

@@ -1,20 +1,39 @@
+import { ShoppingBasket } from 'lucide-react-native';
 import { RecipeListCard } from '@/src/features/recipes/ui/RecipeListCard';
-import type { DiscoveryRecipe } from '@/src/features/recipes/hooks/useRecipeDiscovery';
+import type { InspirationListItem } from '@/src/features/recipes/types';
+import { theme } from '@/src/shared/theme/theme';
 
 type Props = {
-  item: DiscoveryRecipe;
+  item: InspirationListItem;
   onPress?: (id: string) => void;
+  onSave?: (item: InspirationListItem) => void;
+  saveDisabled?: boolean;
 };
 
-export function RecipeDiscoveryListItem({ item, onPress }: Props) {
+export function RecipeDiscoveryListItem({ item, onPress, onSave, saveDisabled }: Props) {
+  const subtitle = [item.category, item.area].filter(Boolean).join(' · ');
+  const ingredientLabel =
+    item.ingredientCount !== null && item.ingredientCount !== undefined && item.ingredientCount > 0
+      ? String(item.ingredientCount)
+      : null;
+
   return (
     <RecipeListCard
       title={item.title}
-      timeLabel={item.timeLabel}
-      caloriesLabel={item.caloriesLabel}
-      likes={item.likes}
-      saves={item.saves}
+      subtitle={subtitle || 'Discover recipe'}
+      imageUrl={item.imageUrl ?? undefined}
       onPress={() => onPress?.(item.id)}
+      metaLeft={null}
+      metaMiddle={
+        ingredientLabel
+          ? {
+              icon: <ShoppingBasket color={theme.colors.primaryDark} size={26} strokeWidth={2.4} />,
+              label: ingredientLabel,
+            }
+          : null
+      }
+      onSave={onSave ? () => onSave(item) : undefined}
+      saveDisabled={saveDisabled}
     />
   );
 }

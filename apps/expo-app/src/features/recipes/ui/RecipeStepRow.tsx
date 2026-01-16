@@ -1,5 +1,5 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { GripVertical } from 'lucide-react-native';
+import { ChevronRight, GripVertical } from 'lucide-react-native';
 import { theme } from '@/src/shared/theme/theme';
 
 type Props = {
@@ -7,18 +7,34 @@ type Props = {
   text: string;
   onDrag?: () => void;
   showHandle?: boolean;
+  onPress?: () => void;
+  showDisclosure?: boolean;
+  maxLines?: number;
 };
 
-export function RecipeStepRow({ index, text, onDrag, showHandle = false }: Props) {
+export function RecipeStepRow({
+  index,
+  text,
+  onDrag,
+  showHandle = false,
+  onPress,
+  showDisclosure = false,
+  maxLines = 2,
+}: Props) {
   const label = Number.isFinite(index) ? String(index) : '';
   const hasHandle = Boolean(onDrag) || showHandle;
+  const showChevron = !hasHandle && showDisclosure;
 
   return (
-    <View style={styles.row}>
+    <Pressable
+      onPress={onPress}
+      disabled={!onPress}
+      style={({ pressed }) => [styles.row, pressed && onPress ? styles.rowPressed : null]}
+    >
       <View style={styles.badge}>
         <Text style={styles.badgeText}>{label}</Text>
       </View>
-      <Text style={styles.text} numberOfLines={2}>
+      <Text style={styles.text} numberOfLines={maxLines}>
         {text}
       </Text>
       {hasHandle ? (
@@ -37,8 +53,12 @@ export function RecipeStepRow({ index, text, onDrag, showHandle = false }: Props
             <GripVertical color={theme.colors.primaryDark} size={18} strokeWidth={2.5} />
           </View>
         )
+      ) : showChevron ? (
+        <View style={styles.chevron}>
+          <ChevronRight color={theme.colors.primaryDark} size={18} strokeWidth={2.5} />
+        </View>
       ) : null}
-    </View>
+    </Pressable>
   );
 }
 
@@ -53,6 +73,9 @@ const styles = StyleSheet.create({
     borderColor: theme.colors.borderNeutral,
     backgroundColor: theme.colors.bgLight,
     gap: theme.spacing.s2,
+  },
+  rowPressed: {
+    opacity: 0.92,
   },
   badge: {
     width: 28,
@@ -82,6 +105,12 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: theme.colors.borderGreen,
     backgroundColor: theme.colors.primaryLight,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  chevron: {
+    width: 28,
+    height: 28,
     alignItems: 'center',
     justifyContent: 'center',
   },

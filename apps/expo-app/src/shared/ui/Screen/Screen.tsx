@@ -20,6 +20,7 @@ type Props = {
   onBack?: () => void;
   showProfileIcon?: boolean;
   rightSlot?: ReactNode;
+  onTitlePress?: () => void;
 
   /**
    * Optional pull-to-refresh control for the internal ScrollView
@@ -41,6 +42,7 @@ export function Screen({
   onBack,
   showProfileIcon = true,
   rightSlot,
+  onTitlePress,
   refreshControl,
   contentStyle,
 }: Props) {
@@ -48,7 +50,13 @@ export function Screen({
 
   return (
     <View style={styles.root}>
-      <AppHeader title={title} showBack={showBack} onBackPress={onBack} rightSlot={headerRight} />
+      <AppHeader
+        title={title}
+        showBack={showBack}
+        onBackPress={onBack}
+        rightSlot={headerRight}
+        onTitlePress={onTitlePress}
+      />
 
       {scroll ? (
         <ScrollView contentContainerStyle={styles.scrollContainer} refreshControl={refreshControl}>

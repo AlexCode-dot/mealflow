@@ -1,0 +1,70 @@
+import { useCallback, useEffect, useState } from 'react';
+import { inspirationApi } from '@/src/features/recipes/api/inspirationApi';
+import { recipesApi } from '@/src/features/recipes/api/recipesApi';
+import type { InspirationRecipe, Recipe } from '@/src/features/recipes/types';
+import { toApiError } from '@/src/core/http/toApiError';
+import { mapCommonError } from '@/src/shared/errors/mapCommonError';
+import { buildInspirationCreatePayload } from '@/src/features/recipes/utils/inspiration';
+
+type SaveOptions = {
+  mealType?: string;
+};
+
+export function useInspirationDetails(id: string) {
+  const [recipe, setRecipe] = useState<InspirationRecipe | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+
+  const load = useCallback(async () => {
+    if (!id) {
+      setError('Missing recipe id.');
+      setIsLoading(false);
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const data = await inspirationApi.get(id);
+      setRecipe(data);
+    } catch (e) {
+      const uiErr = mapCommonError(toApiError(e));
+      setError(uiErr.message);
+      setRecipe(null);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [id]);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  const save = useCallback(
+    async ({ mealType }: SaveOptions = {}): Promise<Recipe | null> => {
+      if (!recipe) return null;
+
+      setIsSaving(true);
+      setSaveError(null);
+
+      try {
+        const payload = buildInspirationCreatePayload(recipe, mealType);
+        const created = await recipesApi.create(payload);
+
+        return created;
+      } catch (e) {
+        const uiErr = mapCommonError(toApiError(e));
+        setSaveError(uiErr.message);
+        return null;
+      } finally {
+        setIsSaving(false);
+      }
+    },
+    [recipe],
+  );
+
+  return { recipe, isLoading, error, load, save, isSaving, saveError };
+}

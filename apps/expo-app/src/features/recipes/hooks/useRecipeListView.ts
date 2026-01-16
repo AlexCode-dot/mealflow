@@ -1,6 +1,5 @@
 import { useCallback, useMemo, useState } from 'react';
 import type { RecipeListItem } from '@/src/features/recipes/types';
-import type { DiscoveryRecipe } from '@/src/features/recipes/hooks/useRecipeDiscovery';
 import { DISCOVERY_FILTERS, SAVED_FILTERS } from '@/src/features/recipes/constants/recipeFilters';
 
 const TABS = [
@@ -12,10 +11,9 @@ export type RecipeListTabKey = (typeof TABS)[number]['key'];
 
 type Args = {
   savedItems: RecipeListItem[];
-  discoveryItems: DiscoveryRecipe[];
 };
 
-export function useRecipeListView({ savedItems, discoveryItems }: Args) {
+export function useRecipeListView({ savedItems }: Args) {
   const [tab, setTab] = useState<RecipeListTabKey>('saved');
   const [query, setQuery] = useState('');
   const [filtersOpen, setFiltersOpen] = useState(false);
@@ -76,13 +74,6 @@ export function useRecipeListView({ savedItems, discoveryItems }: Args) {
     return filtered;
   }, [savedItems, query, savedFilters]);
 
-  const visibleDiscoveryItems = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    if (!q) return discoveryItems;
-
-    return discoveryItems.filter((r) => r.title.toLowerCase().includes(q));
-  }, [discoveryItems, query]);
-
   const updateSelection = useCallback(
     (sectionKey: string, next: string[]) => {
       if (tab === 'saved') {
@@ -114,8 +105,8 @@ export function useRecipeListView({ savedItems, discoveryItems }: Args) {
     filterSelection,
     activeFilterCount,
     visibleSavedItems,
-    visibleDiscoveryItems,
     updateSelection,
     clearSelection,
+    discoveryFilters,
   };
 }

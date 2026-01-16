@@ -26,6 +26,7 @@ const styles = StyleSheet.create({
     borderRadius: theme.radius.md,
     padding: theme.spacing.s4,
     gap: theme.spacing.s2,
+    marginTop: theme.spacing.s3,
   },
   title: {
     color: theme.colors.text,

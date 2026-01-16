@@ -10,6 +10,7 @@ type Touched = {
 type Values = {
   title: string;
   description: string;
+  imageUrl: string;
   time: string;
   portions: string;
   category: string;
@@ -18,6 +19,7 @@ type Values = {
 type ApiValues = {
   title: string;
   description: string | null;
+  imageUrl: string | null;
   cookingTimeMinutes: number | null;
   portions: number | null;
   category: string | null;
@@ -26,6 +28,7 @@ type ApiValues = {
 export function useRecipeFormState(initial?: Partial<Values>) {
   const [title, setTitleState] = useState(initial?.title ?? '');
   const [description, setDescriptionState] = useState(initial?.description ?? '');
+  const [imageUrl, setImageUrl] = useState(initial?.imageUrl ?? '');
   const [time, setTime] = useState(initial?.time ?? '');
   const [portions, setPortions] = useState(initial?.portions ?? '');
   const [category, setCategory] = useState(initial?.category ?? '');
@@ -48,6 +51,7 @@ export function useRecipeFormState(initial?: Partial<Values>) {
   const setValues = useCallback((next: Partial<Values>, resetTouched = false) => {
     if (next.title !== undefined) setTitleState(next.title);
     if (next.description !== undefined) setDescriptionState(next.description);
+    if (next.imageUrl !== undefined) setImageUrl(next.imageUrl);
     if (next.time !== undefined) setTime(next.time);
     if (next.portions !== undefined) setPortions(next.portions);
     if (next.category !== undefined) setCategory(next.category);
@@ -60,6 +64,7 @@ export function useRecipeFormState(initial?: Partial<Values>) {
         {
           title: recipe.title ?? '',
           description: recipe.description ?? '',
+          imageUrl: recipe.imageUrl ?? '',
           time:
             recipe.cookingTimeMinutes !== null && recipe.cookingTimeMinutes !== undefined
               ? String(recipe.cookingTimeMinutes)
@@ -79,23 +84,27 @@ export function useRecipeFormState(initial?: Partial<Values>) {
   const getApiValues = useCallback((): ApiValues => {
     const trimmedTitle = title.trim();
     const trimmedDescription = description.trim();
+    const trimmedImageUrl = imageUrl.trim();
     const cookingTimeMinutes = time ? Number(time) : null;
     const portionsValue = portions ? Number(portions) : null;
 
     return {
       title: trimmedTitle,
       description: trimmedDescription ? trimmedDescription : null,
+      imageUrl: trimmedImageUrl ? trimmedImageUrl : null,
       cookingTimeMinutes: Number.isNaN(cookingTimeMinutes) ? null : cookingTimeMinutes,
       portions: Number.isNaN(portionsValue) ? null : portionsValue,
       category: category ? category : null,
     };
-  }, [category, description, portions, time, title]);
+  }, [category, description, imageUrl, portions, time, title]);
 
   return {
     title,
     setTitle,
     description,
     setDescription,
+    imageUrl,
+    setImageUrl,
     time,
     setTime,
     portions,

@@ -5,12 +5,22 @@ import { theme } from '@/src/shared/theme/theme';
 type Props = {
   name: string;
   amount?: string;
+  quantity?: number | null;
+  unit?: string | null;
   onDrag?: () => void;
   showHandle?: boolean;
 };
 
-export function RecipeIngredientRow({ name, amount, onDrag, showHandle = false }: Props) {
+export function RecipeIngredientRow({
+  name,
+  amount,
+  quantity,
+  unit,
+  onDrag,
+  showHandle = false,
+}: Props) {
   const hasHandle = Boolean(onDrag) || showHandle;
+  const derivedAmount = amount ?? formatAmount(quantity, unit);
 
   return (
     <View style={styles.row}>
@@ -19,7 +29,7 @@ export function RecipeIngredientRow({ name, amount, onDrag, showHandle = false }
       </View>
       <Text style={styles.name} numberOfLines={1}>
         {name}
-        {amount ? <Text style={styles.amountInline}>{` | ${amount}`}</Text> : null}
+        {derivedAmount ? <Text style={styles.amountInline}>{` | ${derivedAmount}`}</Text> : null}
       </Text>
       {hasHandle ? (
         onDrag ? (
@@ -86,3 +96,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
 });
+
+function formatAmount(quantity?: number | null, unit?: string | null): string {
+  const unitText = unit?.trim();
+  const hasQuantity = typeof quantity === 'number' && Number.isFinite(quantity);
+  if (hasQuantity && unitText) return `${quantity} ${unitText}`;
+  if (hasQuantity) return String(quantity);
+  if (unitText) return unitText;
+  return '';
+}

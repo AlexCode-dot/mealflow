@@ -54,6 +54,8 @@ export function useCreateRecipe() {
       form.setDescription(v);
       setServerError(null);
     },
+    imageUrl: form.imageUrl,
+    setImageUrl: form.setImageUrl,
     time: form.time,
     setTime: form.setTime,
     portions: form.portions,

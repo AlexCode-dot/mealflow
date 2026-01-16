@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, InteractionManager, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Image, InteractionManager, StyleSheet, Text, View } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import { useFocusEffect, useIsFocused } from '@react-navigation/native';
 import { Clock3, ShoppingBasket, Utensils, Users, Pencil, Trash2 } from 'lucide-react-native';
@@ -12,6 +12,7 @@ import {
   ConfirmSheet,
   ToastBanner,
   useBottomBarActions,
+  ModalSheet,
 } from '@/src/shared/ui';
 import { theme } from '@/src/shared/theme/theme';
 import { routes } from '@/src/core/navigation/routes';
@@ -38,6 +39,10 @@ export function RecipeDetailsScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [isLeaving, setIsLeaving] = useState(false);
+  const [stepOpen, setStepOpen] = useState(false);
+  const [stepText, setStepText] = useState('');
+  const [stepIndex, setStepIndex] = useState<number | null>(null);
+  const [titleOpen, setTitleOpen] = useState(false);
   const { toast, show, clear } = useToastState();
   const didInitialFocusLoad = useRef(false);
   const isFocused = useIsFocused();
@@ -124,6 +129,12 @@ export function RecipeDetailsScreen() {
 
   useBottomBarActions(isLeaving ? null : actionItems);
 
+  const openStep = useCallback((text: string, index: number) => {
+    setStepText(text);
+    setStepIndex(index);
+    setStepOpen(true);
+  }, []);
+
   useEffect(() => {
     if (!toastParam || !isFocused) return;
 
@@ -203,6 +214,7 @@ export function RecipeDetailsScreen() {
       showBack
       onBack={onBack}
       showProfileIcon={false}
+      onTitlePress={() => setTitleOpen(true)}
       scroll={false}
       contentStyle={styles.screenContent}
     >
@@ -234,7 +246,16 @@ export function RecipeDetailsScreen() {
           <RecipeSheetLayout
             hero={
               <View style={styles.hero}>
-                <Shimmer height={heroHeight} borderRadius={0} />
+                {recipe?.imageUrl ? (
+                  <Image source={{ uri: recipe.imageUrl }} style={styles.heroImage} />
+                ) : (
+                  <Shimmer height={heroHeight} borderRadius={0} />
+                )}
+                {recipe?.fromExternal ? (
+                  <View style={styles.originBadge}>
+                    <Text style={styles.originBadgeText}>Imported</Text>
+                  </View>
+                ) : null}
               </View>
             }
             heroHeight={heroHeight}
@@ -274,11 +295,8 @@ export function RecipeDetailsScreen() {
                         <RecipeIngredientRow
                           key={`${ing.name}-${idx}`}
                           name={ing.name}
-                          amount={
-                            ing.quantity !== undefined
-                              ? `${ing.quantity}${ing.unit ? ` ${ing.unit}` : ''}`
-                              : ''
-                          }
+                          quantity={ing.quantity}
+                          unit={ing.unit}
                         />
                       ))}
                     </View>
@@ -292,6 +310,9 @@ export function RecipeDetailsScreen() {
                         key={`${idx}-${step.slice(0, 12)}`}
                         index={idx + 1}
                         text={step}
+                        maxLines={2}
+                        showDisclosure
+                        onPress={() => openStep(step, idx + 1)}
                       />
                     ))}
                   </View>
@@ -314,6 +335,27 @@ export function RecipeDetailsScreen() {
         onCancel={() => setDeleteOpen(false)}
         disabled={isDeleting}
       />
+
+      <ModalSheet visible={stepOpen} onClose={() => setStepOpen(false)}>
+        <View style={styles.stepSheet}>
+          <Text style={styles.stepTitle}>{stepIndex ? `Step ${stepIndex}` : 'Step'}</Text>
+          <View style={styles.stepBody}>
+            {splitStepParagraphs(stepText).map((paragraph, index) => (
+              <View key={`${index}-${paragraph}`} style={styles.stepParagraphRow}>
+                <Text style={styles.stepBullet}>•</Text>
+                <Text style={styles.stepParagraph}>{paragraph}</Text>
+              </View>
+            ))}
+          </View>
+        </View>
+      </ModalSheet>
+
+      <ModalSheet visible={titleOpen} onClose={() => setTitleOpen(false)}>
+        <View style={styles.titleSheet}>
+          <Text style={styles.titleSheetHeading}>Recipe title</Text>
+          <Text style={styles.titleSheetText}>{recipe?.title ?? 'Recipe'}</Text>
+        </View>
+      </ModalSheet>
     </Screen>
   );
 }
@@ -354,6 +396,31 @@ const styles = StyleSheet.create({
   },
   hero: {
     backgroundColor: theme.colors.bgLight,
+  },
+  heroImage: {
+    width: '100%',
+    height: 320,
+  },
+  originBadge: {
+    position: 'absolute',
+    top: theme.spacing.s4,
+    right: theme.spacing.s4,
+    paddingHorizontal: theme.spacing.s3,
+    paddingVertical: theme.spacing.s2,
+    borderRadius: 999,
+    backgroundColor: '#E3F3E6',
+    borderWidth: 2,
+    borderColor: theme.colors.primaryDark,
+    shadowColor: '#000',
+    shadowOpacity: 0.18,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 4,
+  },
+  originBadgeText: {
+    color: theme.colors.primaryDark,
+    fontSize: 12,
+    fontWeight: '700',
   },
   summary: {
     padding: theme.spacing.s4,
@@ -407,4 +474,93 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     textAlign: 'center',
   },
+  stepSheet: {
+    gap: theme.spacing.s2,
+    paddingBottom: theme.spacing.s4,
+    minHeight: 260,
+    paddingHorizontal: theme.spacing.s4,
+  },
+  stepTitle: {
+    fontSize: 22,
+    fontWeight: '800',
+    color: theme.colors.text,
+    textAlign: 'center',
+    marginBottom: theme.spacing.s1,
+  },
+  stepBody: {
+    marginTop: theme.spacing.s2,
+  },
+  stepParagraphRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: theme.spacing.s2,
+    marginBottom: theme.spacing.s2,
+  },
+  stepParagraph: {
+    fontSize: 16,
+    lineHeight: 24,
+    color: theme.colors.text,
+  },
+  stepBullet: {
+    fontSize: 18,
+    lineHeight: 24,
+    color: theme.colors.text,
+    marginTop: 1,
+  },
+  titleSheet: {
+    paddingHorizontal: theme.spacing.s4,
+    paddingTop: theme.spacing.s4,
+    paddingBottom: theme.spacing.s6,
+    gap: theme.spacing.s2,
+  },
+  titleSheetHeading: {
+    color: theme.colors.textMuted,
+    fontSize: 12,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+  },
+  titleSheetText: {
+    color: theme.colors.text,
+    fontSize: 20,
+    fontWeight: '700',
+    lineHeight: 28,
+  },
 });
+
+function splitStepParagraphs(text: string): string[] {
+  const trimmed = text.trim();
+  if (!trimmed) return [];
+  const parts = extractSentences(trimmed);
+  if (parts.length > 1) return parts;
+  return splitByLength(trimmed, 140);
+}
+
+function extractSentences(text: string): string[] {
+  const matches = text.match(/[^.!?]+[.!?]+|[^.!?]+$/g);
+  if (!matches) return [];
+  return matches.map((part) => part.trim()).filter(Boolean);
+}
+
+function splitByLength(text: string, maxLen: number): string[] {
+  const words = text.split(/\s+/).filter(Boolean);
+  const chunks: string[] = [];
+  let buffer = '';
+
+  for (const word of words) {
+    if ((buffer + ' ' + word).trim().length <= maxLen) {
+      buffer = buffer ? `${buffer} ${word}` : word;
+      continue;
+    }
+    if (buffer) {
+      chunks.push(buffer);
+    }
+    buffer = word;
+  }
+
+  if (buffer) {
+    chunks.push(buffer);
+  }
+
+  return chunks;
+}

@@ -9,13 +9,27 @@ type Props = {
   empty: ReactNode;
   addLabel: string;
   onAdd: () => void;
+  showInlineAdd?: boolean;
 };
 
-export function RecipeEditorListSection({ itemsCount, list, empty, addLabel, onAdd }: Props) {
+export function RecipeEditorListSection({
+  itemsCount,
+  list,
+  empty,
+  addLabel,
+  onAdd,
+  showInlineAdd = true,
+}: Props) {
+  const showList = itemsCount > 0;
+
   return (
     <>
-      {itemsCount ? <View style={styles.list}>{list}</View> : empty}
-      {itemsCount ? <RecipeAddButton label={addLabel} onPress={onAdd} /> : null}
+      {showList ? (
+        <View style={[styles.list, !showInlineAdd ? styles.listWithSticky : null]}>{list}</View>
+      ) : (
+        empty
+      )}
+      {showList && showInlineAdd ? <RecipeAddButton label={addLabel} onPress={onAdd} /> : null}
     </>
   );
 }
@@ -23,5 +37,8 @@ export function RecipeEditorListSection({ itemsCount, list, empty, addLabel, onA
 const styles = StyleSheet.create({
   list: {
     gap: theme.spacing.s3,
+  },
+  listWithSticky: {
+    paddingBottom: theme.spacing.s7 + 70,
   },
 });

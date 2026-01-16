@@ -13,11 +13,20 @@ type Props = {
   options: Option[];
   onChange: (value: string) => void;
   onClose: () => void;
+  onDone?: () => void;
 };
 
-export function RecipePickerSheet({ visible, title, value, options, onChange, onClose }: Props) {
+export function RecipePickerSheet({
+  visible,
+  title,
+  value,
+  options,
+  onChange,
+  onClose,
+  onDone,
+}: Props) {
   return (
-    <PickerSheet visible={visible} title={title} onClose={onClose}>
+    <PickerSheet visible={visible} title={title} onClose={onClose} onDone={onDone}>
       <Picker selectedValue={value} onValueChange={(v) => onChange(String(v))}>
         {options.map((option) => (
           <Picker.Item key={option.value} label={option.label} value={option.value} />

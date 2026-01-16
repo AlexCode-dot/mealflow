@@ -138,6 +138,7 @@ List item fields:
 - `id`
 - `title`
 - `description`
+- `imageUrl`
 - `cookingTimeMinutes`
 - `ingredientCount` (derived)
 - `portions`
@@ -151,6 +152,7 @@ Create a new recipe (manual or saved from inspiration).
 Fields:
 - `title`
 - `description`
+- `imageUrl`
 - `ingredients[]`
 - `steps[]`
 - `cookingTimeMinutes`
@@ -167,6 +169,7 @@ Response fields:
 - `id`
 - `title`
 - `description`
+- `imageUrl`
 - `ingredients[]`
 - `steps[]`
 - `cookingTimeMinutes`
@@ -178,9 +181,6 @@ Response fields:
 
 **PATCH** `/api/recipes/{id}`  
 Partial update (recommended).
-
-**PUT** `/api/recipes/{id}`  
-Full replacement (rarely used).
 
 **DELETE** `/api/recipes/{id}`  
 Delete recipe.
@@ -195,10 +195,15 @@ Retrieve a list of inspiration recipes from an external provider.
 **GET** `/api/inspiration/{externalId}`  
 Retrieve detailed inspiration recipe.
 
+**GET** `/api/inspiration/random?count=6`  
+Retrieve a small random batch for “load more” browsing (used to keep the
+list fresh without relying on provider pagination).
+
 Saving an inspiration recipe uses:
 
 **POST** `/api/recipes`  
-with `fromExternal: true`
+with `fromExternal: true`. The client also prompts for a meal category
+before saving.
 
 ---
 
