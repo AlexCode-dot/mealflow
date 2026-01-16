@@ -22,7 +22,7 @@ The requirements are structured to provide **clear traceability** between:
 | APR-1.3 | The system shall allow users to update existing recipes. |
 | APR-1.4 | The system shall allow partial recipe updates. |
 | APR-1.5 | The system shall allow users to delete recipes. |
-| APR-1.6 | A recipe shall contain title, description, ingredients, and steps. |
+| APR-1.6 | A recipe shall contain a title and may include description, ingredients, and steps. |
 | APR-1.7 | Each recipe shall belong to exactly one user. |
 | APR-1.8 | Saved inspiration recipes shall behave as normal user recipes. |
 
