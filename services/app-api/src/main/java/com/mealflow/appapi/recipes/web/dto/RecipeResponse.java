@@ -7,6 +7,7 @@ public record RecipeResponse(
         String id,
         String title,
         String description,
+        String imageUrl,
         List<IngredientDto> ingredients,
         List<String> steps,
         Integer cookingTimeMinutes,

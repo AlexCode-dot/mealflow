@@ -9,6 +9,7 @@ import java.util.List;
 public record CreateRecipeRequest(
         @NotBlank @Size(max = 120) String title,
         @Size(max = 2000) String description,
+        @Size(max = 500) String imageUrl,
         List<@Valid IngredientDto> ingredients,
         List<@NotBlank @Size(max = 500) String> steps,
         @Min(0) Integer cookingTimeMinutes,

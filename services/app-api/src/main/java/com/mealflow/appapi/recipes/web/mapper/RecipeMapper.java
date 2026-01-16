@@ -24,10 +24,13 @@ public class RecipeMapper {
 
         String category = body.category() == null ? null : body.category().trim();
 
+        String imageUrl = body.imageUrl() == null ? null : body.imageUrl().trim();
+
         return new CreateArgs(
                 userId,
                 body.title().trim(),
                 body.description(),
+                imageUrl,
                 ingredients,
                 steps,
                 body.cookingTimeMinutes(),
@@ -43,11 +46,14 @@ public class RecipeMapper {
 
         String category = body.category() == null ? null : body.category().trim();
 
+        String imageUrl = body.imageUrl() == null ? null : body.imageUrl().trim();
+
         return new PatchArgs(
                 userId,
                 recipeId,
                 body.title(),
                 body.description(),
+                imageUrl,
                 ingredients,
                 body.steps(),
                 body.cookingTimeMinutes(),
@@ -61,6 +67,7 @@ public class RecipeMapper {
                 r.getId(),
                 r.getTitle(),
                 r.getDescription(),
+                r.getImageUrl(),
                 r.getIngredients().stream().map(this::toDto).toList(),
                 r.getSteps(),
                 r.getCookingTimeMinutes(),
@@ -81,6 +88,7 @@ public class RecipeMapper {
                 r.getId(),
                 r.getTitle(),
                 r.getDescription(),
+                r.getImageUrl(),
                 r.getCookingTimeMinutes(),
                 ingredientCount,
                 r.getPortions(),
@@ -103,6 +111,7 @@ public class RecipeMapper {
             String userId,
             String title,
             String description,
+            String imageUrl,
             List<Ingredient> ingredients,
             List<String> steps,
             Integer cookingTimeMinutes,
@@ -115,6 +124,7 @@ public class RecipeMapper {
             String recipeId,
             String title,
             String description,
+            String imageUrl,
             List<Ingredient> ingredients,
             List<String> steps,
             Integer cookingTimeMinutes,

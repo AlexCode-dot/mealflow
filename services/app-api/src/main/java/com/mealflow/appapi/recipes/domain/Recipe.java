@@ -18,6 +18,7 @@ public class Recipe {
 
     private String title;
     private String description;
+    private String imageUrl;
 
     private List<Ingredient> ingredients = new ArrayList<>();
     private List<String> steps = new ArrayList<>();
@@ -37,6 +38,7 @@ public class Recipe {
             String userId,
             String title,
             String description,
+            String imageUrl,
             List<Ingredient> ingredients,
             List<String> steps,
             Integer cookingTimeMinutes,
@@ -49,6 +51,7 @@ public class Recipe {
         this.userId = userId;
         this.title = title;
         this.description = description;
+        this.imageUrl = imageUrl;
         this.ingredients = ingredients != null ? ingredients : new ArrayList<>();
         this.steps = steps != null ? steps : new ArrayList<>();
         this.cookingTimeMinutes = cookingTimeMinutes;
@@ -62,6 +65,7 @@ public class Recipe {
     public void applyPatch(
             String title,
             String description,
+            String imageUrl,
             List<Ingredient> ingredients,
             List<String> steps,
             Integer cookingTimeMinutes,
@@ -74,6 +78,9 @@ public class Recipe {
         }
         if (description != null) {
             this.description = description;
+        }
+        if (imageUrl != null) {
+            this.imageUrl = imageUrl;
         }
         if (ingredients != null) {
             this.ingredients = ingredients;
@@ -124,6 +131,14 @@ public class Recipe {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
     }
 
     public List<Ingredient> getIngredients() {
