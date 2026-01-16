@@ -42,6 +42,7 @@ export function RecipeDetailsScreen() {
   const [stepOpen, setStepOpen] = useState(false);
   const [stepText, setStepText] = useState('');
   const [stepIndex, setStepIndex] = useState<number | null>(null);
+  const [titleOpen, setTitleOpen] = useState(false);
   const { toast, show, clear } = useToastState();
   const didInitialFocusLoad = useRef(false);
   const isFocused = useIsFocused();
@@ -213,6 +214,7 @@ export function RecipeDetailsScreen() {
       showBack
       onBack={onBack}
       showProfileIcon={false}
+      onTitlePress={() => setTitleOpen(true)}
       scroll={false}
       contentStyle={styles.screenContent}
     >
@@ -249,6 +251,11 @@ export function RecipeDetailsScreen() {
                 ) : (
                   <Shimmer height={heroHeight} borderRadius={0} />
                 )}
+                {recipe?.fromExternal ? (
+                  <View style={styles.originBadge}>
+                    <Text style={styles.originBadgeText}>Imported</Text>
+                  </View>
+                ) : null}
               </View>
             }
             heroHeight={heroHeight}
@@ -342,6 +349,13 @@ export function RecipeDetailsScreen() {
           </View>
         </View>
       </ModalSheet>
+
+      <ModalSheet visible={titleOpen} onClose={() => setTitleOpen(false)}>
+        <View style={styles.titleSheet}>
+          <Text style={styles.titleSheetHeading}>Recipe title</Text>
+          <Text style={styles.titleSheetText}>{recipe?.title ?? 'Recipe'}</Text>
+        </View>
+      </ModalSheet>
     </Screen>
   );
 }
@@ -386,6 +400,27 @@ const styles = StyleSheet.create({
   heroImage: {
     width: '100%',
     height: 320,
+  },
+  originBadge: {
+    position: 'absolute',
+    top: theme.spacing.s4,
+    right: theme.spacing.s4,
+    paddingHorizontal: theme.spacing.s3,
+    paddingVertical: theme.spacing.s2,
+    borderRadius: 999,
+    backgroundColor: '#E3F3E6',
+    borderWidth: 2,
+    borderColor: theme.colors.primaryDark,
+    shadowColor: '#000',
+    shadowOpacity: 0.18,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 4,
+  },
+  originBadgeText: {
+    color: theme.colors.primaryDark,
+    fontSize: 12,
+    fontWeight: '700',
   },
   summary: {
     padding: theme.spacing.s4,
@@ -471,6 +506,25 @@ const styles = StyleSheet.create({
     lineHeight: 24,
     color: theme.colors.text,
     marginTop: 1,
+  },
+  titleSheet: {
+    paddingHorizontal: theme.spacing.s4,
+    paddingTop: theme.spacing.s4,
+    paddingBottom: theme.spacing.s6,
+    gap: theme.spacing.s2,
+  },
+  titleSheetHeading: {
+    color: theme.colors.textMuted,
+    fontSize: 12,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+  },
+  titleSheetText: {
+    color: theme.colors.text,
+    fontSize: 20,
+    fontWeight: '700',
+    lineHeight: 28,
   },
 });
 

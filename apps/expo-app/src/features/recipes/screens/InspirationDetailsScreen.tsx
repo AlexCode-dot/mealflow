@@ -37,6 +37,7 @@ export function InspirationDetailsScreen() {
   const [stepOpen, setStepOpen] = useState(false);
   const [stepText, setStepText] = useState('');
   const [stepIndex, setStepIndex] = useState<number | null>(null);
+  const [titleOpen, setTitleOpen] = useState(false);
   const { toast, show, clear } = useToastState();
 
   const openStep = useCallback((text: string, index: number) => {
@@ -117,6 +118,7 @@ export function InspirationDetailsScreen() {
       title={isLoading ? 'Inspiration' : (recipe?.title ?? 'Inspiration')}
       showBack
       showProfileIcon={false}
+      onTitlePress={() => setTitleOpen(true)}
       scroll={false}
       contentStyle={styles.screenContent}
     >
@@ -210,6 +212,13 @@ export function InspirationDetailsScreen() {
             </View>
           </View>
         </ModalSheet>
+
+        <ModalSheet visible={titleOpen} onClose={() => setTitleOpen(false)}>
+          <View style={styles.titleSheet}>
+            <Text style={styles.titleSheetHeading}>Recipe title</Text>
+            <Text style={styles.titleSheetText}>{recipe?.title ?? 'Inspiration'}</Text>
+          </View>
+        </ModalSheet>
       </View>
     </Screen>
   );
@@ -301,6 +310,25 @@ const styles = StyleSheet.create({
     lineHeight: 24,
     color: theme.colors.text,
     marginTop: 1,
+  },
+  titleSheet: {
+    paddingHorizontal: theme.spacing.s4,
+    paddingTop: theme.spacing.s4,
+    paddingBottom: theme.spacing.s6,
+    gap: theme.spacing.s2,
+  },
+  titleSheetHeading: {
+    color: theme.colors.textMuted,
+    fontSize: 12,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+  },
+  titleSheetText: {
+    color: theme.colors.text,
+    fontSize: 20,
+    fontWeight: '700',
+    lineHeight: 28,
   },
 });
 

@@ -10,12 +10,19 @@ type Props = {
   showBack?: boolean;
   onBackPress?: () => void;
   rightSlot?: ReactNode;
+  onTitlePress?: () => void;
 };
 
 const HEADER_HEIGHT = 54;
 const CONTENT_OFFSET_Y = -6; // 👈 subtle upward bias (try -6 if you want it tighter)
 
-export function AppHeader({ title, showBack = false, onBackPress, rightSlot }: Props) {
+export function AppHeader({
+  title,
+  showBack = false,
+  onBackPress,
+  rightSlot,
+  onTitlePress,
+}: Props) {
   const insets = useSafeAreaInsets();
 
   const handleBack = () => {
@@ -55,8 +62,28 @@ export function AppHeader({ title, showBack = false, onBackPress, rightSlot }: P
           )}
         </View>
 
-        <View style={styles.center} pointerEvents="none">
-          {title ? <Text style={styles.title}>{title}</Text> : null}
+        <View style={styles.center}>
+          {title ? (
+            onTitlePress ? (
+              <Pressable onPress={onTitlePress} hitSlop={6}>
+                <Text
+                  style={[styles.title, title.length > 15 ? styles.titleCompact : null]}
+                  numberOfLines={1}
+                  ellipsizeMode="tail"
+                >
+                  {title}
+                </Text>
+              </Pressable>
+            ) : (
+              <Text
+                style={[styles.title, title.length > 15 ? styles.titleCompact : null]}
+                numberOfLines={1}
+                ellipsizeMode="tail"
+              >
+                {title}
+              </Text>
+            )
+          ) : null}
         </View>
 
         <View style={styles.side}>{rightSlot ?? <View style={styles.iconBtn} />}</View>
@@ -100,5 +127,8 @@ const styles = StyleSheet.create({
     color: theme.colors.textOnPrimary,
     fontSize: 26,
     fontWeight: '500',
+  },
+  titleCompact: {
+    fontSize: 22,
   },
 });
