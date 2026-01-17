@@ -13,8 +13,7 @@ import {
   useBottomBarActions,
 } from '@/src/shared/ui';
 import { theme } from '@/src/shared/theme/theme';
-import { routes } from '@/src/core/navigation/routes';
-import { useInspirationDetails } from '@/src/features/recipes/hooks';
+import { useInspirationDetails, useRecipesList } from '@/src/features/recipes/hooks';
 import {
   RecipeDetailsTabs,
   RecipeIngredientRow,
@@ -31,6 +30,7 @@ export function InspirationDetailsScreen() {
   const params = useLocalSearchParams<{ id?: string }>();
   const id = typeof params.id === 'string' ? params.id : '';
   const { recipe, isLoading, error, load, save, isSaving, saveError } = useInspirationDetails(id);
+  const saved = useRecipesList();
   const [tab, setTab] = useState<RecipeDetailsTab>('ingredients');
   const [mealType, setMealType] = useState('');
   const [pickerOpen, setPickerOpen] = useState(false);
@@ -65,7 +65,7 @@ export function InspirationDetailsScreen() {
     setPickerOpen(false);
     const created = await save({ mealType });
     if (created) {
-      router.replace(`${routes.recipe(created.id)}?toast=saved`);
+      router.replace({ pathname: '/recipes/[id]', params: { id: created.id, toast: 'saved' } });
     }
   }, [mealType, save, show]);
 
@@ -106,6 +106,16 @@ export function InspirationDetailsScreen() {
       },
     ];
   }, [recipe]);
+
+  const isSaved = useMemo(() => {
+    const normalize = (value?: string | null) => (value ?? '').trim().toLowerCase();
+    const key = `${normalize(recipe?.title)}|${normalize(recipe?.imageUrl)}`;
+    if (!key.trim()) return false;
+    return saved.items.some((item) => {
+      if (!item.fromExternal) return false;
+      return `${normalize(item.title)}|${normalize(item.imageUrl)}` === key;
+    });
+  }, [recipe?.imageUrl, recipe?.title, saved.items]);
 
   const steps = useMemo(() => {
     return (recipe?.steps ?? []).filter((step) => !isStepMarker(step));
@@ -149,14 +159,22 @@ export function InspirationDetailsScreen() {
         ) : (
           <RecipeSheetLayout
             hero={
-              recipe?.imageUrl ? (
-                <Image source={{ uri: recipe.imageUrl }} style={styles.heroImage} />
-              ) : (
-                <Shimmer height={heroHeight} borderRadius={0} />
-              )
+              <View style={styles.hero}>
+                {recipe?.imageUrl ? (
+                  <Image source={{ uri: recipe.imageUrl }} style={styles.heroImage} />
+                ) : (
+                  <Shimmer height={heroHeight} borderRadius={0} />
+                )}
+                {isSaved ? (
+                  <View style={styles.savedBadge}>
+                    <Text style={styles.savedBadgeText}>Saved</Text>
+                  </View>
+                ) : null}
+              </View>
             }
             heroHeight={heroHeight}
             sheetOverlap={15}
+            heroHasImage={Boolean(recipe?.imageUrl)}
           >
             <View style={styles.summary}>
               <IconStatRow items={stats} labelStyle={styles.statLabel} rowStyle={styles.statRow} />
@@ -258,6 +276,31 @@ const styles = StyleSheet.create({
   heroImage: {
     width: '100%',
     height: 320,
+  },
+  hero: {
+    position: 'relative',
+  },
+  savedBadge: {
+    position: 'absolute',
+    top: theme.spacing.s4,
+    right: theme.spacing.s4,
+    paddingHorizontal: theme.spacing.s3,
+    paddingVertical: theme.spacing.s2,
+    borderRadius: 999,
+    backgroundColor: 'rgba(227,243,230,0.92)',
+    borderWidth: 2,
+    borderColor: theme.colors.primaryDark,
+    shadowColor: '#000',
+    shadowOpacity: 0.16,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 4,
+  },
+  savedBadgeText: {
+    color: theme.colors.primaryDark,
+    fontSize: 12,
+    fontWeight: '700',
+    letterSpacing: 0.3,
   },
   summary: {
     paddingTop: theme.spacing.s3,

@@ -20,7 +20,7 @@ public class RecipeService {
     }
 
     public List<Recipe> listForUser(String userId) {
-        return recipeRepository.findAllByUserId(userId);
+        return recipeRepository.findAllByUserIdOrderByCreatedAtDesc(userId);
     }
 
     public Recipe getForUser(String userId, String recipeId) {

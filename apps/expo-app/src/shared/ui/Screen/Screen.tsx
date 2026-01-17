@@ -1,4 +1,3 @@
-// apps/expo-app/src/shared/ui/Screen/Screen.tsx
 import type { ReactElement, ReactNode } from 'react';
 import {
   ScrollView,

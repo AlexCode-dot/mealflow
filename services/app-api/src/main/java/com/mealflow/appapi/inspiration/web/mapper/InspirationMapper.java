@@ -29,84 +29,87 @@ public class InspirationMapper {
     }
 
     private List<InspirationIngredientResponse> toIngredients(MealDbMeal meal) {
-        List<String> names = List.of(
-                meal.ingredient1(),
-                meal.ingredient2(),
-                meal.ingredient3(),
-                meal.ingredient4(),
-                meal.ingredient5(),
-                meal.ingredient6(),
-                meal.ingredient7(),
-                meal.ingredient8(),
-                meal.ingredient9(),
-                meal.ingredient10(),
-                meal.ingredient11(),
-                meal.ingredient12(),
-                meal.ingredient13(),
-                meal.ingredient14(),
-                meal.ingredient15(),
-                meal.ingredient16(),
-                meal.ingredient17(),
-                meal.ingredient18(),
-                meal.ingredient19(),
-                meal.ingredient20());
+        String[] names = {
+            meal.ingredient1(),
+            meal.ingredient2(),
+            meal.ingredient3(),
+            meal.ingredient4(),
+            meal.ingredient5(),
+            meal.ingredient6(),
+            meal.ingredient7(),
+            meal.ingredient8(),
+            meal.ingredient9(),
+            meal.ingredient10(),
+            meal.ingredient11(),
+            meal.ingredient12(),
+            meal.ingredient13(),
+            meal.ingredient14(),
+            meal.ingredient15(),
+            meal.ingredient16(),
+            meal.ingredient17(),
+            meal.ingredient18(),
+            meal.ingredient19(),
+            meal.ingredient20()
+        };
 
-        List<String> measures = List.of(
-                meal.measure1(),
-                meal.measure2(),
-                meal.measure3(),
-                meal.measure4(),
-                meal.measure5(),
-                meal.measure6(),
-                meal.measure7(),
-                meal.measure8(),
-                meal.measure9(),
-                meal.measure10(),
-                meal.measure11(),
-                meal.measure12(),
-                meal.measure13(),
-                meal.measure14(),
-                meal.measure15(),
-                meal.measure16(),
-                meal.measure17(),
-                meal.measure18(),
-                meal.measure19(),
-                meal.measure20());
+        String[] measures = {
+            meal.measure1(),
+            meal.measure2(),
+            meal.measure3(),
+            meal.measure4(),
+            meal.measure5(),
+            meal.measure6(),
+            meal.measure7(),
+            meal.measure8(),
+            meal.measure9(),
+            meal.measure10(),
+            meal.measure11(),
+            meal.measure12(),
+            meal.measure13(),
+            meal.measure14(),
+            meal.measure15(),
+            meal.measure16(),
+            meal.measure17(),
+            meal.measure18(),
+            meal.measure19(),
+            meal.measure20()
+        };
 
         List<InspirationIngredientResponse> result = new ArrayList<>();
-        for (int i = 0; i < names.size(); i++) {
-            String name = trimToNull(names.get(i));
+        for (int i = 0; i < names.length; i++) {
+            String name = trimToNull(names[i]);
             if (name == null) {
                 continue;
             }
-            String measure = trimToNull(measures.get(i));
+            String measure = trimToNull(measures[i]);
             result.add(new InspirationIngredientResponse(name, measure));
         }
         return result;
     }
 
     private Integer countIngredients(MealDbMeal meal) {
-        List<String> names = List.of(
-                meal.ingredient1(),
-                meal.ingredient2(),
-                meal.ingredient3(),
-                meal.ingredient4(),
-                meal.ingredient5(),
-                meal.ingredient6(),
-                meal.ingredient7(),
-                meal.ingredient8(),
-                meal.ingredient9(),
-                meal.ingredient10(),
-                meal.ingredient11(),
-                meal.ingredient12(),
-                meal.ingredient13(),
-                meal.ingredient14(),
-                meal.ingredient15(),
-                meal.ingredient16(),
-                meal.ingredient17(),
-                meal.ingredient18(),
-                meal.ingredient19(),
-                meal.ingredient20());
+        String[] names = {
+            meal.ingredient1(),
+            meal.ingredient2(),
+            meal.ingredient3(),
+            meal.ingredient4(),
+            meal.ingredient5(),
+            meal.ingredient6(),
+            meal.ingredient7(),
+            meal.ingredient8(),
+            meal.ingredient9(),
+            meal.ingredient10(),
+            meal.ingredient11(),
+            meal.ingredient12(),
+            meal.ingredient13(),
+            meal.ingredient14(),
+            meal.ingredient15(),
+            meal.ingredient16(),
+            meal.ingredient17(),
+            meal.ingredient18(),
+            meal.ingredient19(),
+            meal.ingredient20()
+        };
 
         int count = 0;
         for (String name : names) {

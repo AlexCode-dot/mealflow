@@ -1,4 +1,3 @@
-// apps/expo-app/src/features/recipes/hooks/useRecipesList.tsx
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { ReactElement } from 'react';
 import { RefreshControl, type RefreshControlProps } from 'react-native';

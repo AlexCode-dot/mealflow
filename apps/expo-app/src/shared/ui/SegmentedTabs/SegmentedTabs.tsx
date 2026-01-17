@@ -37,12 +37,11 @@ export function SegmentedTabs({ tabs, value, onChange }: Props) {
 const styles = StyleSheet.create({
   wrap: {
     flexDirection: 'row',
-    gap: 8,
-    padding: 6,
+    gap: 6,
+    padding: 4,
     borderRadius: theme.radius.pill,
-    borderWidth: 1,
-    borderColor: theme.colors.borderNeutral,
-    backgroundColor: theme.colors.bgLight,
+    backgroundColor: theme.colors.primaryLight,
+    marginBottom: 10,
   },
   tab: {
     flex: 1,
@@ -55,20 +54,20 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   tabActive: {
-    backgroundColor: theme.colors.surface,
-    borderWidth: 1,
-    borderColor: theme.colors.borderNeutral,
+    backgroundColor: theme.colors.primary,
   },
   text: {
-    fontSize: 12,
-    fontWeight: '900',
+    fontSize: 14,
+    fontWeight: '800',
     letterSpacing: 0.2,
   },
   textInactive: {
-    color: theme.colors.textMuted,
+    color: theme.colors.primaryDark,
+    opacity: 0.8,
   },
   textActive: {
-    color: theme.colors.text,
+    color: theme.colors.textOnPrimary,
+    fontSize: 15,
   },
   pressed: {
     opacity: 0.9,

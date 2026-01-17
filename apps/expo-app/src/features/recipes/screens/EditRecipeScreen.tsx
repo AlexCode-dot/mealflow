@@ -4,7 +4,6 @@ import { useLocalSearchParams, router } from 'expo-router';
 import DraggableFlatList from 'react-native-draggable-flatlist';
 import { Screen, ErrorText, SectionEmpty, useBottomBarActions } from '@/src/shared/ui';
 import { theme } from '@/src/shared/theme/theme';
-import { routes } from '@/src/core/navigation/routes';
 import {
   useEditRecipe,
   useRecipeEditorUiState,
@@ -59,7 +58,7 @@ export function EditRecipeScreen() {
   const onSave = useCallback(async () => {
     const ok = await saveRef.current();
     if (ok && id) {
-      router.navigate(`${routes.recipe(id)}?toast=saved`);
+      router.navigate({ pathname: '/recipes/[id]', params: { id, toast: 'saved' } });
       return;
     }
     if (ok) router.back();
@@ -135,6 +134,7 @@ export function EditRecipeScreen() {
         <RecipeSheetLayout
           hero={<RecipeHero imageUrl={form.imageUrl} />}
           heroHeight={heroHeight}
+          heroHasImage={Boolean(form.imageUrl)}
           refreshing={refreshing}
           onRefresh={onRefresh}
         >

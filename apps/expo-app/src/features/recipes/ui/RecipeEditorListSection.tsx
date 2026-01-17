@@ -39,6 +39,6 @@ const styles = StyleSheet.create({
     gap: theme.spacing.s3,
   },
   listWithSticky: {
-    paddingBottom: theme.spacing.s7 + 70,
+    paddingBottom: theme.spacing.s6 + 70,
   },
 });

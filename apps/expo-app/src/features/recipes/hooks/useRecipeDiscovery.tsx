@@ -25,6 +25,11 @@ type UseRecipeDiscoveryResult = {
   canLoadMore: boolean;
 };
 
+const normalizePickerValue = (value?: string) => {
+  if (!value) return undefined;
+  return value;
+};
+
 export function useRecipeDiscovery({
   query,
   filters,
@@ -42,16 +47,16 @@ export function useRecipeDiscovery({
   const hasFilters = useMemo(() => {
     const q = query.trim();
     const ingredient = filters.ingredients?.[0];
-    const category = filters.category?.[0];
-    const area = filters.area?.[0];
+    const category = normalizePickerValue(filters.category?.[0]);
+    const area = normalizePickerValue(filters.area?.[0]);
     return Boolean(q || ingredient || category || area);
   }, [filters, query]);
 
   const params = useMemo(() => {
     const q = query.trim();
     const ingredient = filters.ingredients?.[0];
-    const category = filters.category?.[0];
-    const area = filters.area?.[0];
+    const category = normalizePickerValue(filters.category?.[0]);
+    const area = normalizePickerValue(filters.area?.[0]);
     return {
       q: q ? q : undefined,
       ingredient,
