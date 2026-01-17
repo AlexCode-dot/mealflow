@@ -175,7 +175,7 @@ export function RecipeDetailsScreen() {
     setIsLeaving(true);
     const ok = await remove();
     if (ok) {
-      router.replace(`${routes.recipes}?toast=deleted`);
+      router.replace({ pathname: routes.recipes, params: { toast: 'deleted' } });
       return;
     }
     setIsLeaving(false);
@@ -260,6 +260,7 @@ export function RecipeDetailsScreen() {
             }
             heroHeight={heroHeight}
             sheetOverlap={15}
+            heroHasImage={Boolean(recipe?.imageUrl)}
             refreshing={refreshing}
             onRefresh={onRefresh}
           >
@@ -408,7 +409,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: theme.spacing.s3,
     paddingVertical: theme.spacing.s2,
     borderRadius: 999,
-    backgroundColor: '#E3F3E6',
+    backgroundColor: 'rgba(227,243,230,0.8)',
     borderWidth: 2,
     borderColor: theme.colors.primaryDark,
     shadowColor: '#000',

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   useRecipeDiscovery,
   useRecipeListView,
@@ -60,6 +60,34 @@ export function RecipesScreen() {
   const { load: loadSaved } = saved;
   const { load: loadDiscovery } = discovery;
   const hasDiscoveryFilters = Boolean(view.query.trim() || view.activeFilterCount > 0);
+  const savedFilterMode = view.discoveryFilters.hideSaved?.[0] ?? 'show';
+
+  const savedLookup = useMemo(() => {
+    const normalize = (value?: string | null) => (value ?? '').trim().toLowerCase();
+    const keys = saved.items
+      .filter((item) => item.fromExternal)
+      .map((item) => `${normalize(item.title)}|${normalize(item.imageUrl)}`);
+    return new Set(keys);
+  }, [saved.items]);
+
+  const isDiscoverySaved = useCallback(
+    (item: InspirationListItem) => {
+      const normalize = (value?: string | null) => (value ?? '').trim().toLowerCase();
+      const key = `${normalize(item.title)}|${normalize(item.imageUrl)}`;
+      return savedLookup.has(key);
+    },
+    [savedLookup],
+  );
+
+  const visibleDiscoveryItems = useMemo(() => {
+    if (savedFilterMode === 'hide') {
+      return discovery.items.filter((item) => !isDiscoverySaved(item));
+    }
+    if (savedFilterMode === 'saved') {
+      return discovery.items.filter((item) => isDiscoverySaved(item));
+    }
+    return discovery.items;
+  }, [discovery.items, isDiscoverySaved, savedFilterMode]);
 
   useFocusEffect(
     useCallback(() => {
@@ -206,7 +234,7 @@ export function RecipesScreen() {
           <FlatList<InspirationListItem>
             key="inspiration"
             ref={discoveryListRef}
-            data={discovery.items}
+            data={visibleDiscoveryItems}
             keyExtractor={(r) => r.id}
             numColumns={1}
             showsVerticalScrollIndicator={false}
@@ -281,6 +309,7 @@ export function RecipesScreen() {
                 item={item}
                 onPress={(id) => router.push(routes.inspirationRecipe(id))}
                 onSave={handleSavePress}
+                isSaved={isDiscoverySaved(item)}
                 saveDisabled={isSaving && saveTarget?.id === item.id}
               />
             )}

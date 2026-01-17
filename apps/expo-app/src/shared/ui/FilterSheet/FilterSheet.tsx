@@ -8,6 +8,7 @@ import { PickerSheet } from '@/src/shared/ui/PickerSheet';
 import { Chip } from '@/src/shared/ui/Chip';
 import { ModalSheet } from '@/src/shared/ui/ModalSheet';
 import { TextField } from '@/src/shared/ui/TextField';
+import { SegmentedTabs } from '@/src/shared/ui/SegmentedTabs';
 
 export type FilterOption = {
   key: string;
@@ -17,7 +18,7 @@ export type FilterOption = {
 export type FilterSection = {
   key: string;
   title: string;
-  type: 'chips' | 'picker' | 'tags' | 'pickerRow';
+  type: 'chips' | 'picker' | 'tags' | 'pickerRow' | 'segmented';
   options?: FilterOption[];
   selectionMode?: 'single' | 'multi';
   placeholder?: string;
@@ -150,6 +151,8 @@ export function FilterSheet({
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.sections}>
         {sections.map((section) => {
           const selected = selectedMap[section.key] ?? new Set<string>();
+          const segmentedDefault = section.options?.[0]?.key ?? '';
+          const segmentedValue = selection[section.key]?.[0] ?? segmentedDefault;
 
           return (
             <View
@@ -159,7 +162,16 @@ export function FilterSheet({
                 section.type === 'picker' && section.layout === 'row' ? styles.sectionInline : null,
               ]}
             >
-              {section.title ? <Text style={styles.sectionTitle}>{section.title}</Text> : null}
+              {section.title && section.type !== 'segmented' ? (
+                <Text style={styles.sectionTitle}>{section.title}</Text>
+              ) : null}
+              {section.type === 'segmented' && section.options ? (
+                <SegmentedTabs
+                  tabs={section.options.map((opt) => ({ key: opt.key, label: opt.label }))}
+                  value={segmentedValue}
+                  onChange={(key) => onUpdateSelection(section.key, [key])}
+                />
+              ) : null}
               {section.type === 'chips' ? (
                 <View style={[styles.options, section.layout === 'row' ? styles.optionsRow : null]}>
                   {(section.options ?? []).map((opt) =>

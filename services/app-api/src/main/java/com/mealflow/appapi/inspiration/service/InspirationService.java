@@ -21,6 +21,7 @@ public class InspirationService {
 
     public List<MealDbMeal> list(String query, String ingredient, String category, String area, Integer limit) {
         List<MealDbMeal> meals;
+        boolean noFilters = false;
         if (StringUtils.hasText(query)) {
             meals = mealDbClient.searchByName(query.trim());
         } else if (StringUtils.hasText(ingredient)) {
@@ -30,10 +31,15 @@ public class InspirationService {
         } else if (StringUtils.hasText(area)) {
             meals = mealDbClient.filterByArea(area.trim());
         } else {
+            noFilters = true;
             meals = mealDbClient.searchByName("");
         }
 
         int capped = resolveLimit(limit);
+        if (noFilters) {
+            meals = new java.util.ArrayList<>(meals);
+            java.util.Collections.shuffle(meals);
+        }
         if (meals.size() <= capped) {
             return meals;
         }

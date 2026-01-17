@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { Animated, RefreshControl, StyleSheet, View, type LayoutChangeEvent } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { theme } from '@/src/shared/theme/theme';
+import { RECIPE_IMAGE_FADE_MODE } from '@/src/features/recipes/constants/recipeUiConfig';
 
 type Props = {
   hero: ReactNode;
@@ -10,6 +11,7 @@ type Props = {
   children: ReactNode;
   sheetOverlap?: number;
   heroBleed?: number;
+  heroHasImage?: boolean;
   refreshing?: boolean;
   onRefresh?: () => void | Promise<void>;
 };
@@ -20,6 +22,7 @@ export function RecipeSheetLayout({
   children,
   sheetOverlap = 63,
   heroBleed = 0,
+  heroHasImage = false,
   refreshing = false,
   onRefresh,
 }: Props) {
@@ -71,11 +74,15 @@ export function RecipeSheetLayout({
       >
         {hero}
         <LinearGradient
-          colors={['rgba(0,0,0,0)', 'rgba(0,0,0,0.2)', 'rgba(0,0,0,0.32)']}
+          colors={
+            heroHasImage && RECIPE_IMAGE_FADE_MODE === 'bright'
+              ? ['rgba(247,245,235,0)', 'rgba(247,245,235,0.52)', 'rgba(247,245,235,0.82)']
+              : ['rgba(0,0,0,0)', 'rgba(0,0,0,0.2)', 'rgba(0,0,0,0.32)']
+          }
           locations={[0, 0.6, 1]}
           start={{ x: 0.5, y: 0 }}
           end={{ x: 0.5, y: 1 }}
-          style={[styles.heroFade, { bottom: -87 + heroBleed, height: 220 + heroBleed }]}
+          style={[styles.heroFade, { bottom: -87 + heroBleed, height: 198 + heroBleed }]}
         />
       </Animated.View>
 

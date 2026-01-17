@@ -7,10 +7,17 @@ type Props = {
   item: InspirationListItem;
   onPress?: (id: string) => void;
   onSave?: (item: InspirationListItem) => void;
+  isSaved?: boolean;
   saveDisabled?: boolean;
 };
 
-export function RecipeDiscoveryListItem({ item, onPress, onSave, saveDisabled }: Props) {
+export function RecipeDiscoveryListItem({
+  item,
+  onPress,
+  onSave,
+  isSaved = false,
+  saveDisabled,
+}: Props) {
   const subtitle = [item.category, item.area].filter(Boolean).join(' · ');
   const ingredientLabel =
     item.ingredientCount !== null && item.ingredientCount !== undefined && item.ingredientCount > 0
@@ -32,8 +39,11 @@ export function RecipeDiscoveryListItem({ item, onPress, onSave, saveDisabled }:
             }
           : null
       }
-      onSave={onSave ? () => onSave(item) : undefined}
-      saveDisabled={saveDisabled}
+      onSave={!isSaved && onSave ? () => onSave(item) : undefined}
+      saveLabel={isSaved ? 'Saved' : 'Save'}
+      saveFilled={isSaved}
+      savedBadge={isSaved}
+      saveDisabled={saveDisabled || isSaved}
     />
   );
 }

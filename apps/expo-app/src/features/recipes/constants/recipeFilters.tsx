@@ -1,5 +1,5 @@
 import type { FilterSection } from '@/src/shared/ui/FilterSheet';
-import { Clock3, Users } from 'lucide-react-native';
+import { Clock3, Users, Tag, MapPin } from 'lucide-react-native';
 import { theme } from '@/src/shared/theme/theme';
 import {
   RECIPE_PORTIONS_OPTIONS,
@@ -51,34 +51,50 @@ export const SAVED_FILTERS: FilterSection[] = [
 
 export const DISCOVERY_FILTERS: FilterSection[] = [
   {
-    key: 'category',
-    title: 'Category',
-    type: 'chips',
-    selectionMode: 'multi',
+    key: 'hideSaved',
+    title: 'Saved',
+    type: 'segmented',
     layout: 'row',
     options: [
-      { key: 'Beef', label: 'Beef' },
-      { key: 'Chicken', label: 'Chicken' },
-      { key: 'Dessert', label: 'Dessert' },
-      { key: 'Pasta', label: 'Pasta' },
-      { key: 'Seafood', label: 'Seafood' },
-      { key: 'Vegetarian', label: 'Vegetarian' },
+      { key: 'show', label: 'Show all' },
+      { key: 'hide', label: 'Hide saved' },
+      { key: 'saved', label: 'Saved' },
     ],
   },
   {
-    key: 'area',
-    title: 'Cuisine',
-    type: 'chips',
-    selectionMode: 'multi',
-    layout: 'row',
-    options: [
-      { key: 'American', label: 'American' },
-      { key: 'British', label: 'British' },
-      { key: 'French', label: 'French' },
-      { key: 'Indian', label: 'Indian' },
-      { key: 'Italian', label: 'Italian' },
-      { key: 'Mexican', label: 'Mexican' },
-      { key: 'Thai', label: 'Thai' },
+    key: 'discovery-pickers',
+    title: '',
+    type: 'pickerRow',
+    items: [
+      {
+        key: 'category',
+        title: 'Category',
+        placeholder: 'Any',
+        icon: <Tag color={theme.colors.primaryDark} size={20} strokeWidth={2.3} />,
+        options: [
+          { key: 'Beef', label: 'Beef' },
+          { key: 'Chicken', label: 'Chicken' },
+          { key: 'Dessert', label: 'Dessert' },
+          { key: 'Pasta', label: 'Pasta' },
+          { key: 'Seafood', label: 'Seafood' },
+          { key: 'Vegetarian', label: 'Vegetarian' },
+        ],
+      },
+      {
+        key: 'area',
+        title: 'Cuisine',
+        placeholder: 'Any',
+        icon: <MapPin color={theme.colors.primaryDark} size={20} strokeWidth={2.3} />,
+        options: [
+          { key: 'American', label: 'American' },
+          { key: 'British', label: 'British' },
+          { key: 'French', label: 'French' },
+          { key: 'Indian', label: 'Indian' },
+          { key: 'Italian', label: 'Italian' },
+          { key: 'Mexican', label: 'Mexican' },
+          { key: 'Thai', label: 'Thai' },
+        ],
+      },
     ],
   },
   {

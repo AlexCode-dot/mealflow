@@ -1,9 +1,11 @@
 import type { ReactElement } from 'react';
-import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Image, Pressable, StyleSheet, Text, View, type ColorValue } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Clock3, ShoppingBasket, Utensils } from 'lucide-react-native';
 import { IconStat, Shimmer } from '@/src/shared/ui';
 import { theme } from '@/src/shared/theme/theme';
 import { formatDuration } from '@/src/features/recipes/utils/formatDuration';
+import { RECIPE_IMAGE_FADE_MODE } from '@/src/features/recipes/constants/recipeUiConfig';
 
 const IMAGE_HEIGHT = 166;
 
@@ -30,6 +32,16 @@ export function RecipeGridCard({
   category,
   onPress,
 }: Props) {
+  const hasImage = Boolean(imageUrl);
+  const imageFadeColors: readonly [ColorValue, ColorValue, ColorValue, ColorValue] =
+    hasImage && RECIPE_IMAGE_FADE_MODE === 'bright'
+      ? [
+          'rgba(247,245,235,0)',
+          'rgba(247,245,235,0.18)',
+          'rgba(247,245,235,0.4)',
+          'rgba(247,245,235,0.64)',
+        ]
+      : ['rgba(0,0,0,0)', 'rgba(0,0,0,0.12)', 'rgba(0,0,0,0.2)', 'rgba(0,0,0,0.3)'];
   const timeLabel =
     cookingTimeMinutes !== null && cookingTimeMinutes !== undefined && cookingTimeMinutes > 0
       ? formatDuration(cookingTimeMinutes)
@@ -64,47 +76,67 @@ export function RecipeGridCard({
   ].filter((stat): stat is Stat => Boolean(stat));
 
   return (
-    <Pressable
-      onPress={onPress}
-      style={({ pressed }) => [styles.card, pressed ? styles.pressed : null]}
-    >
-      <View style={styles.imageWrap}>
-        {imageUrl ? (
-          <Image source={{ uri: imageUrl }} style={styles.image} resizeMode="cover" />
-        ) : (
-          <Shimmer height={IMAGE_HEIGHT} borderRadius={0} />
-        )}
-      </View>
+    <View style={styles.cardShadow}>
+      <Pressable
+        onPress={onPress}
+        style={({ pressed }) => [styles.card, pressed ? styles.pressed : null]}
+      >
+        <View style={styles.imageWrap}>
+          {imageUrl ? (
+            <Image source={{ uri: imageUrl }} style={styles.image} resizeMode="cover" />
+          ) : (
+            <Shimmer height={IMAGE_HEIGHT} borderRadius={0} />
+          )}
+          <LinearGradient
+            colors={imageFadeColors}
+            locations={hasImage ? [0, 0.55, 0.82, 1] : [0, 0.55, 0.82, 1]}
+            start={{ x: 0.5, y: 0 }}
+            end={{ x: 0.5, y: 1 }}
+            style={styles.imageFade}
+          />
+        </View>
 
-      <View style={styles.sheet}>
-        <Text style={styles.cardTitle} numberOfLines={2} ellipsizeMode="tail">
-          {title}
-        </Text>
-
-        {stats.length ? (
-          <View style={[styles.metaRow, stats.length <= 2 ? styles.metaRowSparse : null]}>
-            {stats.map((stat) => (
-              <IconStat key={stat.key} icon={stat.icon} label={stat.label} />
-            ))}
+        <View style={styles.sheet}>
+          <View style={styles.titleWrap}>
+            <Text style={styles.cardTitle} numberOfLines={2} ellipsizeMode="tail">
+              {title}
+            </Text>
           </View>
-        ) : null}
-      </View>
-    </Pressable>
+
+          {stats.length ? (
+            <View style={[styles.metaRow, stats.length <= 2 ? styles.metaRowSparse : null]}>
+              {stats.map((stat) => (
+                <IconStat key={stat.key} icon={stat.icon} label={stat.label} />
+              ))}
+            </View>
+          ) : null}
+        </View>
+      </Pressable>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  card: {
+  cardShadow: {
     flex: 1,
-    borderRadius: 16,
-    borderWidth: 1.5,
+    marginBottom: 10,
+    shadowColor: '#000',
+    shadowOpacity: 0.12,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 6,
+  },
+
+  card: {
+    borderRadius: 14,
+    borderWidth: 2,
     borderColor: theme.colors.borderGreen,
     backgroundColor: theme.colors.surface,
-    marginBottom: 10,
     overflow: 'hidden',
   },
 
   imageWrap: {
+    position: 'relative',
     width: '100%',
     height: IMAGE_HEIGHT,
     backgroundColor: theme.colors.bg,
@@ -113,30 +145,40 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
   },
+  imageFade: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    height: 84,
+  },
 
   sheet: {
     marginTop: -16,
     paddingTop: theme.spacing.s2,
     paddingHorizontal: theme.spacing.s3,
     paddingBottom: theme.spacing.s2,
-    borderTopLeftRadius: 18,
-    borderTopRightRadius: 18,
+    borderTopLeftRadius: 26,
+    borderTopRightRadius: 26,
     backgroundColor: theme.colors.surface,
     borderTopWidth: 1,
-    borderLeftWidth: 1,
-    borderRightWidth: 1,
+    borderLeftWidth: 0,
+    borderRightWidth: 0,
     borderColor: 'rgba(198,192,168,0.6)',
     minHeight: 80,
   },
 
   cardTitle: {
-    marginTop: 4,
     color: theme.colors.text,
-    fontSize: 18,
+    fontSize: 17,
     fontWeight: '600',
     lineHeight: 22,
     textAlign: 'center',
-    minHeight: 40,
+  },
+  titleWrap: {
+    height: 44,
+    justifyContent: 'center',
+    marginTop: 4,
   },
 
   metaRow: {

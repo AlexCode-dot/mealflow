@@ -4,7 +4,6 @@ import { router } from 'expo-router';
 import DraggableFlatList from 'react-native-draggable-flatlist';
 import { Screen, ErrorText, SectionEmpty, useBottomBarActions } from '@/src/shared/ui';
 import { theme } from '@/src/shared/theme/theme';
-import { routes } from '@/src/core/navigation/routes';
 import {
   useCreateRecipe,
   useRecipeEditorUiState,
@@ -53,7 +52,9 @@ export function NewRecipeScreen() {
 
   const submit = useCallback(async () => {
     const id = await submitRef.current();
-    if (id) router.replace(`${routes.recipe(id)}?toast=saved`);
+    if (id) {
+      router.replace({ pathname: '/recipes/[id]', params: { id, toast: 'saved' } });
+    }
   }, []);
 
   const onCancel = useCallback(() => {
@@ -117,7 +118,11 @@ export function NewRecipeScreen() {
   return (
     <Screen title="Add Recipe" showBack scroll={false} contentStyle={styles.screenContent}>
       <View style={styles.root}>
-        <RecipeSheetLayout hero={<RecipeHero imageUrl={form.imageUrl} />} heroHeight={heroHeight}>
+        <RecipeSheetLayout
+          hero={<RecipeHero imageUrl={form.imageUrl} />}
+          heroHeight={heroHeight}
+          heroHasImage={Boolean(form.imageUrl)}
+        >
           <RecipeEditorShell tab={editorState.tab} onTabChange={editorState.setTab}>
             {form.serverError ? <ErrorText>{form.serverError}</ErrorText> : null}
             {editorState.tab === 'basic' ? (
