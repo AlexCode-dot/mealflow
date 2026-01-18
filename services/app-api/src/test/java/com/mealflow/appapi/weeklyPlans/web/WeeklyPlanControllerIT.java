@@ -5,6 +5,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
 import com.jayway.jsonpath.JsonPath;
+import com.mealflow.appapi.recipes.domain.Recipe;
+import com.mealflow.appapi.recipes.repository.RecipeRepository;
 import com.mealflow.appapi.support.MongoTestContainerConfig;
 import com.mealflow.appapi.support.TestAccessTokenFactory;
 import com.mealflow.appapi.support.TestJwtConfig;
@@ -12,6 +14,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.time.Instant;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -33,16 +36,19 @@ class WeeklyPlanControllerIT extends MongoTestContainerConfig {
 
     private final HttpClient http = HttpClient.newHttpClient();
     private final TestAccessTokenFactory tokens;
+    private final RecipeRepository recipeRepository;
 
     @Autowired
-    WeeklyPlanControllerIT(JwtEncoder encoder) {
+    WeeklyPlanControllerIT(JwtEncoder encoder, RecipeRepository recipeRepository) {
         this.tokens = new TestAccessTokenFactory(encoder);
+        this.recipeRepository = recipeRepository;
     }
 
     @Test
     void crud_shouldWork_forAuthenticatedUser() throws Exception {
-        String token = tokens.issue("user-1");
-        String recipeId = createRecipe(token, "Veggie Tacos");
+        String userId = "user-1";
+        String token = tokens.issue(userId);
+        String recipeId = createRecipe(userId, "Veggie Tacos");
 
         HttpResponse<String> created = post("/api/weekly-plans", token, """
 {
@@ -112,9 +118,11 @@ class WeeklyPlanControllerIT extends MongoTestContainerConfig {
 
     @Test
     void shouldReject_recipeIds_notOwnedByUser() throws Exception {
-        String tokenUser1 = tokens.issue("user-1");
-        String tokenUser2 = tokens.issue("user-2");
-        String otherUsersRecipe = createRecipe(tokenUser2, "Secret Recipe");
+        String userId1 = "user-1";
+        String userId2 = "user-2";
+        String tokenUser1 = tokens.issue(userId1);
+        String tokenUser2 = tokens.issue(userId2);
+        String otherUsersRecipe = createRecipe(userId2, "Secret Recipe");
 
         HttpResponse<String> created = post("/api/weekly-plans", tokenUser1, """
 {
@@ -155,18 +163,14 @@ class WeeklyPlanControllerIT extends MongoTestContainerConfig {
     // HTTP helpers
     // -------------------------
 
-    private String createRecipe(String token, String title) throws Exception {
-        HttpResponse<String> created = post("/api/recipes", token, """
-{
-  "title":"%s",
-  "description":"High protein",
-  "ingredients":[{"name":"Tortilla","quantity":2,"unit":"pcs"}],
-  "steps":["Heat","Assemble"],
-  "fromExternal":false
-}
-""".formatted(title));
-        assertThat("createRecipe failed: " + created.body(), created.statusCode(), is(201));
-        return JsonPath.read(created.body(), "$.id");
+    private String createRecipe(String userId, String title) {
+        Instant now = Instant.now();
+        Recipe recipe = new Recipe();
+        recipe.setUserId(userId);
+        recipe.setTitle(title);
+        recipe.setCreatedAt(now);
+        recipe.setUpdatedAt(now);
+        return recipeRepository.save(recipe).getId();
     }
 
     private URI uri(String path) {
