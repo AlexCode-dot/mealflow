@@ -7,11 +7,11 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 
 public interface WeeklyPlanRepository extends MongoRepository<WeeklyPlan, String> {
 
-  List<WeeklyPlan> findAllByUserIdOrderByWeeklyStartDesc(String userId);
+    List<WeeklyPlan> findAllByUserIdOrderByWeeklyStartDesc(String userId);
 
-  List<WeeklyPlan> findAllByUserIdAndWeeklyStart(String userId, String weeklyStart);
+    List<WeeklyPlan> findAllByUserIdAndWeeklyStart(String userId, String weeklyStart);
 
-  Optional<WeeklyPlan> findByIdAndUserId(String id, String userId);
+    Optional<WeeklyPlan> findByIdAndUserId(String id, String userId);
 
-  long deleteByIdAndUserId(String id, String userId);
+    long deleteByIdAndUserId(String id, String userId);
 }

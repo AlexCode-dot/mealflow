@@ -32,83 +32,66 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/weekly-plans")
 public class WeeklyPlanController {
 
-  private final WeeklyPlanService weeklyPlanService;
-  private final CurrentUser currentUser;
-  private final WeeklyPlanMapper mapper;
+    private final WeeklyPlanService weeklyPlanService;
+    private final CurrentUser currentUser;
+    private final WeeklyPlanMapper mapper;
 
-  public WeeklyPlanController(
-      WeeklyPlanService weeklyPlanService,
-      CurrentUser currentUser,
-      WeeklyPlanMapper mapper) {
-    this.weeklyPlanService = weeklyPlanService;
-    this.currentUser = currentUser;
-    this.mapper = mapper;
-  }
+    public WeeklyPlanController(WeeklyPlanService weeklyPlanService, CurrentUser currentUser, WeeklyPlanMapper mapper) {
+        this.weeklyPlanService = weeklyPlanService;
+        this.currentUser = currentUser;
+        this.mapper = mapper;
+    }
 
-  @GetMapping
-  public List<WeeklyPlanListItemResponse> list(
-      Authentication auth,
-      @RequestParam(name = "weeklyStart", required = false) String weeklyStart) {
-    String userId = currentUser.userId(auth);
-    return weeklyPlanService.listForUser(userId, weeklyStart).stream()
-        .map(mapper::toListItem)
-        .toList();
-  }
+    @GetMapping
+    public List<WeeklyPlanListItemResponse> list(
+            Authentication auth, @RequestParam(name = "weeklyStart", required = false) String weeklyStart) {
+        String userId = currentUser.userId(auth);
+        return weeklyPlanService.listForUser(userId, weeklyStart).stream()
+                .map(mapper::toListItem)
+                .toList();
+    }
 
-  @GetMapping("/{id}")
-  public WeeklyPlanResponse get(@PathVariable String id, Authentication auth) {
-    String userId = currentUser.userId(auth);
-    return mapper.toResponse(weeklyPlanService.getForUser(userId, id));
-  }
+    @GetMapping("/{id}")
+    public WeeklyPlanResponse get(@PathVariable String id, Authentication auth) {
+        String userId = currentUser.userId(auth);
+        return mapper.toResponse(weeklyPlanService.getForUser(userId, id));
+    }
 
-  @PostMapping
-  public ResponseEntity<WeeklyPlanResponse> create(
-      @Valid @RequestBody CreateWeeklyPlanRequest body,
-      Authentication auth) {
-    String userId = currentUser.userId(auth);
-    CreateArgs args = mapper.toCreateArgs(userId, body);
+    @PostMapping
+    public ResponseEntity<WeeklyPlanResponse> create(
+            @Valid @RequestBody CreateWeeklyPlanRequest body, Authentication auth) {
+        String userId = currentUser.userId(auth);
+        CreateArgs args = mapper.toCreateArgs(userId, body);
 
-    WeeklyPlan created = weeklyPlanService.create(args.userId(), args.weeklyStart(), args.entries());
+        WeeklyPlan created = weeklyPlanService.create(args.userId(), args.weeklyStart(), args.entries());
 
-    return ResponseEntity.status(HttpStatus.CREATED)
-        .location(URI.create("/api/weekly-plans/" + created.getId()))
-        .body(mapper.toResponse(created));
-  }
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .location(URI.create("/api/weekly-plans/" + created.getId()))
+                .body(mapper.toResponse(created));
+    }
 
-  @PatchMapping("/{id}")
-  public WeeklyPlanResponse patch(
-      @PathVariable String id,
-      @Valid @RequestBody UpdateWeeklyPlanRequest body,
-      Authentication auth) {
-    String userId = currentUser.userId(auth);
-    PatchArgs args = mapper.toPatchArgs(userId, id, body);
-    WeeklyPlan updated = weeklyPlanService.patch(
-        args.userId(),
-        args.planId(),
-        args.weeklyStart(),
-        args.entries());
-    return mapper.toResponse(updated);
-  }
+    @PatchMapping("/{id}")
+    public WeeklyPlanResponse patch(
+            @PathVariable String id, @Valid @RequestBody UpdateWeeklyPlanRequest body, Authentication auth) {
+        String userId = currentUser.userId(auth);
+        PatchArgs args = mapper.toPatchArgs(userId, id, body);
+        WeeklyPlan updated = weeklyPlanService.patch(args.userId(), args.planId(), args.weeklyStart(), args.entries());
+        return mapper.toResponse(updated);
+    }
 
-  @PutMapping("/{id}")
-  public WeeklyPlanResponse replace(
-      @PathVariable String id,
-      @Valid @RequestBody CreateWeeklyPlanRequest body,
-      Authentication auth) {
-    String userId = currentUser.userId(auth);
-    CreateArgs args = mapper.toCreateArgs(userId, body);
-    WeeklyPlan updated = weeklyPlanService.replace(
-        args.userId(),
-        id,
-        args.weeklyStart(),
-        args.entries());
-    return mapper.toResponse(updated);
-  }
+    @PutMapping("/{id}")
+    public WeeklyPlanResponse replace(
+            @PathVariable String id, @Valid @RequestBody CreateWeeklyPlanRequest body, Authentication auth) {
+        String userId = currentUser.userId(auth);
+        CreateArgs args = mapper.toCreateArgs(userId, body);
+        WeeklyPlan updated = weeklyPlanService.replace(args.userId(), id, args.weeklyStart(), args.entries());
+        return mapper.toResponse(updated);
+    }
 
-  @DeleteMapping("/{id}")
-  @ResponseStatus(HttpStatus.NO_CONTENT)
-  public void delete(@PathVariable String id, Authentication auth) {
-    String userId = currentUser.userId(auth);
-    weeklyPlanService.delete(userId, id);
-  }
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void delete(@PathVariable String id, Authentication auth) {
+        String userId = currentUser.userId(auth);
+        weeklyPlanService.delete(userId, id);
+    }
 }
