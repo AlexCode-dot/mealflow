@@ -14,6 +14,20 @@ public abstract class MongoTestContainerConfig {
 
     @DynamicPropertySource
     static void mongoProps(DynamicPropertyRegistry registry) {
+        String mongoUri = System.getenv("SPRING_DATA_MONGODB_URI");
+        if (mongoUri == null || mongoUri.isBlank()) {
+            mongoUri = System.getenv("SPRING_MONGODB_URI");
+        }
+        if (mongoUri == null || mongoUri.isBlank()) {
+            mongoUri = System.getenv("APP_API_MONGODB_URI");
+        }
+        if (mongoUri != null && !mongoUri.isBlank()) {
+            String configured = mongoUri;
+            registry.add("spring.mongodb.uri", () -> configured);
+            registry.add("spring.data.mongodb.uri", () -> configured);
+            return;
+        }
         registry.add("spring.mongodb.uri", mongo::getReplicaSetUrl);
+        registry.add("spring.data.mongodb.uri", mongo::getReplicaSetUrl);
     }
 }
