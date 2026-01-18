@@ -159,11 +159,13 @@ class WeeklyPlanControllerIT extends MongoTestContainerConfig {
         HttpResponse<String> created = post("/api/recipes", token, """
 {
   "title":"%s",
-  "ingredients":[{"name":"Salt"}],
-  "steps":["Cook"]
+  "description":"High protein",
+  "ingredients":[{"name":"Tortilla","quantity":2,"unit":"pcs"}],
+  "steps":["Heat","Assemble"],
+  "fromExternal":false
 }
 """.formatted(title));
-        assertThat(created.statusCode(), is(201));
+        assertThat("createRecipe failed: " + created.body(), created.statusCode(), is(201));
         return JsonPath.read(created.body(), "$.id");
     }
 
