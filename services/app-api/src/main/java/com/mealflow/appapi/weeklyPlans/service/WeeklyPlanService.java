@@ -9,8 +9,8 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.Arrays;
-import java.util.LinkedHashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -54,13 +54,12 @@ public class WeeklyPlanService {
         String normalizedWeeklyStart = normalizeWeeklyStart(weeklyStart);
         List<PlanEntry> normalizedEntries = normalizeEntries(entries);
         List<String> normalizedSections = normalizeSections(
-                sections,
-                sections == null || sections.isEmpty() ? normalizedEntries : null,
-                DEFAULT_SECTIONS);
+                sections, sections == null || sections.isEmpty() ? normalizedEntries : null, DEFAULT_SECTIONS);
         validateEntries(normalizedEntries, userId, normalizedSections);
 
         Instant now = clock.instant();
-        WeeklyPlan plan = new WeeklyPlan(userId, normalizedWeeklyStart, normalizedEntries, normalizedSections, now, now);
+        WeeklyPlan plan =
+                new WeeklyPlan(userId, normalizedWeeklyStart, normalizedEntries, normalizedSections, now, now);
         return weeklyPlanRepository.save(plan);
     }
 
@@ -70,9 +69,7 @@ public class WeeklyPlanService {
 
         String normalizedWeeklyStart = weeklyStart == null ? null : normalizeWeeklyStart(weeklyStart);
         List<PlanEntry> normalizedEntries = entries == null ? null : normalizeEntries(entries);
-        List<String> normalizedSections = sections == null
-                ? null
-                : normalizeSections(sections, null, DEFAULT_SECTIONS);
+        List<String> normalizedSections = sections == null ? null : normalizeSections(sections, null, DEFAULT_SECTIONS);
 
         if (normalizedEntries != null) {
             List<String> sectionsForValidation =
@@ -90,9 +87,7 @@ public class WeeklyPlanService {
         String normalizedWeeklyStart = normalizeWeeklyStart(weeklyStart);
         List<PlanEntry> normalizedEntries = normalizeEntries(entries);
         List<String> normalizedSections = normalizeSections(
-                sections,
-                sections == null || sections.isEmpty() ? normalizedEntries : null,
-                DEFAULT_SECTIONS);
+                sections, sections == null || sections.isEmpty() ? normalizedEntries : null, DEFAULT_SECTIONS);
         validateEntries(normalizedEntries, userId, normalizedSections);
 
         existing.setWeeklyStart(normalizedWeeklyStart);
@@ -138,8 +133,7 @@ public class WeeklyPlanService {
                 .toList();
     }
 
-    private List<String> normalizeSections(
-            List<String> sections, List<PlanEntry> entries, List<String> fallback) {
+    private List<String> normalizeSections(List<String> sections, List<PlanEntry> entries, List<String> fallback) {
         if (sections != null) {
             for (String section : sections) {
                 if (section == null || section.isBlank()) {
@@ -189,7 +183,8 @@ public class WeeklyPlanService {
             if (!WEEK_DAYS.contains(day)) {
                 throw new WeeklyPlanValidationException("day must be one of MON,TUE,WED,THU,FRI,SAT,SUN");
             }
-            String section = entry.getSection() == null ? "" : entry.getSection().trim();
+            String section =
+                    entry.getSection() == null ? "" : entry.getSection().trim();
             if (section.isBlank()) {
                 throw new WeeklyPlanValidationException("section must not be blank");
             }

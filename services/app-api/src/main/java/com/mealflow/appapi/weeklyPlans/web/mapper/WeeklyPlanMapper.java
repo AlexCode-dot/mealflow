@@ -52,12 +52,7 @@ public class WeeklyPlanMapper {
         List<String> sections = plan.getSections() == null ? List.of() : plan.getSections();
 
         return new WeeklyPlanResponse(
-                plan.getId(),
-                plan.getWeeklyStart(),
-                sections,
-                entries,
-                plan.getCreatedAt(),
-                plan.getUpdatedAt());
+                plan.getId(), plan.getWeeklyStart(), sections, entries, plan.getCreatedAt(), plan.getUpdatedAt());
     }
 
     private PlanEntry toDomain(PlanEntryRequest req) {
