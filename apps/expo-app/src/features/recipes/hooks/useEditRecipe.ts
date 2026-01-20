@@ -1,11 +1,57 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import type { Dispatch, SetStateAction } from 'react';
 import type { IngredientDto, Recipe } from '@/src/features/recipes/types';
 import { recipesApi } from '@/src/features/recipes/api/recipesApi';
 import { toApiError } from '@/src/core/http/toApiError';
 import { mapCommonError } from '@/src/shared/errors/mapCommonError';
 import { useRecipeFormState } from '@/src/features/recipes/hooks/useRecipeFormState';
 
-export function useEditRecipe(id: string) {
+export type EditRecipeState = {
+  isLoading: boolean;
+  loadError: string | null;
+  isSaving: boolean;
+  saveError: string | null;
+  canSave: boolean;
+};
+
+export type EditRecipeForm = {
+  title: string;
+  setTitle: (value: string) => void;
+  description: string;
+  setDescription: (value: string) => void;
+  imageUrl: string;
+  setImageUrl: (value: string) => void;
+  time: string;
+  setTime: (value: string) => void;
+  portions: string;
+  setPortions: (value: string) => void;
+  category: string;
+  setCategory: (value: string) => void;
+  touched: ReturnType<typeof useRecipeFormState>['touched'];
+  setTouched: ReturnType<typeof useRecipeFormState>['setTouched'];
+  errors: ReturnType<typeof useRecipeFormState>['errors'];
+};
+
+export type EditRecipeData = {
+  ingredients: IngredientDto[];
+  setIngredients: Dispatch<SetStateAction<IngredientDto[]>>;
+  steps: string[];
+  setSteps: Dispatch<SetStateAction<string[]>>;
+};
+
+export type EditRecipeActions = {
+  load: () => Promise<void>;
+  save: () => Promise<boolean>;
+};
+
+export type EditRecipeView = {
+  state: EditRecipeState;
+  form: EditRecipeForm;
+  data: EditRecipeData;
+  actions: EditRecipeActions;
+};
+
+export function useEditRecipe(id: string): EditRecipeView {
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
 
@@ -100,36 +146,79 @@ export function useEditRecipe(id: string) {
     }
   }, [id, title, errors, ingredients, steps, markAllTouched, getApiValues]);
 
-  return {
-    isLoading,
-    loadError,
-    load,
+  const state = useMemo<EditRecipeState>(
+    () => ({
+      isLoading,
+      loadError,
+      isSaving,
+      saveError,
+      canSave,
+    }),
+    [isLoading, loadError, isSaving, saveError, canSave],
+  );
 
-    isSaving,
-    saveError,
-    save,
+  const formView = useMemo<EditRecipeForm>(
+    () => ({
+      title,
+      setTitle,
+      description,
+      setDescription,
+      imageUrl,
+      setImageUrl,
+      time,
+      setTime,
+      portions,
+      setPortions,
+      category,
+      setCategory,
+      touched,
+      setTouched,
+      errors,
+    }),
+    [
+      title,
+      setTitle,
+      description,
+      setDescription,
+      imageUrl,
+      setImageUrl,
+      time,
+      setTime,
+      portions,
+      setPortions,
+      category,
+      setCategory,
+      touched,
+      setTouched,
+      errors,
+    ],
+  );
 
-    title,
-    setTitle,
-    description,
-    setDescription,
-    imageUrl,
-    setImageUrl,
-    time,
-    setTime,
-    portions,
-    setPortions,
-    category,
-    setCategory,
-    ingredients,
-    setIngredients,
-    steps,
-    setSteps,
+  const data = useMemo<EditRecipeData>(
+    () => ({
+      ingredients,
+      setIngredients,
+      steps,
+      setSteps,
+    }),
+    [ingredients, setIngredients, steps, setSteps],
+  );
 
-    touched,
-    setTouched,
-    errors,
+  const actions = useMemo<EditRecipeActions>(
+    () => ({
+      load,
+      save,
+    }),
+    [load, save],
+  );
 
-    canSave,
-  };
+  return useMemo(
+    () => ({
+      state,
+      form: formView,
+      data,
+      actions,
+    }),
+    [state, formView, data, actions],
+  );
 }

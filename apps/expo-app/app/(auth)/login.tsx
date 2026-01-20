@@ -8,10 +8,11 @@ import { routes } from '@/src/core/navigation/routes';
 
 export default function LoginScreen() {
   const router = useRouter();
-  const { login, isLoading, error, clearError } = useLogin();
+  const view = useLogin();
+  const { state, actions } = view;
 
   const onSubmit = async (email: string, password: string) => {
-    const ok = await login(email, password);
+    const ok = await actions.login(email, password);
     if (ok) router.replace(routes.overview);
   };
 
@@ -29,9 +30,9 @@ export default function LoginScreen() {
       <View style={styles.formWrap}>
         <LoginForm
           onSubmit={onSubmit}
-          isLoading={isLoading}
-          error={error}
-          clearError={clearError}
+          isLoading={state.isLoading}
+          error={state.error}
+          clearError={actions.clearError}
         />
       </View>
     </AuthScreen>

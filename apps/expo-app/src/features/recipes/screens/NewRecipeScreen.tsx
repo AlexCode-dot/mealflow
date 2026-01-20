@@ -25,35 +25,37 @@ import {
 } from '@/src/features/recipes/ui';
 import { Plus, Download, XCircle } from 'lucide-react-native';
 import { TAB_BAR } from '@/src/shared/ui/layout/tabBar';
+import { routes } from '@/src/core/navigation/routes';
 
 export function NewRecipeScreen() {
-  const form = useCreateRecipe();
+  const view = useCreateRecipe();
+  const { state, form, data, actions } = view;
   const editorState = useRecipeEditorUiState();
 
-  const ingredientRows = useMemo(() => form.ingredients ?? [], [form.ingredients]);
-  const stepRows = useMemo(() => form.steps ?? [], [form.steps]);
+  const ingredientRows = useMemo(() => data.ingredients ?? [], [data.ingredients]);
+  const stepRows = useMemo(() => data.steps ?? [], [data.steps]);
   const ingredientEditor = useRecipeIngredientEditor({
     ingredients: ingredientRows,
-    setIngredients: form.setIngredients,
+    setIngredients: data.setIngredients,
   });
   const stepEditor = useRecipeStepEditor({
     steps: stepRows,
-    setSteps: form.setSteps,
+    setSteps: data.setSteps,
   });
   const { items: stepItems, onDragEnd: onStepsDragEnd } = useStepReorderState({
     steps: stepRows,
-    setSteps: form.setSteps,
+    setSteps: data.setSteps,
   });
 
-  const submitRef = useRef(form.submit);
+  const submitRef = useRef(actions.submit);
   useEffect(() => {
-    submitRef.current = form.submit;
-  }, [form.submit]);
+    submitRef.current = actions.submit;
+  }, [actions.submit]);
 
   const submit = useCallback(async () => {
     const id = await submitRef.current();
     if (id) {
-      router.replace({ pathname: '/recipes/[id]', params: { id, toast: 'saved' } });
+      router.replace(routes.recipeView(id, 'saved'));
     }
   }, []);
 
@@ -82,7 +84,7 @@ export function NewRecipeScreen() {
       },
       {
         key: 'save',
-        label: form.isSaving ? 'Saving…' : 'Save recipe',
+        label: state.isSaving ? 'Saving…' : 'Save recipe',
         icon: (
           <Download
             color={theme.colors.textOnPrimary}
@@ -91,10 +93,10 @@ export function NewRecipeScreen() {
           />
         ),
         onPress: submit,
-        disabled: !form.canSubmit,
+        disabled: !state.canSubmit,
       },
     ],
-    [form.canSubmit, form.isSaving, onCancel, submit],
+    [state.canSubmit, state.isSaving, onCancel, submit],
   );
 
   useBottomBarActions(actionItems);
@@ -124,7 +126,7 @@ export function NewRecipeScreen() {
           heroHasImage={Boolean(form.imageUrl)}
         >
           <RecipeEditorShell tab={editorState.tab} onTabChange={editorState.setTab}>
-            {form.serverError ? <ErrorText>{form.serverError}</ErrorText> : null}
+            {state.serverError ? <ErrorText>{state.serverError}</ErrorText> : null}
             {editorState.tab === 'basic' ? (
               <RecipeEditorBasics
                 title={form.title}
@@ -150,7 +152,7 @@ export function NewRecipeScreen() {
                     data={ingredientRows}
                     keyExtractor={(item, index) => item.id ?? `${item.name}-${index}`}
                     renderItem={renderIngredientItem}
-                    onDragEnd={({ data }) => form.setIngredients(data)}
+                    onDragEnd={({ data: nextData }) => data.setIngredients(nextData)}
                     activationDistance={8}
                     scrollEnabled={false}
                     ItemSeparatorComponent={() => <View style={styles.listSeparator} />}

@@ -67,7 +67,7 @@ const styles = StyleSheet.create({
     marginBottom: theme.spacing.s4,
   },
   headerSide: {
-    minWidth: 70,
+    minWidth: 32,
     alignItems: 'flex-end',
   },
   headerAction: {
@@ -76,9 +76,11 @@ const styles = StyleSheet.create({
   },
   title: {
     color: theme.colors.text,
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: '600',
     textAlign: 'center',
+    flex: 1,
+    paddingHorizontal: 4,
   },
   content: {
     gap: theme.spacing.s3,
@@ -89,6 +91,7 @@ const styles = StyleSheet.create({
   footerBleed: {
     marginHorizontal: -theme.spacing.s4,
     marginBottom: 0,
+    marginTop: 0,
   },
   container: {
     position: 'relative',

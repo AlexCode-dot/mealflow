@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, Image, InteractionManager, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Image, StyleSheet, Text, View } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import { useFocusEffect, useIsFocused } from '@react-navigation/native';
 import { Clock3, ShoppingBasket, Utensils, Users, Pencil, Trash2 } from 'lucide-react-native';
@@ -29,11 +29,21 @@ import { TAB_BAR } from '@/src/shared/ui/layout/tabBar';
 import { formatDuration } from '@/src/features/recipes/utils/formatDuration';
 
 export function RecipeDetailsScreen() {
-  const params = useLocalSearchParams<{ id?: string; toast?: string }>();
+  const params = useLocalSearchParams<{
+    id?: string;
+    toast?: string;
+    returnPlanId?: string;
+    returnEntryId?: string;
+    returnDay?: string;
+  }>();
   const id = typeof params.id === 'string' ? params.id : '';
   const toastParam = typeof params.toast === 'string' ? params.toast : null;
+  const returnPlanId = typeof params.returnPlanId === 'string' ? params.returnPlanId : null;
+  const returnEntryId = typeof params.returnEntryId === 'string' ? params.returnEntryId : null;
+  const returnDay = typeof params.returnDay === 'string' ? params.returnDay : null;
 
-  const { recipe, isLoading, error, load, remove, isDeleting } = useRecipeDetails(id);
+  const view = useRecipeDetails(id);
+  const { state, actions } = view;
   const [tab, setTab] = useState<RecipeDetailsTab>('ingredients');
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
@@ -48,16 +58,16 @@ export function RecipeDetailsScreen() {
   const isFocused = useIsFocused();
 
   const stats = useMemo(() => {
-    const cookingMinutes = recipe?.cookingTimeMinutes;
+    const cookingMinutes = state.recipe?.cookingTimeMinutes;
     const timeLabel =
       cookingMinutes !== null && cookingMinutes !== undefined
         ? formatDuration(cookingMinutes)
         : '—';
-    const ingredientCount = recipe?.ingredients?.length ?? 0;
-    const categoryLabel = recipe?.category ?? '—';
+    const ingredientCount = state.recipe?.ingredients?.length ?? 0;
+    const categoryLabel = state.recipe?.category ?? '—';
     const portionsLabel =
-      recipe?.portions !== null && recipe?.portions !== undefined
-        ? `${recipe.portions} Portions`
+      state.recipe?.portions !== null && state.recipe?.portions !== undefined
+        ? `${state.recipe.portions} Portions`
         : '—';
 
     return [
@@ -78,7 +88,7 @@ export function RecipeDetailsScreen() {
         label: portionsLabel,
       },
     ];
-  }, [recipe]);
+  }, [state.recipe]);
 
   const onEdit = useCallback(() => {
     if (!id) return;
@@ -138,7 +148,7 @@ export function RecipeDetailsScreen() {
   useEffect(() => {
     if (!toastParam || !isFocused) return;
 
-    const task = InteractionManager.runAfterInteractions(() => {
+    const timeoutId = setTimeout(() => {
       if (toastParam === 'saved') {
         show({ variant: 'success', message: 'Saved successfully' });
       }
@@ -146,10 +156,10 @@ export function RecipeDetailsScreen() {
         show({ variant: 'success', message: 'Added to shopping list' });
       }
       router.setParams({ toast: undefined });
-    });
+    }, 80);
 
     return () => {
-      task.cancel?.();
+      clearTimeout(timeoutId);
     };
   }, [isFocused, show, toastParam]);
 
@@ -160,22 +170,18 @@ export function RecipeDetailsScreen() {
     }
 
     setShowToast(false);
-    let timeoutId: ReturnType<typeof setTimeout> | null = null;
-    const task = InteractionManager.runAfterInteractions(() => {
-      timeoutId = setTimeout(() => setShowToast(true), 90);
-    });
+    const timeoutId = setTimeout(() => setShowToast(true), 90);
 
     return () => {
-      task.cancel?.();
-      if (timeoutId) clearTimeout(timeoutId);
+      clearTimeout(timeoutId);
     };
   }, [isFocused, toast]);
 
   const doDelete = async () => {
     setIsLeaving(true);
-    const ok = await remove();
+    const ok = await actions.remove();
     if (ok) {
-      router.replace({ pathname: routes.recipes, params: { toast: 'deleted' } });
+      router.replace(routes.recipesWithToast('deleted'));
       return;
     }
     setIsLeaving(false);
@@ -188,9 +194,9 @@ export function RecipeDetailsScreen() {
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    await load();
+    await actions.load();
     setRefreshing(false);
-  }, [load]);
+  }, [actions]);
 
   useFocusEffect(
     useCallback(() => {
@@ -198,19 +204,23 @@ export function RecipeDetailsScreen() {
         didInitialFocusLoad.current = true;
         return;
       }
-      load();
-    }, [load]),
+      void actions.load();
+    }, [actions]),
   );
 
   const heroHeight = 320;
 
   const onBack = useCallback(() => {
+    if (returnPlanId) {
+      router.push(routes.weeklyPlanEdit(returnPlanId, returnEntryId ?? undefined, returnDay ?? undefined));
+      return;
+    }
     router.replace(routes.recipes);
-  }, []);
+  }, [returnDay, returnEntryId, returnPlanId]);
 
   return (
     <Screen
-      title={isLoading ? 'Recipe' : (recipe?.title ?? 'Recipe')}
+      title={state.isLoading ? 'Recipe' : (state.recipe?.title ?? 'Recipe')}
       showBack
       onBack={onBack}
       showProfileIcon={false}
@@ -230,11 +240,11 @@ export function RecipeDetailsScreen() {
           </View>
         ) : null}
 
-        {error ? (
+        {state.error ? (
           <View style={styles.errorCard}>
-            <ErrorText>{error}</ErrorText>
+            <ErrorText>{state.error}</ErrorText>
             <View style={styles.errorSpacer} />
-            <Button title="Try again" onPress={load} />
+            <Button title="Try again" onPress={actions.load} />
           </View>
         ) : null}
 
@@ -246,12 +256,12 @@ export function RecipeDetailsScreen() {
           <RecipeSheetLayout
             hero={
               <View style={styles.hero}>
-                {recipe?.imageUrl ? (
-                  <Image source={{ uri: recipe.imageUrl }} style={styles.heroImage} />
+                {state.recipe?.imageUrl ? (
+                  <Image source={{ uri: state.recipe.imageUrl }} style={styles.heroImage} />
                 ) : (
                   <Shimmer height={heroHeight} borderRadius={0} />
                 )}
-                {recipe?.fromExternal ? (
+                {state.recipe?.fromExternal ? (
                   <View style={styles.originBadge}>
                     <Text style={styles.originBadgeText}>Imported</Text>
                   </View>
@@ -260,7 +270,7 @@ export function RecipeDetailsScreen() {
             }
             heroHeight={heroHeight}
             sheetOverlap={15}
-            heroHasImage={Boolean(recipe?.imageUrl)}
+            heroHasImage={Boolean(state.recipe?.imageUrl)}
             refreshing={refreshing}
             onRefresh={onRefresh}
           >
@@ -272,9 +282,9 @@ export function RecipeDetailsScreen() {
                 rowStyle={styles.statRow}
               />
 
-              {recipe?.description?.trim() ? (
+              {state.recipe?.description?.trim() ? (
                 <Text style={[styles.summaryText, styles.summaryTextWide]}>
-                  {recipe.description}
+                  {state.recipe.description}
                 </Text>
               ) : (
                 <Text style={[styles.summaryText, styles.summaryTextWide, styles.summaryEmpty]}>
@@ -290,9 +300,9 @@ export function RecipeDetailsScreen() {
 
               <View style={styles.panelContent}>
                 {tab === 'ingredients' ? (
-                  recipe?.ingredients?.length ? (
+                  state.recipe?.ingredients?.length ? (
                     <View style={styles.list}>
-                      {recipe.ingredients.map((ing, idx) => (
+                      {state.recipe.ingredients.map((ing, idx) => (
                         <RecipeIngredientRow
                           key={`${ing.name}-${idx}`}
                           name={ing.name}
@@ -304,9 +314,9 @@ export function RecipeDetailsScreen() {
                   ) : (
                     <Text style={styles.emptyText}>No ingredients yet</Text>
                   )
-                ) : recipe?.steps?.length ? (
+                ) : state.recipe?.steps?.length ? (
                   <View style={styles.list}>
-                    {recipe.steps.map((step, idx) => (
+                    {state.recipe.steps.map((step, idx) => (
                       <RecipeStepRow
                         key={`${idx}-${step.slice(0, 12)}`}
                         index={idx + 1}
@@ -329,12 +339,12 @@ export function RecipeDetailsScreen() {
       <ConfirmSheet
         visible={deleteOpen}
         title="Delete recipe?"
-        description={`You are deleting recipe ${recipe?.title ?? 'this recipe'}.`}
-        confirmLabel={isDeleting ? 'Deleting…' : 'Delete'}
+        description={`You are deleting recipe ${state.recipe?.title ?? 'this recipe'}.`}
+        confirmLabel={state.isDeleting ? 'Deleting…' : 'Delete'}
         confirmVariant="danger"
         onConfirm={doDelete}
         onCancel={() => setDeleteOpen(false)}
-        disabled={isDeleting}
+        disabled={state.isDeleting}
       />
 
       <ModalSheet visible={stepOpen} onClose={() => setStepOpen(false)}>
@@ -354,7 +364,7 @@ export function RecipeDetailsScreen() {
       <ModalSheet visible={titleOpen} onClose={() => setTitleOpen(false)}>
         <View style={styles.titleSheet}>
           <Text style={styles.titleSheetHeading}>Recipe title</Text>
-          <Text style={styles.titleSheetText}>{recipe?.title ?? 'Recipe'}</Text>
+          <Text style={styles.titleSheetText}>{state.recipe?.title ?? 'Recipe'}</Text>
         </View>
       </ModalSheet>
     </Screen>

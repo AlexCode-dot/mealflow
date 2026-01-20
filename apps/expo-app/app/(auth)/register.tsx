@@ -8,10 +8,11 @@ import { routes } from '@/src/core/navigation/routes';
 
 export default function RegisterScreen() {
   const router = useRouter();
-  const { register, isLoading, error, clearError } = useRegister();
+  const view = useRegister();
+  const { state, actions } = view;
 
   const onSubmit = async (email: string, password: string) => {
-    const ok = await register(email, password);
+    const ok = await actions.register(email, password);
     if (ok) router.replace(routes.overview);
   };
 
@@ -29,9 +30,9 @@ export default function RegisterScreen() {
       <View style={styles.formWrap}>
         <RegisterForm
           onSubmit={onSubmit}
-          isLoading={isLoading}
-          error={error}
-          clearError={clearError}
+          isLoading={state.isLoading}
+          error={state.error}
+          clearError={actions.clearError}
         />
       </View>
     </AuthScreen>

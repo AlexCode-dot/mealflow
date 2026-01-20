@@ -1,11 +1,54 @@
-import { useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
+import type { Dispatch, SetStateAction } from 'react';
 import { recipesApi } from '@/src/features/recipes/api/recipesApi';
 import { toApiError } from '@/src/core/http/toApiError';
 import { mapCommonError } from '@/src/shared/errors/mapCommonError';
 import { useRecipeFormState } from '@/src/features/recipes/hooks/useRecipeFormState';
 import type { IngredientDto } from '@/src/features/recipes/types';
 
-export function useCreateRecipe() {
+export type CreateRecipeState = {
+  isSaving: boolean;
+  serverError: string | null;
+  canSubmit: boolean;
+};
+
+export type CreateRecipeForm = {
+  title: string;
+  setTitle: (value: string) => void;
+  description: string;
+  setDescription: (value: string) => void;
+  imageUrl: string;
+  setImageUrl: (value: string) => void;
+  time: string;
+  setTime: (value: string) => void;
+  portions: string;
+  setPortions: (value: string) => void;
+  category: string;
+  setCategory: (value: string) => void;
+  touched: ReturnType<typeof useRecipeFormState>['touched'];
+  setTouched: ReturnType<typeof useRecipeFormState>['setTouched'];
+  errors: ReturnType<typeof useRecipeFormState>['errors'];
+};
+
+export type CreateRecipeData = {
+  ingredients: IngredientDto[];
+  setIngredients: Dispatch<SetStateAction<IngredientDto[]>>;
+  steps: string[];
+  setSteps: Dispatch<SetStateAction<string[]>>;
+};
+
+export type CreateRecipeActions = {
+  submit: () => Promise<string | null>;
+};
+
+export type CreateRecipeView = {
+  state: CreateRecipeState;
+  form: CreateRecipeForm;
+  data: CreateRecipeData;
+  actions: CreateRecipeActions;
+};
+
+export function useCreateRecipe(): CreateRecipeView {
   const form = useRecipeFormState();
   const [ingredients, setIngredients] = useState<IngredientDto[]>([]);
   const [steps, setSteps] = useState<string[]>([]);
@@ -13,15 +56,34 @@ export function useCreateRecipe() {
   const [isSaving, setIsSaving] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
 
-  const canSubmit =
-    !isSaving && !form.errors.title && !form.errors.description && form.title.trim().length > 0;
+  const {
+    title,
+    setTitle,
+    description,
+    setDescription,
+    imageUrl,
+    setImageUrl,
+    time,
+    setTime,
+    portions,
+    setPortions,
+    category,
+    setCategory,
+    touched,
+    setTouched,
+    errors,
+    markAllTouched,
+    getApiValues,
+  } = form;
 
-  async function submit(): Promise<string | null> {
+  const canSubmit = !isSaving && !errors.title && !errors.description && title.trim().length > 0;
+
+  const submit = useCallback(async (): Promise<string | null> => {
     setServerError(null);
-    form.markAllTouched();
+    markAllTouched();
     if (!canSubmit) return null;
 
-    const basePayload = form.getApiValues();
+    const basePayload = getApiValues();
     const ingredientsPayload = ingredients.map(({ id: _id, ...rest }) => rest);
 
     setIsSaving(true);
@@ -41,37 +103,84 @@ export function useCreateRecipe() {
     } finally {
       setIsSaving(false);
     }
-  }
+  }, [canSubmit, getApiValues, ingredients, markAllTouched, steps]);
 
-  return {
-    title: form.title,
-    setTitle: (v: string) => {
-      form.setTitle(v);
-      setServerError(null);
-    },
-    description: form.description,
-    setDescription: (v: string) => {
-      form.setDescription(v);
-      setServerError(null);
-    },
-    imageUrl: form.imageUrl,
-    setImageUrl: form.setImageUrl,
-    time: form.time,
-    setTime: form.setTime,
-    portions: form.portions,
-    setPortions: form.setPortions,
-    category: form.category,
-    setCategory: form.setCategory,
-    ingredients,
-    setIngredients,
-    steps,
-    setSteps,
-    touched: form.touched,
-    setTouched: form.setTouched,
-    errors: form.errors,
-    isSaving,
-    serverError,
-    canSubmit,
-    submit,
-  };
+  const state = useMemo<CreateRecipeState>(
+    () => ({
+      isSaving,
+      serverError,
+      canSubmit,
+    }),
+    [isSaving, serverError, canSubmit],
+  );
+
+  const formView = useMemo<CreateRecipeForm>(
+    () => ({
+      title,
+      setTitle: (v: string) => {
+        setTitle(v);
+        setServerError(null);
+      },
+      description,
+      setDescription: (v: string) => {
+        setDescription(v);
+        setServerError(null);
+      },
+      imageUrl,
+      setImageUrl,
+      time,
+      setTime,
+      portions,
+      setPortions,
+      category,
+      setCategory,
+      touched,
+      setTouched,
+      errors,
+    }),
+    [
+      title,
+      setTitle,
+      description,
+      setDescription,
+      imageUrl,
+      setImageUrl,
+      time,
+      setTime,
+      portions,
+      setPortions,
+      category,
+      setCategory,
+      touched,
+      setTouched,
+      errors,
+    ],
+  );
+
+  const data = useMemo<CreateRecipeData>(
+    () => ({
+      ingredients,
+      setIngredients,
+      steps,
+      setSteps,
+    }),
+    [ingredients, setIngredients, steps, setSteps],
+  );
+
+  const actions = useMemo<CreateRecipeActions>(
+    () => ({
+      submit,
+    }),
+    [submit],
+  );
+
+  return useMemo(
+    () => ({
+      state,
+      form: formView,
+      data,
+      actions,
+    }),
+    [state, formView, data, actions],
+  );
 }

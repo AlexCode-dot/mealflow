@@ -1,10 +1,27 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { recipesApi } from '@/src/features/recipes/api/recipesApi';
 import type { Recipe } from '@/src/features/recipes/types';
 import { toApiError } from '@/src/core/http/toApiError';
 import { mapCommonError } from '@/src/shared/errors/mapCommonError';
 
-export function useRecipeDetails(id: string) {
+export type RecipeDetailsState = {
+  recipe: Recipe | null;
+  isLoading: boolean;
+  error: string | null;
+  isDeleting: boolean;
+};
+
+export type RecipeDetailsActions = {
+  load: () => Promise<void>;
+  remove: () => Promise<boolean>;
+};
+
+export type RecipeDetailsView = {
+  state: RecipeDetailsState;
+  actions: RecipeDetailsActions;
+};
+
+export function useRecipeDetails(id: string): RecipeDetailsView {
   const [recipe, setRecipe] = useState<Recipe | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -33,7 +50,7 @@ export function useRecipeDetails(id: string) {
   }, [id]);
 
   useEffect(() => {
-    load();
+    load().catch(() => undefined);
   }, [load]);
 
   const remove = useCallback(async () => {
@@ -54,5 +71,29 @@ export function useRecipeDetails(id: string) {
     }
   }, [id]);
 
-  return { recipe, isLoading, error, load, remove, isDeleting };
+  const state = useMemo<RecipeDetailsState>(
+    () => ({
+      recipe,
+      isLoading,
+      error,
+      isDeleting,
+    }),
+    [recipe, isLoading, error, isDeleting],
+  );
+
+  const actions = useMemo<RecipeDetailsActions>(
+    () => ({
+      load,
+      remove,
+    }),
+    [load, remove],
+  );
+
+  return useMemo(
+    () => ({
+      state,
+      actions,
+    }),
+    [state, actions],
+  );
 }
