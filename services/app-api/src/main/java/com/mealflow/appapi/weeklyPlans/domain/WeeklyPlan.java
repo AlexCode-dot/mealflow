@@ -18,6 +18,8 @@ public class WeeklyPlan {
 
     private List<PlanEntry> entries = new ArrayList<>();
 
+    private List<String> sections = new ArrayList<>();
+
     private Instant createdAt;
 
     private Instant updatedAt;
@@ -29,6 +31,7 @@ public class WeeklyPlan {
             String userId,
             String weeklyStart,
             List<PlanEntry> entries,
+            List<String> sections,
             Instant createdAt,
             Instant updatedAt) {
 
@@ -36,13 +39,19 @@ public class WeeklyPlan {
         this.userId = userId;
         this.weeklyStart = weeklyStart;
         this.entries = entries != null ? entries : new ArrayList<>();
+        this.sections = sections != null ? sections : new ArrayList<>();
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
     }
 
     public WeeklyPlan(
-            String userId, String weeklyStart, List<PlanEntry> entries, Instant createdAt, Instant updatedAt) {
-        this(null, userId, weeklyStart, entries, createdAt, updatedAt);
+            String userId,
+            String weeklyStart,
+            List<PlanEntry> entries,
+            List<String> sections,
+            Instant createdAt,
+            Instant updatedAt) {
+        this(null, userId, weeklyStart, entries, sections, createdAt, updatedAt);
     }
 
     public String getId() {
@@ -77,12 +86,23 @@ public class WeeklyPlan {
         this.entries = entries;
     }
 
-    public void applyPatch(String weeklyStart, List<PlanEntry> entries, Instant updatedAt) {
+    public List<String> getSections() {
+        return sections;
+    }
+
+    public void setSections(List<String> sections) {
+        this.sections = sections != null ? sections : new ArrayList<>();
+    }
+
+    public void applyPatch(String weeklyStart, List<PlanEntry> entries, List<String> sections, Instant updatedAt) {
         if (weeklyStart != null) {
             this.weeklyStart = weeklyStart;
         }
         if (entries != null) {
             this.entries = entries;
+        }
+        if (sections != null) {
+            this.sections = sections;
         }
         this.updatedAt = updatedAt;
     }

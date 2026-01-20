@@ -63,7 +63,8 @@ public class WeeklyPlanController {
         String userId = currentUser.userId(auth);
         CreateArgs args = mapper.toCreateArgs(userId, body);
 
-        WeeklyPlan created = weeklyPlanService.create(args.userId(), args.weeklyStart(), args.entries());
+        WeeklyPlan created =
+                weeklyPlanService.create(args.userId(), args.weeklyStart(), args.sections(), args.entries());
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .location(URI.create("/api/weekly-plans/" + created.getId()))
@@ -75,7 +76,8 @@ public class WeeklyPlanController {
             @PathVariable String id, @Valid @RequestBody UpdateWeeklyPlanRequest body, Authentication auth) {
         String userId = currentUser.userId(auth);
         PatchArgs args = mapper.toPatchArgs(userId, id, body);
-        WeeklyPlan updated = weeklyPlanService.patch(args.userId(), args.planId(), args.weeklyStart(), args.entries());
+        WeeklyPlan updated = weeklyPlanService.patch(
+                args.userId(), args.planId(), args.weeklyStart(), args.sections(), args.entries());
         return mapper.toResponse(updated);
     }
 
@@ -84,7 +86,8 @@ public class WeeklyPlanController {
             @PathVariable String id, @Valid @RequestBody CreateWeeklyPlanRequest body, Authentication auth) {
         String userId = currentUser.userId(auth);
         CreateArgs args = mapper.toCreateArgs(userId, body);
-        WeeklyPlan updated = weeklyPlanService.replace(args.userId(), id, args.weeklyStart(), args.entries());
+        WeeklyPlan updated =
+                weeklyPlanService.replace(args.userId(), id, args.weeklyStart(), args.sections(), args.entries());
         return mapper.toResponse(updated);
     }
 
