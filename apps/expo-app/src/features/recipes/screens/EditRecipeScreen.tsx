@@ -25,40 +25,41 @@ import {
 } from '@/src/features/recipes/ui';
 import { Plus, Download, XCircle } from 'lucide-react-native';
 import { TAB_BAR } from '@/src/shared/ui/layout/tabBar';
+import { routes } from '@/src/core/navigation/routes';
 
 export function EditRecipeScreen() {
   const params = useLocalSearchParams<{ id?: string }>();
   const id = typeof params.id === 'string' ? params.id : '';
-  const form = useEditRecipe(id);
-  const { load } = form;
+  const view = useEditRecipe(id);
+  const { state, form, data, actions } = view;
 
   const [refreshing, setRefreshing] = useState(false);
   const editorState = useRecipeEditorUiState();
 
-  const ingredientRows = useMemo(() => form.ingredients ?? [], [form.ingredients]);
-  const stepRows = useMemo(() => form.steps ?? [], [form.steps]);
+  const ingredientRows = useMemo(() => data.ingredients ?? [], [data.ingredients]);
+  const stepRows = useMemo(() => data.steps ?? [], [data.steps]);
   const ingredientEditor = useRecipeIngredientEditor({
     ingredients: ingredientRows,
-    setIngredients: form.setIngredients,
+    setIngredients: data.setIngredients,
   });
   const stepEditor = useRecipeStepEditor({
     steps: stepRows,
-    setSteps: form.setSteps,
+    setSteps: data.setSteps,
   });
   const { items: stepItems, onDragEnd: onStepsDragEnd } = useStepReorderState({
     steps: stepRows,
-    setSteps: form.setSteps,
+    setSteps: data.setSteps,
   });
 
-  const saveRef = useRef(form.save);
+  const saveRef = useRef(actions.save);
   useEffect(() => {
-    saveRef.current = form.save;
-  }, [form.save]);
+    saveRef.current = actions.save;
+  }, [actions.save]);
 
   const onSave = useCallback(async () => {
     const ok = await saveRef.current();
     if (ok && id) {
-      router.navigate({ pathname: '/recipes/[id]', params: { id, toast: 'saved' } });
+      router.navigate(routes.recipeView(id, 'saved'));
       return;
     }
     if (ok) router.back();
@@ -70,9 +71,9 @@ export function EditRecipeScreen() {
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    await load();
+    await actions.load();
     setRefreshing(false);
-  }, [load]);
+  }, [actions]);
 
   const heroHeight = 300;
   const titleError = form.touched.title ? form.errors.title : null;
@@ -95,7 +96,7 @@ export function EditRecipeScreen() {
       },
       {
         key: 'save',
-        label: form.isSaving ? 'Saving…' : 'Save recipe',
+        label: state.isSaving ? 'Saving…' : 'Save recipe',
         icon: (
           <Download
             color={theme.colors.textOnPrimary}
@@ -104,10 +105,10 @@ export function EditRecipeScreen() {
           />
         ),
         onPress: onSave,
-        disabled: !form.canSave,
+        disabled: !state.canSave,
       },
     ],
-    [form.canSave, form.isSaving, onCancel, onSave],
+    [state.canSave, state.isSaving, onCancel, onSave],
   );
 
   useBottomBarActions(actionItems);
@@ -139,8 +140,8 @@ export function EditRecipeScreen() {
           onRefresh={onRefresh}
         >
           <RecipeEditorShell tab={editorState.tab} onTabChange={editorState.setTab}>
-            {form.loadError ? <ErrorText>{form.loadError}</ErrorText> : null}
-            {form.saveError ? <ErrorText>{form.saveError}</ErrorText> : null}
+            {state.loadError ? <ErrorText>{state.loadError}</ErrorText> : null}
+            {state.saveError ? <ErrorText>{state.saveError}</ErrorText> : null}
 
             {editorState.tab === 'basic' ? (
               <RecipeEditorBasics
@@ -169,7 +170,7 @@ export function EditRecipeScreen() {
                     data={ingredientRows}
                     keyExtractor={(item, index) => item.id ?? `${item.name}-${index}`}
                     renderItem={renderIngredientItem}
-                    onDragEnd={({ data }) => form.setIngredients(data)}
+                    onDragEnd={({ data: nextData }) => data.setIngredients(nextData)}
                     activationDistance={8}
                     scrollEnabled={false}
                     ItemSeparatorComponent={() => <View style={styles.listSeparator} />}

@@ -11,6 +11,7 @@ import { styles } from './AppTabBar.styles';
 import { TAB_BAR } from '@/src/shared/ui/layout/tabBar';
 import { TabItem } from './TabItem';
 import { BottomActionBar } from '@/src/shared/ui/BottomActionBar';
+import type { BottomActionBarItem } from '@/src/shared/ui/BottomActionBar';
 import { useBottomBarState } from '@/src/shared/ui/BottomBar';
 
 type TabRoute = {
@@ -64,7 +65,7 @@ export function AppTabBar({ state, descriptors, navigation }: BottomTabBarProps)
   const paddingBottom = insets.bottom > 0 ? Math.max(8, insets.bottom - 6) : 10;
   const barHeight = TAB_BAR.BOX_HEIGHT + TAB_BAR.PADDING_TOP + paddingBottom;
   const [layoutWidth, setLayoutWidth] = useState(0);
-  const { actions } = useBottomBarState();
+  const { actions, mode, centerAction } = useBottomBarState();
   const activeRouteName = state.routes[state.index]?.name;
   const showAddRecipe = activeRouteName === 'recipes';
 
@@ -76,8 +77,22 @@ export function AppTabBar({ state, descriptors, navigation }: BottomTabBarProps)
     [layoutWidth],
   );
 
-  if (actions) {
-    return <BottomActionBar items={actions} />;
+  if (mode !== 'default' && actions && actions.length) {
+    if (mode === 'flat-actions') {
+      return <BottomActionBar items={actions} />;
+    }
+    if (mode === 'notched-actions' && centerAction) {
+      return (
+        <NotchedActionBar
+          items={actions}
+          centerAction={centerAction}
+          barHeight={barHeight}
+          layoutWidth={layoutWidth}
+          paddingBottom={paddingBottom}
+          onLayout={handleLayout}
+        />
+      );
+    }
   }
 
   const tabRoutes = state.routes
@@ -160,5 +175,77 @@ export function AppTabBar({ state, descriptors, navigation }: BottomTabBarProps)
         </View>
       ) : null}
     </View>
+  );
+}
+
+type NotchedActionBarProps = {
+  items: BottomActionBarItem[];
+  centerAction: {
+    label: string;
+    icon: React.ReactNode;
+    onPress: () => void;
+    accessibilityLabel?: string;
+  };
+  barHeight: number;
+  layoutWidth: number;
+  paddingBottom: number;
+  onLayout: (event: LayoutChangeEvent) => void;
+};
+
+function NotchedActionBar({
+  items,
+  centerAction,
+  barHeight,
+  layoutWidth,
+  paddingBottom,
+  onLayout,
+}: NotchedActionBarProps) {
+  const midpoint = Math.ceil(items.length / 2);
+  const left = items.slice(0, midpoint);
+  const right = items.slice(midpoint);
+
+  return (
+    <View style={[styles.bar, styles.barNotched, { paddingBottom }]} onLayout={onLayout}>
+      <TabBarBackground width={layoutWidth} height={barHeight} />
+      {left.map((item) => (
+        <ActionSlot key={item.key} item={item} />
+      ))}
+      <View style={[styles.slot, styles.centerSlot]} />
+      {right.map((item) => (
+        <ActionSlot key={item.key} item={item} />
+      ))}
+
+      <View style={styles.centerOverlay} pointerEvents="box-none">
+        <View style={styles.addButtonWrap} pointerEvents="box-none">
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={centerAction.accessibilityLabel ?? centerAction.label}
+            onPress={centerAction.onPress}
+            hitSlop={10}
+            style={styles.addButton}
+          >
+            {centerAction.icon}
+          </Pressable>
+        </View>
+        <Text style={styles.addLabel} numberOfLines={1}>
+          {centerAction.label}
+        </Text>
+      </View>
+    </View>
+  );
+}
+
+function ActionSlot({ item }: { item: BottomActionBarItem }) {
+  return (
+    <Pressable onPress={item.onPress} style={styles.slot} disabled={item.disabled}>
+      <View style={styles.box}>
+        <View style={[styles.iconBox, { marginBottom: 8 }]}>{item.icon}</View>
+        <View style={styles.labelWrap} pointerEvents="none">
+          <Text style={styles.label} numberOfLines={1}>
+            {item.label}
+          </Text>
+        </View>
+      </View>
+    </Pressable>
   );
 }

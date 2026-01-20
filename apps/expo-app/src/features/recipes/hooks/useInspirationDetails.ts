@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { inspirationApi } from '@/src/features/recipes/api/inspirationApi';
 import { recipesApi } from '@/src/features/recipes/api/recipesApi';
 import type { InspirationRecipe, Recipe } from '@/src/features/recipes/types';
@@ -10,7 +10,25 @@ type SaveOptions = {
   mealType?: string;
 };
 
-export function useInspirationDetails(id: string) {
+export type InspirationDetailsState = {
+  recipe: InspirationRecipe | null;
+  isLoading: boolean;
+  error: string | null;
+  isSaving: boolean;
+  saveError: string | null;
+};
+
+export type InspirationDetailsActions = {
+  load: () => Promise<void>;
+  save: (options?: SaveOptions) => Promise<Recipe | null>;
+};
+
+export type InspirationDetailsView = {
+  state: InspirationDetailsState;
+  actions: InspirationDetailsActions;
+};
+
+export function useInspirationDetails(id: string): InspirationDetailsView {
   const [recipe, setRecipe] = useState<InspirationRecipe | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -40,7 +58,7 @@ export function useInspirationDetails(id: string) {
   }, [id]);
 
   useEffect(() => {
-    load();
+    load().catch(() => undefined);
   }, [load]);
 
   const save = useCallback(
@@ -52,9 +70,7 @@ export function useInspirationDetails(id: string) {
 
       try {
         const payload = buildInspirationCreatePayload(recipe, mealType);
-        const created = await recipesApi.create(payload);
-
-        return created;
+        return await recipesApi.create(payload);
       } catch (e) {
         const uiErr = mapCommonError(toApiError(e));
         setSaveError(uiErr.message);
@@ -66,5 +82,30 @@ export function useInspirationDetails(id: string) {
     [recipe],
   );
 
-  return { recipe, isLoading, error, load, save, isSaving, saveError };
+  const state = useMemo<InspirationDetailsState>(
+    () => ({
+      recipe,
+      isLoading,
+      error,
+      isSaving,
+      saveError,
+    }),
+    [recipe, isLoading, error, isSaving, saveError],
+  );
+
+  const actions = useMemo<InspirationDetailsActions>(
+    () => ({
+      load,
+      save,
+    }),
+    [load, save],
+  );
+
+  return useMemo(
+    () => ({
+      state,
+      actions,
+    }),
+    [state, actions],
+  );
 }

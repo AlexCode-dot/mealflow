@@ -2,21 +2,50 @@ import { createContext, useCallback, useContext, useLayoutEffect, useMemo, useSt
 import type { ReactNode } from 'react';
 import type { BottomActionBarItem } from '@/src/shared/ui/BottomActionBar';
 
+export type BottomBarMode = 'default' | 'flat-actions' | 'notched-actions';
+
+export type BottomBarCenterAction = {
+  label: string;
+  icon: ReactNode;
+  onPress: () => void;
+  accessibilityLabel?: string;
+};
+
 type BottomBarContextValue = {
+  mode: BottomBarMode;
   actions: BottomActionBarItem[] | null;
-  setActions: (actions: BottomActionBarItem[] | null) => void;
+  centerAction: BottomBarCenterAction | null;
+  setConfig: (config: {
+    mode: BottomBarMode;
+    actions: BottomActionBarItem[] | null;
+    centerAction: BottomBarCenterAction | null;
+  }) => void;
 };
 
 const BottomBarContext = createContext<BottomBarContextValue | null>(null);
 
 export function BottomBarProvider({ children }: { children: ReactNode }) {
-  const [actions, setActionsState] = useState<BottomActionBarItem[] | null>(null);
+  const [mode, setMode] = useState<BottomBarMode>('default');
+  const [actions, setActions] = useState<BottomActionBarItem[] | null>(null);
+  const [centerAction, setCenterAction] = useState<BottomBarCenterAction | null>(null);
 
-  const setActions = useCallback((next: BottomActionBarItem[] | null) => {
-    setActionsState(next && next.length ? next : null);
-  }, []);
+  const setConfig = useCallback(
+    (config: {
+      mode: BottomBarMode;
+      actions: BottomActionBarItem[] | null;
+      centerAction: BottomBarCenterAction | null;
+    }) => {
+      setMode(config.mode);
+      setActions(config.actions && config.actions.length ? config.actions : null);
+      setCenterAction(config.centerAction);
+    },
+    [],
+  );
 
-  const value = useMemo(() => ({ actions, setActions }), [actions, setActions]);
+  const value = useMemo(
+    () => ({ mode, actions, centerAction, setConfig }),
+    [actions, centerAction, mode, setConfig],
+  );
 
   return <BottomBarContext.Provider value={value}>{children}</BottomBarContext.Provider>;
 }
@@ -29,11 +58,27 @@ export function useBottomBarState() {
   return ctx;
 }
 
-export function useBottomBarActions(actions: BottomActionBarItem[] | null) {
-  const { setActions } = useBottomBarState();
+export function useBottomBarActions(
+  actions: BottomActionBarItem[] | null,
+  options?: {
+    mode?: BottomBarMode;
+    centerAction?: BottomBarCenterAction | null;
+  },
+) {
+  const { setConfig } = useBottomBarState();
 
   useLayoutEffect(() => {
-    setActions(actions);
-    return () => setActions(null);
-  }, [actions, setActions]);
+    if (!actions || actions.length === 0) {
+      setConfig({ mode: 'default', actions: null, centerAction: null });
+      return () => setConfig({ mode: 'default', actions: null, centerAction: null });
+    }
+
+    setConfig({
+      mode: options?.mode ?? 'flat-actions',
+      actions,
+      centerAction: options?.centerAction ?? null,
+    });
+
+    return () => setConfig({ mode: 'default', actions: null, centerAction: null });
+  }, [actions, options?.centerAction, options?.mode, setConfig]);
 }

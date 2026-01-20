@@ -25,11 +25,13 @@ import {
 import { useToastState } from '@/src/shared/hooks/useToastState';
 import { TAB_BAR } from '@/src/shared/ui/layout/tabBar';
 import { RECIPE_CATEGORY_OPTIONS } from '@/src/features/recipes/constants/recipePickerOptions';
+import { routes } from '@/src/core/navigation/routes';
 
 export function InspirationDetailsScreen() {
   const params = useLocalSearchParams<{ id?: string }>();
   const id = typeof params.id === 'string' ? params.id : '';
-  const { recipe, isLoading, error, load, save, isSaving, saveError } = useInspirationDetails(id);
+  const view = useInspirationDetails(id);
+  const { state, actions } = view;
   const saved = useRecipesList();
   const [tab, setTab] = useState<RecipeDetailsTab>('ingredients');
   const [mealType, setMealType] = useState('');
@@ -47,10 +49,10 @@ export function InspirationDetailsScreen() {
   }, []);
 
   useEffect(() => {
-    if (saveError) {
-      show({ variant: 'error', title: 'Save failed', message: saveError });
+    if (state.saveError) {
+      show({ variant: 'error', title: 'Save failed', message: state.saveError });
     }
-  }, [saveError, show]);
+  }, [state.saveError, show]);
 
   const onSave = useCallback(() => {
     setPickerOpen(true);
@@ -63,33 +65,33 @@ export function InspirationDetailsScreen() {
     }
 
     setPickerOpen(false);
-    const created = await save({ mealType });
+    const created = await actions.save({ mealType });
     if (created) {
-      router.replace({ pathname: '/recipes/[id]', params: { id: created.id, toast: 'saved' } });
+      router.replace(routes.recipeView(created.id, 'saved'));
     }
-  }, [mealType, save, show]);
+  }, [mealType, actions, show]);
 
   const actionItems = useMemo(
     () => [
       {
         key: 'save',
-        label: isSaving ? 'Saving…' : 'Save recipe',
+        label: state.isSaving ? 'Saving…' : 'Save recipe',
         icon: (
           <Bookmark color={theme.colors.textOnPrimary} size={TAB_BAR.ICON_SIZE} strokeWidth={2.3} />
         ),
         onPress: onSave,
-        disabled: isSaving || !recipe,
+        disabled: state.isSaving || !state.recipe,
       },
     ],
-    [isSaving, onSave, recipe],
+    [state.isSaving, onSave, state.recipe],
   );
 
   useBottomBarActions(actionItems);
 
   const stats = useMemo(() => {
-    const ingredientCount = recipe?.ingredients?.length ?? 0;
-    const categoryLabel = recipe?.category ?? '—';
-    const areaLabel = recipe?.area ?? '—';
+    const ingredientCount = state.recipe?.ingredients?.length ?? 0;
+    const categoryLabel = state.recipe?.category ?? '—';
+    const areaLabel = state.recipe?.area ?? '—';
 
     return [
       {
@@ -105,27 +107,27 @@ export function InspirationDetailsScreen() {
         label: areaLabel,
       },
     ];
-  }, [recipe]);
+  }, [state.recipe]);
 
   const isSaved = useMemo(() => {
     const normalize = (value?: string | null) => (value ?? '').trim().toLowerCase();
-    const key = `${normalize(recipe?.title)}|${normalize(recipe?.imageUrl)}`;
+    const key = `${normalize(state.recipe?.title)}|${normalize(state.recipe?.imageUrl)}`;
     if (!key.trim()) return false;
     return saved.items.some((item) => {
       if (!item.fromExternal) return false;
       return `${normalize(item.title)}|${normalize(item.imageUrl)}` === key;
     });
-  }, [recipe?.imageUrl, recipe?.title, saved.items]);
+  }, [state.recipe?.imageUrl, state.recipe?.title, saved.items]);
 
   const steps = useMemo(() => {
-    return (recipe?.steps ?? []).filter((step) => !isStepMarker(step));
-  }, [recipe]);
+    return (state.recipe?.steps ?? []).filter((step) => !isStepMarker(step));
+  }, [state.recipe]);
 
   const heroHeight = 320;
 
   return (
     <Screen
-      title={isLoading ? 'Inspiration' : (recipe?.title ?? 'Inspiration')}
+      title={state.isLoading ? 'Inspiration' : (state.recipe?.title ?? 'Inspiration')}
       showBack
       showProfileIcon={false}
       onTitlePress={() => setTitleOpen(true)}
@@ -144,15 +146,15 @@ export function InspirationDetailsScreen() {
           </View>
         ) : null}
 
-        {error ? (
+        {state.error ? (
           <View style={styles.errorCard}>
-            <ErrorText>{error}</ErrorText>
+            <ErrorText>{state.error}</ErrorText>
             <View style={styles.errorSpacer} />
-            <Button title="Try again" onPress={load} />
+            <Button title="Try again" onPress={actions.load} />
           </View>
         ) : null}
 
-        {isLoading ? (
+        {state.isLoading ? (
           <View style={styles.loading}>
             <ActivityIndicator color={theme.colors.primaryDark} />
           </View>
@@ -160,8 +162,8 @@ export function InspirationDetailsScreen() {
           <RecipeSheetLayout
             hero={
               <View style={styles.hero}>
-                {recipe?.imageUrl ? (
-                  <Image source={{ uri: recipe.imageUrl }} style={styles.heroImage} />
+                {state.recipe?.imageUrl ? (
+                  <Image source={{ uri: state.recipe.imageUrl }} style={styles.heroImage} />
                 ) : (
                   <Shimmer height={heroHeight} borderRadius={0} />
                 )}
@@ -174,7 +176,7 @@ export function InspirationDetailsScreen() {
             }
             heroHeight={heroHeight}
             sheetOverlap={15}
-            heroHasImage={Boolean(recipe?.imageUrl)}
+            heroHasImage={Boolean(state.recipe?.imageUrl)}
           >
             <View style={styles.summary}>
               <IconStatRow items={stats} labelStyle={styles.statLabel} rowStyle={styles.statRow} />
@@ -185,7 +187,7 @@ export function InspirationDetailsScreen() {
 
               <View style={styles.list}>
                 {tab === 'ingredients'
-                  ? recipe?.ingredients.map((item, index) => (
+                  ? state.recipe?.ingredients.map((item, index) => (
                       <RecipeIngredientRow
                         key={`${index}-${item.name}`}
                         name={item.name}
@@ -234,7 +236,7 @@ export function InspirationDetailsScreen() {
         <ModalSheet visible={titleOpen} onClose={() => setTitleOpen(false)}>
           <View style={styles.titleSheet}>
             <Text style={styles.titleSheetHeading}>Recipe title</Text>
-            <Text style={styles.titleSheetText}>{recipe?.title ?? 'Inspiration'}</Text>
+            <Text style={styles.titleSheetText}>{state.recipe?.title ?? 'Inspiration'}</Text>
           </View>
         </ModalSheet>
       </View>

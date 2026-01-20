@@ -68,6 +68,9 @@ class WeeklyPlanControllerIT extends MongoTestContainerConfig {
         assertThat(created.statusCode(), is(201));
         String planId = JsonPath.read(created.body(), "$.id");
         assertThat(planId, not(blankOrNullString()));
+        assertThat(
+                (Iterable<String>) JsonPath.read(created.body(), "$.sections"),
+                hasItems("Breakfast", "Lunch", "Dinner"));
 
         HttpResponse<String> list = get("/api/weekly-plans", token);
         assertThat(list.statusCode(), is(200));
@@ -157,6 +160,47 @@ class WeeklyPlanControllerIT extends MongoTestContainerConfig {
 
         assertThat(created.statusCode(), is(400));
         assertThat(created.headers().firstValue("content-type").orElse(""), containsString("application/problem+json"));
+    }
+
+    @Test
+    void create_shouldPersist_sections_order() throws Exception {
+        String token = tokens.issue("user-1");
+
+        HttpResponse<String> created = post("/api/weekly-plans", token, """
+{
+  "weeklyStart":"2024-12-09",
+  "sections":["Dinner","Snack","Breakfast"],
+  "entries":[]
+}
+""");
+
+        assertThat(created.statusCode(), is(201));
+        assertThat(
+                (Iterable<String>) JsonPath.read(created.body(), "$.sections"),
+                contains("Dinner", "Snack", "Breakfast"));
+    }
+
+    @Test
+    void patch_shouldReject_entrySection_notInSections() throws Exception {
+        String token = tokens.issue("user-1");
+
+        HttpResponse<String> created = post("/api/weekly-plans", token, """
+{
+  "weeklyStart":"2024-12-09",
+  "sections":["Breakfast","Lunch"],
+  "entries":[{"day":"MON","section":"Breakfast","customTitle":"Oats"}]
+}
+""");
+        String planId = JsonPath.read(created.body(), "$.id");
+
+        HttpResponse<String> patched = patch("/api/weekly-plans/" + planId, token, """
+{
+  "entries":[{"day":"TUE","section":"Dinner","customTitle":"Soup"}]
+}
+""");
+
+        assertThat(patched.statusCode(), is(400));
+        assertThat(patched.headers().firstValue("content-type").orElse(""), containsString("application/problem+json"));
     }
 
     // -------------------------

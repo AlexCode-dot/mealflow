@@ -10,4 +10,6 @@ public record CreateWeeklyPlanRequest(
         @NotBlank @Size(max = 20) @Pattern(regexp = "\\d{4}-\\d{2}-\\d{2}", message = "must be ISO date (YYYY-MM-DD)")
         String weeklyStart,
 
+        List<@NotBlank @Size(max = 40) String> sections,
+
         List<@Valid PlanEntryRequest> entries) {}

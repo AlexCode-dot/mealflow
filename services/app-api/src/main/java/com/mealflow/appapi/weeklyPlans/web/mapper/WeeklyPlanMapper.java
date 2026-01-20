@@ -18,19 +18,25 @@ public class WeeklyPlanMapper {
         List<PlanEntry> entries = body.entries() == null
                 ? List.of()
                 : body.entries().stream().map(this::toDomain).toList();
+        List<String> sections = body.sections() == null
+                ? null
+                : body.sections().stream().map(String::trim).toList();
 
-        return new CreateArgs(userId, body.weeklyStart().trim(), entries);
+        return new CreateArgs(userId, body.weeklyStart().trim(), sections, entries);
     }
 
     public PatchArgs toPatchArgs(String userId, String planId, UpdateWeeklyPlanRequest body) {
         List<PlanEntry> entries = body.entries() == null
                 ? null
                 : body.entries().stream().map(this::toDomain).toList();
+        List<String> sections = body.sections() == null
+                ? null
+                : body.sections().stream().map(String::trim).toList();
 
         String weeklyStart =
                 body.weeklyStart() == null ? null : body.weeklyStart().trim();
 
-        return new PatchArgs(userId, planId, weeklyStart, entries);
+        return new PatchArgs(userId, planId, weeklyStart, sections, entries);
     }
 
     public WeeklyPlanListItemResponse toListItem(WeeklyPlan plan) {
@@ -43,9 +49,10 @@ public class WeeklyPlanMapper {
         List<PlanEntryResponse> entries = plan.getEntries() == null
                 ? List.of()
                 : plan.getEntries().stream().map(this::toResponse).toList();
+        List<String> sections = plan.getSections() == null ? List.of() : plan.getSections();
 
         return new WeeklyPlanResponse(
-                plan.getId(), plan.getWeeklyStart(), entries, plan.getCreatedAt(), plan.getUpdatedAt());
+                plan.getId(), plan.getWeeklyStart(), sections, entries, plan.getCreatedAt(), plan.getUpdatedAt());
     }
 
     private PlanEntry toDomain(PlanEntryRequest req) {
@@ -78,7 +85,8 @@ public class WeeklyPlanMapper {
                 entry.getPortions());
     }
 
-    public record CreateArgs(String userId, String weeklyStart, List<PlanEntry> entries) {}
+    public record CreateArgs(String userId, String weeklyStart, List<String> sections, List<PlanEntry> entries) {}
 
-    public record PatchArgs(String userId, String planId, String weeklyStart, List<PlanEntry> entries) {}
+    public record PatchArgs(
+            String userId, String planId, String weeklyStart, List<String> sections, List<PlanEntry> entries) {}
 }
