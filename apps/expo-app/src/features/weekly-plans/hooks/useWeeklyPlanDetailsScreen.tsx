@@ -8,6 +8,7 @@ import { ArrowUpRight, Download, Plus, ShoppingBasket, Trash2, XCircle } from 'l
 import { recipesApi } from '@/src/features/recipes/api/recipesApi';
 import type { RecipeListItem } from '@/src/features/recipes/types';
 import { weeklyPlansApi } from '@/src/features/weekly-plans/api/weeklyPlansApi';
+import { shoppingListsApi } from '@/src/features/shopping-lists/api/shoppingListsApi';
 import { useWeeklyPlanDetails } from '@/src/features/weekly-plans/hooks/useWeeklyPlanDetails';
 import type {
   WeeklyPlan,
@@ -50,6 +51,7 @@ export type WeeklyPlanDetailsState = {
   isRefreshing: boolean;
   isSaving: boolean;
   isSectionSaving: boolean;
+  isGenerating: boolean;
   screenHeight: number;
   contentPaddingBottom: number;
 };
@@ -60,6 +62,7 @@ export type WeeklyPlanDetailsActions = {
   handleRefresh: () => Promise<void>;
   openAddSheet: (section: string) => void;
   openEditSheet: (entry: WeeklyPlanEntry) => void;
+  requestGenerateList: () => Promise<void>;
 };
 
 export type WeeklyPlanDetailsToast = {
@@ -159,6 +162,10 @@ export type WeeklyPlanDetailsConfirms = {
   clearWeekOpen: boolean;
   setClearWeekOpen: (value: boolean) => void;
   confirmClearWeek: () => Promise<void>;
+  generateOpen: boolean;
+  setGenerateOpen: (value: boolean) => void;
+  confirmGenerate: () => Promise<void>;
+  generateDescription: string;
   entryDeleteDescription: string;
   clearWeekDescription: string;
 };
@@ -221,6 +228,7 @@ export function useWeeklyPlanDetailsScreen(): WeeklyPlanDetailsView {
   const [editPickerOpen, setEditPickerOpen] = useState<PickerMode>(null);
   const [confirmEntryDeleteOpen, setConfirmEntryDeleteOpen] = useState(false);
   const [confirmClearWeekOpen, setConfirmClearWeekOpen] = useState(false);
+  const [confirmGenerateOpen, setConfirmGenerateOpen] = useState(false);
   const [resumeEditOnCancel, setResumeEditOnCancel] = useState(false);
   const [addSectionOpen, setAddSectionOpen] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -230,6 +238,7 @@ export function useWeeklyPlanDetailsScreen(): WeeklyPlanDetailsView {
   const [newSectionTitle, setNewSectionTitle] = useState('');
   const [newSectionIndex, setNewSectionIndex] = useState(0);
   const [isSaving, setIsSaving] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
   const [isSectionSaving, setIsSectionSaving] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const toastState = useToastState();
@@ -237,6 +246,43 @@ export function useWeeklyPlanDetailsScreen(): WeeklyPlanDetailsView {
   const handleBack = useCallback(() => {
     router.push(routes.weeklyPlanner);
   }, []);
+
+  const handleGenerateList = useCallback(async () => {
+    if (!planId) {
+      toastState.show({ variant: 'error', message: 'Missing weekly plan.' });
+      return;
+    }
+
+    setIsGenerating(true);
+    try {
+      const list = await shoppingListsApi.create({ weeklyPlanId: planId }, { mode: 'replace' });
+      router.push(routes.shoppingListDetail(list.id));
+    } catch (err) {
+      const uiErr = mapCommonError(toApiError(err));
+      toastState.show({ variant: 'error', title: 'Generate failed', message: uiErr.message });
+    } finally {
+      setIsGenerating(false);
+    }
+  }, [planId, toastState]);
+
+  const requestGenerateList = useCallback(async () => {
+    if (!planId) {
+      toastState.show({ variant: 'error', message: 'Missing weekly plan.' });
+      return;
+    }
+    try {
+      const activeLists = await shoppingListsApi.list('active');
+      const active = activeLists[0];
+      if (!active || active.itemCount === 0) {
+        await handleGenerateList();
+        return;
+      }
+      setConfirmGenerateOpen(true);
+    } catch (err) {
+      const uiErr = mapCommonError(toApiError(err));
+      toastState.show({ variant: 'error', title: 'Generate failed', message: uiErr.message });
+    }
+  }, [handleGenerateList, planId, toastState]);
 
   const actionItems = useMemo(
     () => [
@@ -250,7 +296,8 @@ export function useWeeklyPlanDetailsScreen(): WeeklyPlanDetailsView {
             strokeWidth={2.25}
           />
         ),
-        onPress: () => undefined,
+        onPress: requestGenerateList,
+        disabled: isGenerating,
       },
       {
         key: 'clear',
@@ -261,7 +308,7 @@ export function useWeeklyPlanDetailsScreen(): WeeklyPlanDetailsView {
         onPress: () => setConfirmClearWeekOpen(true),
       },
     ],
-    [],
+    [isGenerating, requestGenerateList],
   );
 
   const centerAction = useMemo(
@@ -572,6 +619,14 @@ export function useWeeklyPlanDetailsScreen(): WeeklyPlanDetailsView {
     return `This will remove all meals from ${label} and reset sections to Breakfast, Lunch, and Dinner.`;
   }, [plan]);
 
+  const generateDescription = useMemo(() => {
+    if (!plan) {
+      return 'This will replace your active shopping list with items from this week.';
+    }
+    const label = formatWeekRange(plan.weeklyStart);
+    return `This will replace your active shopping list with items from ${label}.`;
+  }, [plan]);
+
   const resetAddForm = useCallback(() => {
     setSelectedRecipeId(null);
     setCustomTitle('');
@@ -744,6 +799,11 @@ export function useWeeklyPlanDetailsScreen(): WeeklyPlanDetailsView {
       setConfirmClearWeekOpen(false);
     }
   }, [plan, setPlan, toastState]);
+
+  const confirmGenerate = useCallback(async () => {
+    setConfirmGenerateOpen(false);
+    await handleGenerateList();
+  }, [handleGenerateList]);
 
   const editActionItems = useMemo(() => {
     const items = [
@@ -920,6 +980,7 @@ export function useWeeklyPlanDetailsScreen(): WeeklyPlanDetailsView {
       isRefreshing,
       isSaving,
       isSectionSaving,
+      isGenerating,
       screenHeight,
       contentPaddingBottom,
     }),
@@ -931,6 +992,7 @@ export function useWeeklyPlanDetailsScreen(): WeeklyPlanDetailsView {
       isRefreshing,
       isSaving,
       isSectionSaving,
+      isGenerating,
       screenHeight,
       contentPaddingBottom,
     ],
@@ -943,8 +1005,9 @@ export function useWeeklyPlanDetailsScreen(): WeeklyPlanDetailsView {
       handleRefresh,
       openAddSheet,
       openEditSheet,
+      requestGenerateList,
     }),
-    [load, handleBack, handleRefresh, openAddSheet, openEditSheet],
+    [load, handleBack, handleRefresh, openAddSheet, openEditSheet, requestGenerateList],
   );
 
   const toast = useMemo<WeeklyPlanDetailsToast>(
@@ -1125,16 +1188,23 @@ export function useWeeklyPlanDetailsScreen(): WeeklyPlanDetailsView {
       clearWeekOpen: confirmClearWeekOpen,
       setClearWeekOpen: setConfirmClearWeekOpen,
       confirmClearWeek,
+      generateOpen: confirmGenerateOpen,
+      setGenerateOpen: setConfirmGenerateOpen,
+      confirmGenerate,
+      generateDescription,
       entryDeleteDescription,
       clearWeekDescription,
     }),
     [
+      confirmGenerate,
+      confirmGenerateOpen,
       confirmEntryDeleteOpen,
       setConfirmEntryDeleteOpen,
       confirmEntryDelete,
       confirmClearWeekOpen,
       setConfirmClearWeekOpen,
       confirmClearWeek,
+      generateDescription,
       entryDeleteDescription,
       clearWeekDescription,
     ],

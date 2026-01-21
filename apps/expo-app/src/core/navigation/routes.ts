@@ -9,6 +9,12 @@ export const routes = {
   overview: '/overview' as const,
   profile: '/profile' as const,
   shoppingList: '/shopping-list' as const,
+  shoppingListWithToast: (toast: string) =>
+    ({
+      pathname: '/shopping-list',
+      params: { toast },
+    }) as Href,
+  shoppingListDetail: (id: string) => `/shopping-list/${id}` as Href,
   settings: '/settings' as const,
 
   recipes: '/recipes' as const,

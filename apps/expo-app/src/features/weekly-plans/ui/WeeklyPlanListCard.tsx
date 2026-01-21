@@ -76,8 +76,9 @@ const styles = StyleSheet.create({
     padding: theme.spacing.s3,
   },
   cardCurrent: {
-    backgroundColor: theme.colors.successBanner,
+    backgroundColor: theme.colors.primaryLight,
     borderColor: theme.colors.primary,
+    borderWidth: 2,
   },
   cardEmpty: {
     backgroundColor: theme.colors.bgLight,
