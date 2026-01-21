@@ -113,6 +113,14 @@ export function AppTabBar({ state, descriptors, navigation }: BottomTabBarProps)
       })()
     : tabRoutes.map((item) => ({ type: 'tab', item }));
 
+  const tabHrefByName: Record<string, string> = {
+    recipes: routes.recipes,
+    overview: routes.overview,
+    'shopping-list': routes.shoppingList,
+    'weekly-planner': routes.weeklyPlanner,
+    settings: routes.settings,
+  };
+
   return (
     <View
       style={[styles.bar, showAddRecipe ? styles.barNotched : styles.barFlat, { paddingBottom }]}
@@ -135,8 +143,15 @@ export function AppTabBar({ state, descriptors, navigation }: BottomTabBarProps)
             canPreventDefault: true,
           });
 
-          if (!isFocused && !event.defaultPrevented) {
-            navigation.navigate(route.name as never);
+          if (!event.defaultPrevented) {
+            const href = tabHrefByName[route.name];
+            if (href) {
+              router.replace(href);
+              return;
+            }
+            if (!isFocused) {
+              navigation.navigate(route.name as never);
+            }
           }
         };
 
