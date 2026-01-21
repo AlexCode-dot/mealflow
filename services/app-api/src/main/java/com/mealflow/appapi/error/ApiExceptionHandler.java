@@ -3,6 +3,8 @@ package com.mealflow.appapi.error;
 import com.mealflow.appapi.inspiration.service.InspirationNotFoundException;
 import com.mealflow.appapi.recipes.service.RecipeNotFoundException;
 import com.mealflow.appapi.recipes.service.RecipeValidationException;
+import com.mealflow.appapi.shoppingLists.service.ShoppingListNotFoundException;
+import com.mealflow.appapi.shoppingLists.service.ShoppingListValidationException;
 import com.mealflow.appapi.weeklyPlans.service.WeeklyPlanNotFoundException;
 import com.mealflow.appapi.weeklyPlans.service.WeeklyPlanValidationException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -48,6 +50,12 @@ public class ApiExceptionHandler {
         return problems.build(HttpStatus.NOT_FOUND, ex.getMessage(), req);
     }
 
+    @ExceptionHandler(ShoppingListNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ProblemDetail handleShoppingListNotFound(ShoppingListNotFoundException ex, HttpServletRequest req) {
+        return problems.build(HttpStatus.NOT_FOUND, ex.getMessage(), req);
+    }
+
     @ExceptionHandler(RecipeValidationException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ProblemDetail handleRecipeValidation(RecipeValidationException ex, HttpServletRequest req) {
@@ -57,6 +65,12 @@ public class ApiExceptionHandler {
     @ExceptionHandler(WeeklyPlanValidationException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ProblemDetail handleWeeklyPlanValidation(WeeklyPlanValidationException ex, HttpServletRequest req) {
+        return problems.build(HttpStatus.BAD_REQUEST, ex.getMessage(), req);
+    }
+
+    @ExceptionHandler(ShoppingListValidationException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ProblemDetail handleShoppingListValidation(ShoppingListValidationException ex, HttpServletRequest req) {
         return problems.build(HttpStatus.BAD_REQUEST, ex.getMessage(), req);
     }
 

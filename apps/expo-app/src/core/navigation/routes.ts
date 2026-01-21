@@ -8,6 +8,8 @@ export const routes = {
   // Tabs
   overview: '/overview' as const,
   profile: '/profile' as const,
+  shoppingList: '/shopping-list' as const,
+  settings: '/settings' as const,
 
   recipes: '/recipes' as const,
   recipesWithToast: (toast: string) =>
