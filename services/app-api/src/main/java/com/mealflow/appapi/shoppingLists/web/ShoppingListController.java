@@ -69,9 +69,8 @@ public class ShoppingListController {
             Authentication auth) {
         String userId = currentUser.userId(auth);
         CreateArgs args = mapper.toCreateArgs(userId, body);
-        return ResponseEntity.ok(
-                mapper.toResponse(shoppingListService.createOrMerge(
-                        args.userId(), args.weeklyPlanId(), parseReplaceMode(mode), args.title())));
+        return ResponseEntity.ok(mapper.toResponse(shoppingListService.createOrMerge(
+                args.userId(), args.weeklyPlanId(), parseReplaceMode(mode), args.title())));
     }
 
     @PatchMapping("/{id}")

@@ -21,7 +21,8 @@ public class ShoppingListMapper {
         String weeklyPlanId = body == null || body.weeklyPlanId() == null
                 ? null
                 : body.weeklyPlanId().trim();
-        String title = body == null || body.title() == null ? null : body.title().trim();
+        String title =
+                body == null || body.title() == null ? null : body.title().trim();
         return new CreateArgs(userId, weeklyPlanId, title);
     }
 
@@ -35,7 +36,8 @@ public class ShoppingListMapper {
                 throw new ShoppingListValidationException(ex.getMessage());
             }
         }
-        String title = body == null || body.title() == null ? null : body.title().trim();
+        String title =
+                body == null || body.title() == null ? null : body.title().trim();
         return new PatchArgs(userId, listId, status, title);
     }
 

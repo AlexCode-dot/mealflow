@@ -6,4 +6,5 @@ import jakarta.validation.constraints.Size;
 public record UpdateShoppingListRequest(
         @Pattern(regexp = "(?i)active|archived", message = "must be active or archived")
         String status,
+
         @Size(max = 80) String title) {}
