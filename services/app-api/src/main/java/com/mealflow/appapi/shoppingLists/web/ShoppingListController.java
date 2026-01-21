@@ -64,11 +64,14 @@ public class ShoppingListController {
 
     @PostMapping
     public ResponseEntity<ShoppingListResponse> create(
-            @Valid @RequestBody(required = false) CreateShoppingListRequest body, Authentication auth) {
+            @Valid @RequestBody(required = false) CreateShoppingListRequest body,
+            @RequestParam(name = "mode", required = false) String mode,
+            Authentication auth) {
         String userId = currentUser.userId(auth);
         CreateArgs args = mapper.toCreateArgs(userId, body);
         return ResponseEntity.ok(
-                mapper.toResponse(shoppingListService.createOrMerge(args.userId(), args.weeklyPlanId())));
+                mapper.toResponse(shoppingListService.createOrMerge(
+                        args.userId(), args.weeklyPlanId(), parseReplaceMode(mode), args.title())));
     }
 
     @PatchMapping("/{id}")
@@ -76,7 +79,8 @@ public class ShoppingListController {
             @PathVariable String id, @Valid @RequestBody UpdateShoppingListRequest body, Authentication auth) {
         String userId = currentUser.userId(auth);
         PatchArgs args = mapper.toPatchArgs(userId, id, body);
-        return mapper.toResponse(shoppingListService.patchList(args.userId(), args.listId(), args.status()));
+        return mapper.toResponse(
+                shoppingListService.patchList(args.userId(), args.listId(), args.status(), args.title()));
     }
 
     @PostMapping("/{id}/items")
@@ -129,5 +133,19 @@ public class ShoppingListController {
         } catch (IllegalArgumentException ex) {
             throw new ShoppingListValidationException(ex.getMessage());
         }
+    }
+
+    private boolean parseReplaceMode(String mode) {
+        if (mode == null || mode.isBlank()) {
+            return false;
+        }
+        String normalized = mode.trim().toLowerCase();
+        if ("replace".equals(normalized)) {
+            return true;
+        }
+        if ("merge".equals(normalized)) {
+            return false;
+        }
+        throw new ShoppingListValidationException("mode must be merge or replace");
     }
 }

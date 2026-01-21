@@ -21,7 +21,8 @@ public class ShoppingListMapper {
         String weeklyPlanId = body == null || body.weeklyPlanId() == null
                 ? null
                 : body.weeklyPlanId().trim();
-        return new CreateArgs(userId, weeklyPlanId);
+        String title = body == null || body.title() == null ? null : body.title().trim();
+        return new CreateArgs(userId, weeklyPlanId, title);
     }
 
     public PatchArgs toPatchArgs(String userId, String listId, UpdateShoppingListRequest body) {
@@ -34,7 +35,8 @@ public class ShoppingListMapper {
                 throw new ShoppingListValidationException(ex.getMessage());
             }
         }
-        return new PatchArgs(userId, listId, status);
+        String title = body == null || body.title() == null ? null : body.title().trim();
+        return new PatchArgs(userId, listId, status, title);
     }
 
     public AddItemArgs toAddItemArgs(String userId, String listId, AddShoppingListItemRequest body) {
@@ -58,6 +60,7 @@ public class ShoppingListMapper {
                 list.getId(),
                 list.getStatus() == null ? null : list.getStatus().value(),
                 list.getWeeklyPlanId(),
+                list.getTitle(),
                 items,
                 list.getCreatedAt(),
                 list.getUpdatedAt());
@@ -69,6 +72,7 @@ public class ShoppingListMapper {
                 list.getId(),
                 list.getStatus() == null ? null : list.getStatus().value(),
                 list.getWeeklyPlanId(),
+                list.getTitle(),
                 count,
                 list.getCreatedAt(),
                 list.getUpdatedAt());
@@ -79,9 +83,9 @@ public class ShoppingListMapper {
                 item.getId(), item.getName(), item.getQuantity(), item.getUnit(), item.isChecked());
     }
 
-    public record CreateArgs(String userId, String weeklyPlanId) {}
+    public record CreateArgs(String userId, String weeklyPlanId, String title) {}
 
-    public record PatchArgs(String userId, String listId, ShoppingListStatus status) {}
+    public record PatchArgs(String userId, String listId, ShoppingListStatus status, String title) {}
 
     public record AddItemArgs(String userId, String listId, String name, Double quantity, String unit) {}
 

@@ -59,7 +59,7 @@ class ShoppingListControllerIT extends MongoTestContainerConfig {
         String recipeId = createRecipe(userId, "Pasta", 2);
         String planId = createWeeklyPlan(userId, recipeId, 4);
 
-        HttpResponse<String> created = post("/api/shopping-lists", token, """
+        HttpResponse<String> created = post("/api/shopping-lists?mode=replace", token, """
 { "weeklyPlanId":"%s" }
 """.formatted(planId));
 
