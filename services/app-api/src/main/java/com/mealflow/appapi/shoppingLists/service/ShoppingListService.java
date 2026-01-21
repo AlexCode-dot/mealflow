@@ -66,8 +66,7 @@ public class ShoppingListService {
                 .findByIdAndUserId(weeklyPlanId, userId)
                 .orElseThrow(() -> new WeeklyPlanNotFoundException("Weekly plan not found"));
 
-        List<ShoppingListItem> mergedItems =
-                generator.mergePlan(active.getItems(), plan, loadRecipes(plan, userId));
+        List<ShoppingListItem> mergedItems = generator.mergePlan(active.getItems(), plan, loadRecipes(plan, userId));
         active.setItems(mergedItems);
         active.setWeeklyPlanId(weeklyPlanId);
         active.setUpdatedAt(clock.instant());
@@ -97,8 +96,8 @@ public class ShoppingListService {
         }
         String normalizedUnit = normalizeUnit(unit);
 
-        ShoppingListItem item = new ShoppingListItem(
-                UUID.randomUUID().toString(), normalizedName, quantity, normalizedUnit, false);
+        ShoppingListItem item =
+                new ShoppingListItem(UUID.randomUUID().toString(), normalizedName, quantity, normalizedUnit, false);
 
         List<ShoppingListItem> items = new ArrayList<>(list.getItems());
         items.add(item);
@@ -108,13 +107,7 @@ public class ShoppingListService {
     }
 
     public ShoppingList updateItem(
-            String userId,
-            String listId,
-            String itemId,
-            String name,
-            Double quantity,
-            String unit,
-            Boolean checked) {
+            String userId, String listId, String itemId, String name, Double quantity, String unit, Boolean checked) {
         ShoppingList list = getForUser(userId, listId);
         ShoppingListItem item = findItem(list, itemId);
 
@@ -173,8 +166,7 @@ public class ShoppingListService {
         }
 
         Instant now = clock.instant();
-        ShoppingList list = new ShoppingList(
-                userId, ShoppingListStatus.ACTIVE, null, List.of(), now, now);
+        ShoppingList list = new ShoppingList(userId, ShoppingListStatus.ACTIVE, null, List.of(), now, now);
         return shoppingListRepository.save(list);
     }
 

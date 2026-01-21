@@ -86,11 +86,5 @@ public class ShoppingListMapper {
     public record AddItemArgs(String userId, String listId, String name, Double quantity, String unit) {}
 
     public record UpdateItemArgs(
-            String userId,
-            String listId,
-            String itemId,
-            String name,
-            Double quantity,
-            String unit,
-            Boolean checked) {}
+            String userId, String listId, String itemId, String name, Double quantity, String unit, Boolean checked) {}
 }

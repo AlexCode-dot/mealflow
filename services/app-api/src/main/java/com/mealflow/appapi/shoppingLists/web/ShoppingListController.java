@@ -67,7 +67,8 @@ public class ShoppingListController {
             @Valid @RequestBody(required = false) CreateShoppingListRequest body, Authentication auth) {
         String userId = currentUser.userId(auth);
         CreateArgs args = mapper.toCreateArgs(userId, body);
-        return ResponseEntity.ok(mapper.toResponse(shoppingListService.createOrMerge(args.userId(), args.weeklyPlanId())));
+        return ResponseEntity.ok(
+                mapper.toResponse(shoppingListService.createOrMerge(args.userId(), args.weeklyPlanId())));
     }
 
     @PatchMapping("/{id}")
@@ -95,15 +96,14 @@ public class ShoppingListController {
             Authentication auth) {
         String userId = currentUser.userId(auth);
         UpdateItemArgs args = mapper.toUpdateItemArgs(userId, id, itemId, body);
-        return mapper.toResponse(
-                shoppingListService.updateItem(
-                        args.userId(),
-                        args.listId(),
-                        args.itemId(),
-                        args.name(),
-                        args.quantity(),
-                        args.unit(),
-                        args.checked()));
+        return mapper.toResponse(shoppingListService.updateItem(
+                args.userId(),
+                args.listId(),
+                args.itemId(),
+                args.name(),
+                args.quantity(),
+                args.unit(),
+                args.checked()));
     }
 
     @DeleteMapping("/{id}/items/{itemId}")

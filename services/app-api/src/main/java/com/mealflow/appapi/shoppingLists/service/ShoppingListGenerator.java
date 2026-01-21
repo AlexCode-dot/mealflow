@@ -17,9 +17,7 @@ import org.springframework.stereotype.Component;
 public class ShoppingListGenerator {
 
     public List<ShoppingListItem> mergePlan(
-            List<ShoppingListItem> existingItems,
-            WeeklyPlan plan,
-            Map<String, Recipe> recipesById) {
+            List<ShoppingListItem> existingItems, WeeklyPlan plan, Map<String, Recipe> recipesById) {
         List<ShoppingListItem> items = new ArrayList<>(existingItems == null ? List.of() : existingItems);
 
         Map<String, ShoppingListItem> mergeableByKey = new HashMap<>();
@@ -78,8 +76,8 @@ public class ShoppingListGenerator {
         String unit = normalizeUnit(ingredient.getUnit());
 
         Double scaledQuantity = scaleQuantity(quantity, recipe.getPortions(), entry.getPortions());
-        ShoppingListItem incoming = new ShoppingListItem(
-                UUID.randomUUID().toString(), name, scaledQuantity, unit, false);
+        ShoppingListItem incoming =
+                new ShoppingListItem(UUID.randomUUID().toString(), name, scaledQuantity, unit, false);
 
         if (isMergeable(incoming)) {
             String key = normalizedKey(incoming.getName(), incoming.getUnit());
@@ -137,5 +135,4 @@ public class ShoppingListGenerator {
         String trimmed = unit.trim();
         return trimmed.isBlank() ? null : trimmed;
     }
-
 }
