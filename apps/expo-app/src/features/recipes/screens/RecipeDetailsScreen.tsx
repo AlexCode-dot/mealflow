@@ -101,9 +101,7 @@ export function RecipeDetailsScreen() {
     if (recipePortions && recipePortions > 0) {
       const value = String(recipePortions);
       if (!base.some((option) => option.value === value)) {
-        return [...base, { label: value, value }].sort(
-          (a, b) => Number(a.value) - Number(b.value),
-        );
+        return [...base, { label: value, value }].sort((a, b) => Number(a.value) - Number(b.value));
       }
     }
     return base;
@@ -128,7 +126,7 @@ export function RecipeDetailsScreen() {
         show({ variant: 'error', message: result.message });
       }
     },
-    [addRecipeToShoppingList, show],
+    [show],
   );
 
   const onAddToShoppingList = useCallback(async () => {
@@ -161,7 +159,14 @@ export function RecipeDetailsScreen() {
     setAddListOpen(false);
     const result = await addRecipeToShoppingList(state.recipe, selected);
     handleAddResult(result);
-  }, [addListPortions, addRecipeToShoppingList, handleAddResult, isAddingToList, show, state.recipe]);
+  }, [
+    addListPortions,
+    addRecipeToShoppingList,
+    handleAddResult,
+    isAddingToList,
+    show,
+    state.recipe,
+  ]);
 
   const onDelete = useCallback(() => {
     setDeleteOpen(true);
@@ -242,7 +247,6 @@ export function RecipeDetailsScreen() {
     };
   }, [isFocused, toast]);
 
-
   const doDelete = async () => {
     setIsLeaving(true);
     const ok = await actions.remove();
@@ -278,7 +282,9 @@ export function RecipeDetailsScreen() {
 
   const onBack = useCallback(() => {
     if (returnPlanId) {
-      router.push(routes.weeklyPlanEdit(returnPlanId, returnEntryId ?? undefined, returnDay ?? undefined));
+      router.push(
+        routes.weeklyPlanEdit(returnPlanId, returnEntryId ?? undefined, returnDay ?? undefined),
+      );
       return;
     }
     router.replace(routes.recipes);
