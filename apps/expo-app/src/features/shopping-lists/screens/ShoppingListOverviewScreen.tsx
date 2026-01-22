@@ -112,7 +112,7 @@ export default function ShoppingListOverviewScreen() {
             ]}
           >
             <View style={styles.openButtonRow}>
-              <ShoppingBasket size={22} color={theme.colors.primary} strokeWidth={2.6} />
+              <ShoppingBasket size={22} color={theme.colors.primary} strokeWidth={2.0} />
               <Text style={styles.openButtonText}>
                 {data.activeList ? 'Open List' : 'Create List'}
               </Text>
@@ -143,16 +143,26 @@ export default function ShoppingListOverviewScreen() {
                 onPress={actions.requestGenerateFromCurrentWeek}
                 disabled={state.isGenerating}
                 style={({ pressed }) => [
-                  styles.quickButton,
+                  styles.quickRow,
                   pressed ? styles.quickPressed : null,
                   state.isGenerating ? styles.quickDisabled : null,
                 ]}
               >
-                <CalendarDays size={18} color={theme.colors.textOnPrimary} />
-                <Text style={styles.quickLabel}>
-                  {state.isGenerating ? 'Generating...' : 'Generate from this week'}
-                </Text>
+                <View style={styles.quickRowContent}>
+                  <CalendarDays size={18} color={theme.colors.primaryDark} />
+                  <Text style={styles.quickLabel}>
+                    {state.isGenerating ? 'Generating...' : 'Generate from this week'}
+                  </Text>
+                </View>
+                <ChevronRight
+                  size={18}
+                  color={theme.colors.primaryDark}
+                  style={styles.quickRowChevron}
+                />
               </Pressable>
+              <Text style={styles.quickHint}>
+                Auto-generate shopping list from this week&apos;s meal plan.
+              </Text>
             </Card>
           </View>
         ) : null}
@@ -207,8 +217,9 @@ const styles = StyleSheet.create({
   summaryCard: {
     gap: theme.spacing.s4,
     marginBottom: theme.spacing.s4,
-    backgroundColor: theme.colors.primary,
-    borderColor: theme.colors.primaryLight,
+    backgroundColor: theme.colors.primaryDark,
+    borderColor: theme.colors.primaryDark,
+    padding: theme.spacing.s5,
   },
   summaryHeader: {
     flexDirection: 'row',
@@ -249,16 +260,16 @@ const styles = StyleSheet.create({
   },
   statsRow: {
     flexDirection: 'row',
-    gap: theme.spacing.s3,
+    gap: theme.spacing.s2,
   },
   statBox: {
     flex: 1,
     borderRadius: theme.radius.md,
     paddingVertical: theme.spacing.s3,
     alignItems: 'center',
-    backgroundColor: theme.colors.primaryDark,
+    backgroundColor: theme.colors.primary,
     borderWidth: 1,
-    borderColor: theme.colors.primaryDark,
+    borderColor: theme.colors.primaryLight,
   },
   statValue: {
     fontSize: 20,
@@ -268,12 +279,12 @@ const styles = StyleSheet.create({
   statLabel: {
     fontSize: 12,
     fontWeight: '700',
-    color: theme.colors.iconMutedOnPrimary,
+    color: theme.colors.primaryLight,
   },
   progressTrack: {
     height: 10,
     borderRadius: 999,
-    backgroundColor: 'rgba(245,241,230,0.35)',
+    backgroundColor: 'rgba(255,255,255,0.35)',
     overflow: 'hidden',
   },
   progressFill: {
@@ -282,9 +293,10 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.surface,
   },
   openButton: {
+    marginTop: theme.spacing.s1,
     paddingVertical: theme.spacing.s4,
     paddingHorizontal: theme.spacing.s4,
-    borderRadius: theme.radius.pill,
+    borderRadius: theme.radius.md,
     backgroundColor: theme.colors.surface,
     borderWidth: 1,
     borderColor: theme.colors.borderNeutral,
@@ -303,7 +315,7 @@ const styles = StyleSheet.create({
   },
   openButtonText: {
     fontSize: 16,
-    fontWeight: '800',
+    fontWeight: '700',
     color: theme.colors.primary,
   },
   openButtonPressed: {
@@ -342,27 +354,43 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     color: theme.colors.text,
   },
-  quickButton: {
+  quickRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: theme.spacing.s2,
     paddingVertical: theme.spacing.s3,
+    paddingHorizontal: theme.spacing.s3,
     borderRadius: theme.radius.md,
-    backgroundColor: theme.colors.primaryDark,
-    borderWidth: 1,
+    backgroundColor: theme.colors.bgLight,
+    borderWidth: 1.5,
     borderColor: theme.colors.primaryDark,
+  },
+  quickRowContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.s2,
+  },
+  quickRowChevron: {
+    position: 'absolute',
+    right: theme.spacing.s3,
   },
   quickLabel: {
     fontSize: 14,
     fontWeight: '800',
-    color: theme.colors.textOnPrimary,
+    color: theme.colors.primaryDark,
   },
   quickPressed: {
     opacity: 0.9,
   },
   quickDisabled: {
     opacity: 0.6,
+  },
+  quickHint: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: theme.colors.textMuted,
+    textAlign: 'center',
   },
   archivedList: {
     gap: theme.spacing.s2,
