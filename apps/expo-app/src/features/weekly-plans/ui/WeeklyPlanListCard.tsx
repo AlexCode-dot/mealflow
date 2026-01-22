@@ -57,11 +57,7 @@ export function WeeklyPlanListCard({
             </View>
           ) : null}
         </View>
-        <ChevronRight
-          size={22}
-          color={isCurrent ? theme.colors.primaryDark : theme.colors.textMuted}
-          strokeWidth={2.2}
-        />
+        <ChevronRight size={22} color={theme.colors.textMuted} strokeWidth={2.2} />
       </View>
     </Pressable>
   );
@@ -76,9 +72,8 @@ const styles = StyleSheet.create({
     padding: theme.spacing.s3,
   },
   cardCurrent: {
-    backgroundColor: theme.colors.primaryLight,
-    borderColor: theme.colors.primary,
-    borderWidth: 2,
+    borderLeftWidth: 3,
+    borderLeftColor: theme.colors.primary,
   },
   cardEmpty: {
     backgroundColor: theme.colors.bgLight,
@@ -104,17 +99,13 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     color: theme.colors.text,
   },
-  titleCurrent: {
-    color: theme.colors.primaryDark,
-  },
+  titleCurrent: {},
   range: {
     fontSize: 14,
     fontWeight: '600',
     color: theme.colors.textMuted,
   },
-  rangeCurrent: {
-    color: theme.colors.primaryDark,
-  },
+  rangeCurrent: {},
   metaRow: {
     flexDirection: 'row',
     alignItems: 'center',
