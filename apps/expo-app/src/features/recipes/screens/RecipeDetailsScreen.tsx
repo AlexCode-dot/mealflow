@@ -16,17 +16,19 @@ import {
 } from '@/src/shared/ui';
 import { theme } from '@/src/shared/theme/theme';
 import { routes } from '@/src/core/navigation/routes';
-import { useRecipeDetails } from '@/src/features/recipes/hooks';
+import { useAddRecipeToShoppingList, useRecipeDetails } from '@/src/features/recipes/hooks';
 import {
   RecipeIngredientRow,
   RecipeStepRow,
   RecipeSheetLayout,
   RecipeDetailsTabs,
   type RecipeDetailsTab,
+  RecipePickerSheet,
 } from '@/src/features/recipes/ui';
 import { useToastState } from '@/src/shared/hooks/useToastState';
 import { TAB_BAR } from '@/src/shared/ui/layout/tabBar';
 import { formatDuration } from '@/src/features/recipes/utils/formatDuration';
+import { RECIPE_PORTIONS_OPTIONS } from '@/src/features/recipes/constants/recipePickerOptions';
 
 export function RecipeDetailsScreen() {
   const params = useLocalSearchParams<{
@@ -53,7 +55,10 @@ export function RecipeDetailsScreen() {
   const [stepText, setStepText] = useState('');
   const [stepIndex, setStepIndex] = useState<number | null>(null);
   const [titleOpen, setTitleOpen] = useState(false);
+  const [addListOpen, setAddListOpen] = useState(false);
+  const [addListPortions, setAddListPortions] = useState('');
   const { toast, show, clear } = useToastState();
+  const { isAdding: isAddingToList, addRecipeToShoppingList } = useAddRecipeToShoppingList();
   const didInitialFocusLoad = useRef(false);
   const isFocused = useIsFocused();
 
@@ -90,14 +95,78 @@ export function RecipeDetailsScreen() {
     ];
   }, [state.recipe]);
 
+  const portionsOptions = useMemo(() => {
+    const base = RECIPE_PORTIONS_OPTIONS.filter((option) => option.value !== '0');
+    const recipePortions = state.recipe?.portions ?? null;
+    if (recipePortions && recipePortions > 0) {
+      const value = String(recipePortions);
+      if (!base.some((option) => option.value === value)) {
+        return [...base, { label: value, value }].sort((a, b) => Number(a.value) - Number(b.value));
+      }
+    }
+    return base;
+  }, [state.recipe?.portions]);
+
   const onEdit = useCallback(() => {
     if (!id) return;
     router.push(routes.recipeEdit(id));
   }, [id]);
 
-  const onAddToShoppingList = useCallback(() => {
-    show({ variant: 'success', message: 'Added to shopping list' });
-  }, [show]);
+  const handleAddResult = useCallback(
+    (result: Awaited<ReturnType<typeof addRecipeToShoppingList>>) => {
+      if (result.ok) {
+        show({ variant: 'success', message: 'Added to shopping list.' });
+        return;
+      }
+      if (result.reason === 'no-ingredients') {
+        show({ variant: 'info', message: 'No ingredients to add.' });
+        return;
+      }
+      if (result.reason === 'error') {
+        show({ variant: 'error', message: result.message });
+      }
+    },
+    [show],
+  );
+
+  const onAddToShoppingList = useCallback(async () => {
+    if (!state.recipe) return;
+    const recipePortions = state.recipe.portions ?? null;
+    if (recipePortions && recipePortions > 0) {
+      setAddListPortions(String(recipePortions));
+      setAddListOpen(true);
+      return;
+    }
+
+    const result = await addRecipeToShoppingList(state.recipe, null);
+    handleAddResult(result);
+  }, [addRecipeToShoppingList, handleAddResult, state.recipe]);
+
+  const parsePortions = (value: string) => {
+    const trimmed = value.trim();
+    if (!trimmed) return null;
+    const parsed = Number(trimmed);
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+  };
+
+  const confirmAddToList = useCallback(async () => {
+    if (isAddingToList) return;
+    const selected = parsePortions(addListPortions);
+    if (!selected) {
+      show({ variant: 'error', message: 'Pick a valid portions value.' });
+      return;
+    }
+    setAddListOpen(false);
+    const result = await addRecipeToShoppingList(state.recipe, selected);
+    handleAddResult(result);
+  }, [
+    addListPortions,
+    addRecipeToShoppingList,
+    handleAddResult,
+    isAddingToList,
+    show,
+    state.recipe,
+  ]);
 
   const onDelete = useCallback(() => {
     setDeleteOpen(true);
@@ -124,6 +193,7 @@ export function RecipeDetailsScreen() {
           />
         ),
         onPress: onAddToShoppingList,
+        disabled: isAddingToList,
       },
       {
         key: 'delete',
@@ -134,7 +204,7 @@ export function RecipeDetailsScreen() {
         onPress: onDelete,
       },
     ],
-    [onAddToShoppingList, onDelete, onEdit],
+    [isAddingToList, onAddToShoppingList, onDelete, onEdit],
   );
 
   useBottomBarActions(isLeaving ? null : actionItems);
@@ -212,7 +282,9 @@ export function RecipeDetailsScreen() {
 
   const onBack = useCallback(() => {
     if (returnPlanId) {
-      router.push(routes.weeklyPlanEdit(returnPlanId, returnEntryId ?? undefined, returnDay ?? undefined));
+      router.push(
+        routes.weeklyPlanEdit(returnPlanId, returnEntryId ?? undefined, returnDay ?? undefined),
+      );
       return;
     }
     router.replace(routes.recipes);
@@ -345,6 +417,17 @@ export function RecipeDetailsScreen() {
         onConfirm={doDelete}
         onCancel={() => setDeleteOpen(false)}
         disabled={state.isDeleting}
+      />
+
+      <RecipePickerSheet
+        visible={addListOpen}
+        title="Portions"
+        value={addListPortions || '1'}
+        options={portionsOptions}
+        onChange={setAddListPortions}
+        onClose={() => setAddListOpen(false)}
+        onDone={confirmAddToList}
+        doneLabel={isAddingToList ? 'Adding...' : 'Add Items'}
       />
 
       <ModalSheet visible={stepOpen} onClose={() => setStepOpen(false)}>

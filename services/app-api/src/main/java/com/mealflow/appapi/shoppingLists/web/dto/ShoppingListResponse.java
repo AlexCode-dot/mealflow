@@ -7,6 +7,7 @@ public record ShoppingListResponse(
         String id,
         String status,
         String weeklyPlanId,
+        String title,
         List<ShoppingListItemResponse> items,
         Instant createdAt,
         Instant updatedAt) {}

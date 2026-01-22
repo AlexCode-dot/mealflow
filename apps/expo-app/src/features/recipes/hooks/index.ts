@@ -2,6 +2,7 @@ export { useCreateRecipe } from './useCreateRecipe';
 export { useEditRecipe } from './useEditRecipe';
 export { useInspirationDetails } from './useInspirationDetails';
 export { useRecipeDetails } from './useRecipeDetails';
+export { useAddRecipeToShoppingList } from './useAddRecipeToShoppingList';
 export { useRecipesScreen } from './useRecipesScreen';
 export { useRecipeDiscovery } from './useRecipeDiscovery';
 export { useRecipeEditorUiState } from './useRecipeEditorState';

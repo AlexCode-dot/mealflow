@@ -20,6 +20,8 @@ public class ShoppingList {
 
     private String weeklyPlanId;
 
+    private String title;
+
     private List<ShoppingListItem> items = new ArrayList<>();
 
     private Instant createdAt;
@@ -33,6 +35,7 @@ public class ShoppingList {
             String userId,
             ShoppingListStatus status,
             String weeklyPlanId,
+            String title,
             List<ShoppingListItem> items,
             Instant createdAt,
             Instant updatedAt) {
@@ -40,6 +43,7 @@ public class ShoppingList {
         this.userId = userId;
         this.status = status;
         this.weeklyPlanId = weeklyPlanId;
+        this.title = title;
         this.items = items != null ? items : new ArrayList<>();
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
@@ -49,10 +53,11 @@ public class ShoppingList {
             String userId,
             ShoppingListStatus status,
             String weeklyPlanId,
+            String title,
             List<ShoppingListItem> items,
             Instant createdAt,
             Instant updatedAt) {
-        this(null, userId, status, weeklyPlanId, items, createdAt, updatedAt);
+        this(null, userId, status, weeklyPlanId, title, items, createdAt, updatedAt);
     }
 
     public String getId() {
@@ -85,6 +90,14 @@ public class ShoppingList {
 
     public void setWeeklyPlanId(String weeklyPlanId) {
         this.weeklyPlanId = weeklyPlanId;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
     }
 
     public List<ShoppingListItem> getItems() {

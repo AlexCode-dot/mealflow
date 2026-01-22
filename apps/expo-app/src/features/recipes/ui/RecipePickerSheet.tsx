@@ -14,6 +14,7 @@ type Props = {
   onChange: (value: string) => void;
   onClose: () => void;
   onDone?: () => void;
+  doneLabel?: string;
 };
 
 export function RecipePickerSheet({
@@ -24,9 +25,16 @@ export function RecipePickerSheet({
   onChange,
   onClose,
   onDone,
+  doneLabel,
 }: Props) {
   return (
-    <PickerSheet visible={visible} title={title} onClose={onClose} onDone={onDone}>
+    <PickerSheet
+      visible={visible}
+      title={title}
+      onClose={onClose}
+      onDone={onDone}
+      doneLabel={doneLabel}
+    >
       <Picker selectedValue={value} onValueChange={(v) => onChange(String(v))}>
         {options.map((option) => (
           <Picker.Item key={option.value} label={option.label} value={option.value} />

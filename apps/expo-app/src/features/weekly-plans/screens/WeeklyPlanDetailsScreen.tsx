@@ -565,6 +565,17 @@ export default function WeeklyPlanDetailScreen() {
             onCancel={() => confirms.setClearWeekOpen(false)}
             disabled={state.isSaving}
           />
+
+          <ConfirmSheet
+            visible={confirms.generateOpen}
+            title="Generate shopping list?"
+            description={confirms.generateDescription}
+            confirmLabel="Generate"
+            onConfirm={confirms.confirmGenerate}
+            onCancel={() => confirms.setGenerateOpen(false)}
+            disabled={state.isGenerating}
+            confirmVariant="primary"
+          />
         </View>
       </Screen>
       {toastBanner}

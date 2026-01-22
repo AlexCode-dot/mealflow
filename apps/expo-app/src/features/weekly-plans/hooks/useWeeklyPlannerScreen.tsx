@@ -1,6 +1,7 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { router } from 'expo-router';
 import { weeklyPlansApi } from '@/src/features/weekly-plans/api/weeklyPlansApi';
+import type { WeeklyPlan } from '@/src/features/weekly-plans/types';
 import { routes } from '@/src/core/navigation/routes';
 import { useWeeklyPlansList } from '@/src/features/weekly-plans/hooks/useWeeklyPlansList';
 import {
@@ -43,6 +44,7 @@ export type WeeklyPlannerHeaderView = {
   rangeLabel: string;
   plannedCount: number;
   weekDays: ReturnType<typeof buildWeekDays>;
+  dayMealCounts: Record<string, number>;
   activeDayKey: string | null;
   weekOffset: number;
   onPrev: () => void;
@@ -81,13 +83,17 @@ export function useWeeklyPlannerScreen(): WeeklyPlannerView {
     () => items.find((item) => item.weeklyStart === selectedWeekStart) ?? null,
     [items, selectedWeekStart],
   );
+  const [selectedPlanDetails, setSelectedPlanDetails] = useState<WeeklyPlan | null>(null);
 
   const isCurrentWeek = weekOffset === 0;
   const weekTitle = useMemo(() => {
     if (weekOffset === -1) return 'Previous week';
     if (weekOffset === 1) return 'Next week';
+    if (weekOffset !== 0) {
+      return `Week ${getIsoWeekNumber(selectedWeekStart)}`;
+    }
     return 'This Week';
-  }, [weekOffset]);
+  }, [selectedWeekStart, weekOffset]);
 
   const activeDayKey = useMemo(() => {
     if (!isCurrentWeek) {
@@ -98,6 +104,32 @@ export function useWeeklyPlannerScreen(): WeeklyPlannerView {
     const labels = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
     return labels[day] ?? null;
   }, [isCurrentWeek]);
+
+  const loadSelectedPlan = useCallback(async () => {
+    if (!selectedPlan?.id) {
+      setSelectedPlanDetails(null);
+      return;
+    }
+    try {
+      const plan = await weeklyPlansApi.get(selectedPlan.id);
+      setSelectedPlanDetails(plan);
+    } catch {
+      setSelectedPlanDetails(null);
+    }
+  }, [selectedPlan?.id]);
+
+  useEffect(() => {
+    loadSelectedPlan();
+  }, [loadSelectedPlan]);
+
+  const dayMealCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    if (!selectedPlanDetails) return counts;
+    for (const entry of selectedPlanDetails.entries) {
+      counts[entry.day] = (counts[entry.day] ?? 0) + 1;
+    }
+    return counts;
+  }, [selectedPlanDetails]);
 
   const itemsByWeekStart = useMemo(() => {
     return new Map(items.map((item) => [item.weeklyStart, item]));
@@ -162,11 +194,11 @@ export function useWeeklyPlannerScreen(): WeeklyPlannerView {
   }, [load, selectedPlan, selectedWeekStart]);
 
   const handlePrevWeek = useCallback(() => {
-    setWeekOffset((prev) => Math.max(-1, prev - 1));
+    setWeekOffset((prev) => Math.max(-2, prev - 1));
   }, []);
 
   const handleNextWeek = useCallback(() => {
-    setWeekOffset((prev) => Math.min(1, prev + 1));
+    setWeekOffset((prev) => Math.min(2, prev + 1));
   }, []);
 
   const listItems: WeeklyPlannerListItem[] = useMemo(() => {
@@ -234,6 +266,7 @@ export function useWeeklyPlannerScreen(): WeeklyPlannerView {
       rangeLabel: formatWeekRange(selectedWeekStart),
       plannedCount: selectedPlan?.entryCount ?? 0,
       weekDays: selectedWeek,
+      dayMealCounts,
       activeDayKey,
       weekOffset,
       onPrev: handlePrevWeek,
@@ -247,6 +280,7 @@ export function useWeeklyPlannerScreen(): WeeklyPlannerView {
       selectedWeekStart,
       selectedPlan,
       selectedWeek,
+      dayMealCounts,
       activeDayKey,
       weekOffset,
       handlePrevWeek,
