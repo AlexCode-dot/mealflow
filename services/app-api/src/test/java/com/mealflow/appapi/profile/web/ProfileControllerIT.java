@@ -41,7 +41,7 @@ class ProfileControllerIT extends MongoTestContainerConfig {
 
     @Test
     void get_shouldCreateDefaultProfile() throws Exception {
-        String token = tokens.issue("user-1");
+        String token = tokens.issue("user-default");
 
         HttpResponse<String> res = get("/api/profile", token);
         assertThat(res.statusCode(), is(200));
@@ -54,7 +54,7 @@ class ProfileControllerIT extends MongoTestContainerConfig {
 
     @Test
     void patch_shouldUpdateProfile() throws Exception {
-        String token = tokens.issue("user-1");
+        String token = tokens.issue("user-update");
 
         HttpResponse<String> res = patch("/api/profile", token, """
 { "displayName":"Alex", "theme":"olive", "avatarUrl":"https://img.example/avatar.png" }
@@ -67,7 +67,7 @@ class ProfileControllerIT extends MongoTestContainerConfig {
 
     @Test
     void patch_shouldRejectBlankDisplayName() throws Exception {
-        String token = tokens.issue("user-1");
+        String token = tokens.issue("user-invalid");
 
         HttpResponse<String> res = patch("/api/profile", token, """
 { "displayName":"   " }
@@ -78,8 +78,8 @@ class ProfileControllerIT extends MongoTestContainerConfig {
 
     @Test
     void profile_shouldBeScopedByUser() throws Exception {
-        String tokenUser1 = tokens.issue("user-1");
-        String tokenUser2 = tokens.issue("user-2");
+        String tokenUser1 = tokens.issue("user-scope-1");
+        String tokenUser2 = tokens.issue("user-scope-2");
 
         patch("/api/profile", tokenUser1, """
 { "displayName":"User One" }
