@@ -7,7 +7,13 @@ import {
   type LucideIcon,
 } from 'lucide-react-native';
 
-type RouteName = 'recipes' | 'shopping-list' | 'overview' | 'weekly-planner' | 'settings';
+type RouteName =
+  | 'recipes'
+  | 'shopping-list'
+  | 'overview'
+  | 'weekly-planner'
+  | 'settings'
+  | 'settings/index';
 
 export function getTabIcon(routeName: string): LucideIcon {
   switch (routeName as RouteName) {
@@ -20,6 +26,7 @@ export function getTabIcon(routeName: string): LucideIcon {
     case 'weekly-planner':
       return CalendarDays;
     case 'settings':
+    case 'settings/index':
       return SettingsIcon;
     default:
       return Home;

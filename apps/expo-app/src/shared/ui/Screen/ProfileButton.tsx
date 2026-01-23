@@ -1,12 +1,26 @@
 import { Pressable, StyleSheet } from 'react-native';
-import { router } from 'expo-router';
+import { router, usePathname } from 'expo-router';
 import { UserRound } from 'lucide-react-native';
 import { theme } from '@/src/shared/theme/theme';
 import { routes } from '@/src/core/navigation/routes';
+import { normalizePath } from '@/src/core/navigation/normalizePath';
 
 export function ProfileButton() {
+  const pathname = usePathname();
+  const normalizedPath = normalizePath(pathname ?? null);
+  const returnTo = normalizedPath && normalizedPath !== routes.profile ? normalizedPath : undefined;
+
   return (
-    <Pressable onPress={() => router.push(routes.profile)} hitSlop={10} style={styles.iconBtn}>
+    <Pressable
+      onPress={() =>
+        router.push({
+          pathname: routes.profile,
+          params: returnTo ? { returnTo } : undefined,
+        })
+      }
+      hitSlop={10}
+      style={styles.iconBtn}
+    >
       <UserRound color={theme.colors.textOnPrimary} size={32} strokeWidth={2.25} />
     </Pressable>
   );

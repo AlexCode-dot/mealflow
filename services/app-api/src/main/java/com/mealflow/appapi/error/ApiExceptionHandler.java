@@ -1,6 +1,7 @@
 package com.mealflow.appapi.error;
 
 import com.mealflow.appapi.inspiration.service.InspirationNotFoundException;
+import com.mealflow.appapi.profile.service.ProfileValidationException;
 import com.mealflow.appapi.recipes.service.RecipeNotFoundException;
 import com.mealflow.appapi.recipes.service.RecipeValidationException;
 import com.mealflow.appapi.shoppingLists.service.ShoppingListNotFoundException;
@@ -71,6 +72,12 @@ public class ApiExceptionHandler {
     @ExceptionHandler(ShoppingListValidationException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ProblemDetail handleShoppingListValidation(ShoppingListValidationException ex, HttpServletRequest req) {
+        return problems.build(HttpStatus.BAD_REQUEST, ex.getMessage(), req);
+    }
+
+    @ExceptionHandler(ProfileValidationException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ProblemDetail handleProfileValidation(ProfileValidationException ex, HttpServletRequest req) {
         return problems.build(HttpStatus.BAD_REQUEST, ex.getMessage(), req);
     }
 
