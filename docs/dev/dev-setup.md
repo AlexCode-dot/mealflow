@@ -37,7 +37,7 @@ Both backend services are independent Spring Boot applications.
 |---------|-----|
 | Identity Service | `http://localhost:8081` |
 | App API | `http://localhost:8082` |
-| Expo Web | `http://localhost:19006` |
+| Expo Web | `http://localhost:8083` |
 
 ### Mobile devices
 Physical devices **cannot use `localhost`**.
@@ -125,8 +125,8 @@ Both services must allow Expo Web and LAN origins.
 ```java
 registry.addMapping("/auth/**")
   .allowedOrigins(
-    "http://localhost:19006",
-    "http://192.168.x.x:19006"
+    "http://localhost:8083",
+    "http://192.168.x.x:8083"
   )
   .allowedMethods("GET","POST","OPTIONS")
   .allowedHeaders("Content-Type","Authorization");
@@ -137,8 +137,8 @@ registry.addMapping("/auth/**")
 ```java
 registry.addMapping("/api/**")
   .allowedOrigins(
-    "http://localhost:19006",
-    "http://192.168.x.x:19006"
+    "http://localhost:8083",
+    "http://192.168.x.x:8083"
   )
   .allowedMethods("GET","POST","PUT","PATCH","DELETE","OPTIONS")
   .allowedHeaders("Content-Type","Authorization");
@@ -220,7 +220,7 @@ Use LAN IP.
 
 ### CORS errors
 Ensure both services allow:
-- `http://localhost:19006`
+- `http://localhost:8083`
 - Authorization header
 
 ### Token refresh issues
