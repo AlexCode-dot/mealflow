@@ -119,7 +119,13 @@ export function AppTabBar({ state, descriptors, navigation }: BottomTabBarProps)
     'shopping-list': routes.shoppingList,
     'weekly-planner': routes.weeklyPlanner,
     settings: routes.settings,
+    'settings/index': routes.settings,
   };
+  const labelByName: Record<string, string> = {
+    settings: 'Settings',
+  };
+  const normalizeRouteName = (name: string) =>
+    name.endsWith('/index') ? name.slice(0, -'/index'.length) : name;
 
   return (
     <View
@@ -133,7 +139,13 @@ export function AppTabBar({ state, descriptors, navigation }: BottomTabBarProps)
         }
 
         const { route, index, options } = slot.item;
-        const label = String(options?.tabBarLabel ?? options?.title ?? route.name);
+        const normalizedRouteName = normalizeRouteName(route.name);
+        const label = String(
+          options?.tabBarLabel ??
+            options?.title ??
+            labelByName[normalizedRouteName] ??
+            normalizedRouteName,
+        );
         const isFocused = state.index === index;
 
         const onPress = () => {
@@ -144,7 +156,7 @@ export function AppTabBar({ state, descriptors, navigation }: BottomTabBarProps)
           });
 
           if (!event.defaultPrevented) {
-            const href = tabHrefByName[route.name];
+            const href = tabHrefByName[route.name] ?? tabHrefByName[normalizedRouteName];
             if (href) {
               router.replace(href);
               return;
@@ -161,7 +173,7 @@ export function AppTabBar({ state, descriptors, navigation }: BottomTabBarProps)
           <TabItem
             key={route.key}
             routeKey={route.key}
-            routeName={route.name}
+            routeName={normalizedRouteName}
             label={label}
             isFocused={isFocused}
             onPress={onPress}

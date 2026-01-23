@@ -8,6 +8,7 @@ export const routes = {
   // Tabs
   overview: '/overview' as const,
   profile: '/profile' as const,
+  profileEdit: '/profile/edit' as const,
   shoppingList: '/shopping-list' as const,
   shoppingListWithToast: (toast: string) =>
     ({
@@ -16,6 +17,11 @@ export const routes = {
     }) as Href,
   shoppingListDetail: (id: string) => `/shopping-list/${id}` as Href,
   settings: '/settings' as const,
+  settingsWithToast: (toast: string) =>
+    ({
+      pathname: '/settings',
+      params: { toast },
+    }) as Href,
 
   recipes: '/recipes' as const,
   recipesWithToast: (toast: string) =>

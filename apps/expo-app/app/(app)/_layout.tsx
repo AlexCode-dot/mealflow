@@ -21,7 +21,7 @@ export default function AppLayout() {
         <Tabs.Screen name="shopping-list" options={{ title: 'Shopping List' }} />
         <Tabs.Screen name="overview" options={{ title: 'Overview' }} />
         <Tabs.Screen name="weekly-planner" options={{ title: 'Weekly Planner' }} />
-        <Tabs.Screen name="settings" options={{ title: 'Settings' }} />
+        <Tabs.Screen name="settings/index" options={{ title: 'Settings' }} />
       </Tabs>
     </BottomBarProvider>
   );
