@@ -24,12 +24,7 @@ public class Profile {
     public Profile() {}
 
     public Profile(
-            String userId,
-            String displayName,
-            String avatarUrl,
-            String theme,
-            Instant createdAt,
-            Instant updatedAt) {
+            String userId, String displayName, String avatarUrl, String theme, Instant createdAt, Instant updatedAt) {
         this.userId = userId;
         this.displayName = displayName;
         this.avatarUrl = avatarUrl;
