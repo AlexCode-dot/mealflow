@@ -37,6 +37,19 @@ export function mapAuthError(apiErr: ApiError): UiError {
     return { kind: 'auth', message: 'Invalid email or password.', status };
   }
 
+  if (status === 429) {
+    const retry =
+      typeof apiErr.retryAfterSeconds === 'number' && apiErr.retryAfterSeconds > 0
+        ? apiErr.retryAfterSeconds
+        : undefined;
+    return {
+      kind: 'rate_limit',
+      message: retry ? 'Too many requests.' : 'Too many requests. Try again in a moment.',
+      status,
+      retryAfterSeconds: retry,
+    };
+  }
+
   // Register conflict -> inline on email
   if (status === 409) {
     const msg = 'An account with this email already exists.';

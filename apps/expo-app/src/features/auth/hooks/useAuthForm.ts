@@ -62,9 +62,13 @@ export function useAuthForm({ validate, error, isLoading, useServerFieldErrors =
   // - Always hide server errors while client validation is failing (UX: fix your inputs first)
   // - For register (useServerFieldErrors): only show global error if it’s NOT field-based
   // - For login: show the error globally when client validation passes
+  // - Auth flow: keep rate_limit/network/unknown errors global only (hide inline)
   const showServerError = (() => {
     if (clientErrors.email || clientErrors.password) return null;
     if (!error) return null;
+    if (error.kind === 'rate_limit' || error.kind === 'network' || error.kind === 'unknown') {
+      return null;
+    }
 
     if (!useServerFieldErrors) return error;
 
