@@ -85,7 +85,7 @@ export function useRecipesScreen(): RecipesScreenView {
     enabled: view.tab === 'inspiration',
   });
   const toastState = useToastState();
-  const { showApiError, showError, showValidationError } = useGlobalToast();
+  const { showApiError, showValidationError } = useGlobalToast();
   const [showToast, setShowToast] = useState(false);
   const isFocused = useIsFocused();
   const discoveryListRef = useRef<FlatList<InspirationListItem> | null>(null);
@@ -194,15 +194,7 @@ export function useRecipesScreen(): RecipesScreenView {
     } finally {
       setIsSaving(false);
     }
-  }, [
-    loadSaved,
-    saveCategory,
-    saveTarget,
-    showApiError,
-    showError,
-    showValidationError,
-    toastState,
-  ]);
+  }, [loadSaved, saveCategory, saveTarget, showApiError, showValidationError, toastState]);
 
   const handleDiscoveryScroll = useCallback((offsetY: number) => {
     setShowScrollTop(offsetY > 500);

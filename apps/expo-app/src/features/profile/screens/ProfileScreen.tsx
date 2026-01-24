@@ -10,7 +10,7 @@ import {
   UserRound,
 } from 'lucide-react-native';
 import { useProfileScreen } from '@/src/features/profile/hooks/useProfileScreen';
-import { Button, Card, LoadingScreen, Screen, ToastBanner, useGlobalToast } from '@/src/shared/ui';
+import { Card, LoadingScreen, Screen, ToastBanner, useGlobalToast } from '@/src/shared/ui';
 import { theme } from '@/src/shared/theme/theme';
 
 type Props = {

@@ -5,7 +5,6 @@ import { useFocusEffect, useIsFocused } from '@react-navigation/native';
 import { Clock3, ShoppingBasket, Utensils, Users, Pencil, Trash2 } from 'lucide-react-native';
 import {
   Screen,
-  Button,
   Shimmer,
   IconStatRow,
   ConfirmSheet,
@@ -165,8 +164,6 @@ export function RecipeDetailsScreen() {
     addRecipeToShoppingList,
     handleAddResult,
     isAddingToList,
-    show,
-    showError,
     showValidationError,
     state.recipe,
   ]);

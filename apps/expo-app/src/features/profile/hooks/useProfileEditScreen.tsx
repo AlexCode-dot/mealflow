@@ -118,7 +118,7 @@ export function useProfileEditScreen(): ProfileEditView {
     } finally {
       setIsSaving(false);
     }
-  }, [displayName, isSaving, parentReturnTo, returnTo, showError, theme, toast]);
+  }, [displayName, isSaving, parentReturnTo, returnTo, showError, theme]);
 
   const cancel = useCallback(() => {
     if (returnTo) {

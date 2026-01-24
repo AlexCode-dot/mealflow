@@ -9,9 +9,7 @@ import { mapCommonError } from '@/src/shared/errors/mapCommonError';
 import type { UiError } from '@/src/shared/errors/errorTypes';
 import { toApiError } from '@/src/core/http/toApiError';
 import { useToastState } from '@/src/shared/hooks/useToastState';
-import type { BottomActionBarItem } from '@/src/shared/ui';
-import { useBottomBarActions } from '@/src/shared/ui';
-import { useGlobalToast } from '@/src/shared/ui';
+import { useBottomBarActions, useGlobalToast, type BottomActionBarItem } from '@/src/shared/ui';
 import { theme } from '@/src/shared/theme/theme';
 import { TAB_BAR } from '@/src/shared/ui/layout/tabBar';
 import { routes } from '@/src/core/navigation/routes';
@@ -261,7 +259,16 @@ export function useShoppingListDetailsScreen(): ShoppingListDetailsView {
     } finally {
       setIsSaving(false);
     }
-  }, [editItem, editName, editQuantity, editUnit, listId, showError, showValidationError]);
+  }, [
+    editItem,
+    editName,
+    editQuantity,
+    editUnit,
+    listId,
+    showError,
+    showValidationError,
+    toastState,
+  ]);
 
   const toggleItem = useCallback(
     async (item: ShoppingListItem) => {

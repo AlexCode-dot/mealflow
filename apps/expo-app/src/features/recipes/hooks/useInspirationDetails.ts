@@ -59,7 +59,7 @@ export function useInspirationDetails(id: string): InspirationDetailsView {
     } finally {
       setIsLoading(false);
     }
-  }, [id]);
+  }, [id, showError]);
 
   useEffect(() => {
     load().catch(() => undefined);

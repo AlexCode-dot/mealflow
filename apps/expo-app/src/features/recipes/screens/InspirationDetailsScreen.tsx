@@ -3,7 +3,6 @@ import { ActivityIndicator, Image, StyleSheet, Text, View } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import { Bookmark, MapPin, ShoppingBasket, Utensils } from 'lucide-react-native';
 import {
-  Button,
   IconStatRow,
   ModalSheet,
   Screen,
@@ -40,8 +39,8 @@ export function InspirationDetailsScreen() {
   const [stepText, setStepText] = useState('');
   const [stepIndex, setStepIndex] = useState<number | null>(null);
   const [titleOpen, setTitleOpen] = useState(false);
-  const { toast, show, clear } = useToastState();
-  const { toast: globalToast, showApiError, showError, showValidationError } = useGlobalToast();
+  const { toast, clear } = useToastState();
+  const { toast: globalToast, showApiError, showValidationError } = useGlobalToast();
 
   const openStep = useCallback((text: string, index: number) => {
     setStepText(text);

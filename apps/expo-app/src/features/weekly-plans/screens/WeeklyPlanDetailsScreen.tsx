@@ -14,7 +14,6 @@ import {
   type AddTabKey,
 } from '@/src/features/weekly-plans/hooks/useWeeklyPlanDetailsScreen';
 import {
-  Button,
   BottomActionBar,
   Card,
   Chip,

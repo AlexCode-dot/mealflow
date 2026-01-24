@@ -23,13 +23,11 @@ import {
   formatWeekRange,
 } from '@/src/features/weekly-plans/utils/weeklyPlanDates';
 import { useToastState } from '@/src/shared/hooks/useToastState';
-import { useGlobalToast } from '@/src/shared/ui';
+import { useBottomBarActions, useGlobalToast, type BottomActionBarItem } from '@/src/shared/ui';
 import { mapCommonError } from '@/src/shared/errors/mapCommonError';
 import type { UiError } from '@/src/shared/errors/errorTypes';
 import { theme } from '@/src/shared/theme/theme';
 import { TAB_BAR } from '@/src/shared/ui/layout/tabBar';
-import type { BottomActionBarItem } from '@/src/shared/ui';
-import { useBottomBarActions } from '@/src/shared/ui';
 import {
   DEFAULT_WEEKLY_SECTIONS,
   SECTION_DRAFT_ID,
@@ -266,7 +264,7 @@ export function useWeeklyPlanDetailsScreen(): WeeklyPlanDetailsView {
     } finally {
       setIsGenerating(false);
     }
-  }, [planId, showError, showValidationError]);
+  }, [planId, showApiError, showValidationError]);
 
   const requestGenerateList = useCallback(async () => {
     if (!planId) {
@@ -285,7 +283,7 @@ export function useWeeklyPlanDetailsScreen(): WeeklyPlanDetailsView {
       const uiErr = mapCommonError(toApiError(err));
       showApiError(uiErr, 'Generate failed');
     }
-  }, [handleGenerateList, planId, showError, showValidationError]);
+  }, [handleGenerateList, planId, showApiError, showValidationError]);
 
   const actionItems = useMemo(
     () => [
@@ -969,7 +967,8 @@ export function useWeeklyPlanDetailsScreen(): WeeklyPlanDetailsView {
     plan,
     selectedRecipeId,
     setPlan,
-    showError,
+    showApiError,
+    toastState,
   ]);
 
   const contentPaddingBottom = TAB_BAR.BOX_HEIGHT + TAB_BAR.PADDING_TOP + 40;

@@ -39,7 +39,7 @@ export function useWeeklyPlanDetails(planId: string | null): UseWeeklyPlanDetail
     } finally {
       setIsLoading(false);
     }
-  }, [planId]);
+  }, [planId, showError]);
 
   useEffect(() => {
     load();

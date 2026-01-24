@@ -37,7 +37,7 @@ export function useWeeklyPlansList(): UseWeeklyPlansListResult {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [showError]);
 
   useEffect(() => {
     load();

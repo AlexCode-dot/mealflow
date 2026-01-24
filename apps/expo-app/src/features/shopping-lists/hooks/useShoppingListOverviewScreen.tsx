@@ -177,7 +177,7 @@ export function useShoppingListOverviewScreen(): ShoppingListOverviewView {
     } finally {
       setIsGenerating(false);
     }
-  }, [showApiError]);
+  }, [showApiError, toastState]);
 
   const confirmGenerate = useCallback(async () => {
     setConfirmGenerateOpen(false);

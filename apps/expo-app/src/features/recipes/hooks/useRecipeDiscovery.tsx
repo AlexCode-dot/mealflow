@@ -85,7 +85,7 @@ export function useRecipeDiscovery({
     } finally {
       setIsLoading(false);
     }
-  }, [params]);
+  }, [params, showError]);
 
   useEffect(() => {
     if (!enabled) return;

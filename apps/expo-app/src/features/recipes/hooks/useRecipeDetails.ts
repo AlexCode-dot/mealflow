@@ -51,7 +51,7 @@ export function useRecipeDetails(id: string): RecipeDetailsView {
     } finally {
       setIsLoading(false);
     }
-  }, [id]);
+  }, [id, showError]);
 
   useEffect(() => {
     load().catch(() => undefined);

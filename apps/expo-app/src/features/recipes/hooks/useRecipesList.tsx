@@ -37,7 +37,7 @@ export function useRecipesList(): UseRecipesListResult {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [showError]);
 
   useEffect(() => {
     load();
