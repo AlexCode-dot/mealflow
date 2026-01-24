@@ -101,6 +101,8 @@ Expo Web runs on `http://localhost:8083` (see `apps/expo-app/package.json`).
 For web, ensure `EXPO_PUBLIC_IDENTITY_BASE_URL` and `EXPO_PUBLIC_APP_API_BASE_URL`
 in `apps/expo-app/.env.local` point to your backend (e.g. `http://localhost:8081`
 and `http://localhost:8082` when running locally), and allow the web origin via CORS.
+Rate limiting details, Cloudflare recommendations, and trusted proxy header setup
+live in `docs/dev/dev-setup.md`.
 
 ---
 
