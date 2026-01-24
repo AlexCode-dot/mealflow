@@ -242,7 +242,7 @@ export function useWeeklyPlanDetailsScreen(): WeeklyPlanDetailsView {
   const [isSectionSaving, setIsSectionSaving] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const toastState = useToastState();
-  const { showApiError, showError, showValidationError } = useGlobalToast();
+  const { showApiError, showValidationError } = useGlobalToast();
   const { height: screenHeight } = useWindowDimensions();
   const handleBack = useCallback(() => {
     router.push(routes.weeklyPlanner);
