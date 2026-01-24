@@ -236,13 +236,21 @@ RATE_LIMIT_REGISTER_PER_MINUTE=5
 RATE_LIMIT_REFRESH_PER_MINUTE=30
 RATE_LIMIT_LOGOUT_PER_MINUTE=60
 RATE_LIMIT_JWKS_PER_MINUTE=120
+RATE_LIMIT_BUCKET_TTL_MINUTES=15
+RATE_LIMIT_MAX_BUCKETS=10000
 ```
 
 App API:
 ```
 RATE_LIMIT_ENABLED=true
 RATE_LIMIT_API_PER_MINUTE=120
+RATE_LIMIT_BUCKET_TTL_MINUTES=15
+RATE_LIMIT_MAX_BUCKETS=10000
 ```
+
+**What these do**
+- `RATE_LIMIT_BUCKET_TTL_MINUTES`: how long an unused rate-limit bucket stays in memory before eviction.
+- `RATE_LIMIT_MAX_BUCKETS`: maximum number of distinct buckets kept in memory (safety cap).
 
 ### Production recommendation (Cloudflare)
 
