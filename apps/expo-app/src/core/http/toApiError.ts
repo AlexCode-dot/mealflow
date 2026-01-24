@@ -2,6 +2,11 @@ import { HttpError } from './HttpError';
 import type { ApiError, ApiProblemDetails } from './apiErrorTypes';
 
 type FieldError = { field: string; message: string };
+type UnknownRecord = Record<string, unknown>;
+
+function isRecord(value: unknown): value is UnknownRecord {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
 
 function asProblem(body: unknown): ApiProblemDetails {
   if (typeof body === 'string') {
@@ -18,15 +23,7 @@ function asProblem(body: unknown): ApiProblemDetails {
 function isFieldErrorArray(value: unknown): value is FieldError[] {
   return (
     Array.isArray(value) &&
-    value.every(
-      (e) =>
-        e &&
-        typeof e === 'object' &&
-        'field' in e &&
-        'message' in e &&
-        typeof (e as any).field === 'string' &&
-        typeof (e as any).message === 'string',
-    )
+    value.every((e) => isRecord(e) && typeof e.field === 'string' && typeof e.message === 'string')
   );
 }
 
@@ -69,11 +66,12 @@ export function toApiError(err: unknown): ApiError {
     const fieldErrorsFromObject =
       fieldErrorsFromArray ?? asFieldErrorsObject(problem.errors) ?? undefined;
 
+    const retryValue = isRecord(problem) ? problem.retryAfterSeconds : undefined;
     const retryAfterSeconds =
-      typeof (problem as any).retryAfterSeconds === 'number'
-        ? (problem as any).retryAfterSeconds
-        : typeof (problem as any).retryAfterSeconds === 'string'
-          ? Number.parseInt((problem as any).retryAfterSeconds, 10)
+      typeof retryValue === 'number'
+        ? retryValue
+        : typeof retryValue === 'string'
+          ? Number.parseInt(retryValue, 10)
           : undefined;
 
     return {
