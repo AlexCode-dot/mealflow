@@ -1,7 +1,6 @@
 package com.mealflow.appapi.web.ratelimit;
 
 import com.mealflow.appapi.error.ProblemDetails;
-import io.github.bucket4j.Bandwidth;
 import io.github.bucket4j.BandwidthBuilder;
 import io.github.bucket4j.Bucket;
 import io.github.bucket4j.ConsumptionProbe;
@@ -39,8 +38,7 @@ public class RateLimitFilter extends OncePerRequestFilter {
     }
 
     @Override
-    protected void doFilterInternal(
-            HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
 
         if (!props.isEnabled() || shouldSkip(request)) {
@@ -49,14 +47,12 @@ public class RateLimitFilter extends OncePerRequestFilter {
         }
 
         String key = "api:" + rateLimitKey(request);
-        Bucket bucket = buckets.computeIfAbsent(
-                key,
-                ignored -> Bucket.builder()
-                        .addLimit(BandwidthBuilder.builder()
-                                .capacity(props.getApiPerMinute())
-                                .refillGreedy(props.getApiPerMinute(), Duration.ofMinutes(1))
-                                .build())
-                        .build());
+        Bucket bucket = buckets.computeIfAbsent(key, ignored -> Bucket.builder()
+                .addLimit(BandwidthBuilder.builder()
+                        .capacity(props.getApiPerMinute())
+                        .refillGreedy(props.getApiPerMinute(), Duration.ofMinutes(1))
+                        .build())
+                .build());
 
         ConsumptionProbe probe = bucket.tryConsumeAndReturnRemaining(1);
         if (probe.isConsumed()) {
@@ -77,7 +73,9 @@ public class RateLimitFilter extends OncePerRequestFilter {
 
     private String rateLimitKey(HttpServletRequest request) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication != null && authentication.isAuthenticated() && authentication.getPrincipal() instanceof Jwt jwt) {
+        if (authentication != null
+                && authentication.isAuthenticated()
+                && authentication.getPrincipal() instanceof Jwt jwt) {
             String subject = jwt.getSubject();
             if (subject != null && !subject.isBlank()) {
                 return "user:" + subject;
@@ -101,10 +99,7 @@ public class RateLimitFilter extends OncePerRequestFilter {
     private void writeProblem(HttpServletResponse response, HttpServletRequest request, long waitSeconds)
             throws IOException {
         ProblemDetail pd = problems.build(
-                HttpStatus.TOO_MANY_REQUESTS,
-                "Too many requests",
-                request,
-                Map.of("retryAfterSeconds", waitSeconds));
+                HttpStatus.TOO_MANY_REQUESTS, "Too many requests", request, Map.of("retryAfterSeconds", waitSeconds));
 
         response.setStatus(HttpStatus.TOO_MANY_REQUESTS.value());
         response.setHeader("Retry-After", String.valueOf(waitSeconds));

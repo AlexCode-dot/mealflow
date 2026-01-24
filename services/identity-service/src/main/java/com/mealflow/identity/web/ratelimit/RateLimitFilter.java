@@ -1,6 +1,5 @@
 package com.mealflow.identity.web.ratelimit;
 
-import io.github.bucket4j.Bandwidth;
 import io.github.bucket4j.BandwidthBuilder;
 import io.github.bucket4j.Bucket;
 import io.github.bucket4j.ConsumptionProbe;
@@ -11,7 +10,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.time.Clock;
 import java.time.Duration;
-import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -36,8 +34,7 @@ public class RateLimitFilter extends OncePerRequestFilter {
     }
 
     @Override
-    protected void doFilterInternal(
-            HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
 
         if (!props.isEnabled() || shouldSkip(request)) {
@@ -52,14 +49,12 @@ public class RateLimitFilter extends OncePerRequestFilter {
         }
 
         String key = rule.keyPrefix + ":" + clientIp(request);
-        Bucket bucket = buckets.computeIfAbsent(
-                key,
-                ignored -> Bucket.builder()
-                        .addLimit(BandwidthBuilder.builder()
-                                .capacity(rule.limit)
-                                .refillGreedy(rule.limit, Duration.ofMinutes(1))
-                                .build())
-                        .build());
+        Bucket bucket = buckets.computeIfAbsent(key, ignored -> Bucket.builder()
+                .addLimit(BandwidthBuilder.builder()
+                        .capacity(rule.limit)
+                        .refillGreedy(rule.limit, Duration.ofMinutes(1))
+                        .build())
+                .build());
 
         ConsumptionProbe probe = bucket.tryConsumeAndReturnRemaining(1);
         if (probe.isConsumed()) {

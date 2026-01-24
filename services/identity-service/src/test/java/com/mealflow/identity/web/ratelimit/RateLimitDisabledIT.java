@@ -19,10 +19,7 @@ import org.springframework.test.context.TestPropertySource;
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
 @Import(TestRsaKeysConfig.class)
-@TestPropertySource(properties = {
-        "app.ratelimit.enabled=false",
-        "app.ratelimit.jwks-per-minute=1"
-})
+@TestPropertySource(properties = {"app.ratelimit.enabled=false", "app.ratelimit.jwks-per-minute=1"})
 class RateLimitDisabledIT {
 
     @LocalServerPort

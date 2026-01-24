@@ -1,8 +1,8 @@
 package com.mealflow.identity.web.ratelimit;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.is;
 
 import com.mealflow.identity.support.TestRsaKeysConfig;
 import java.net.URI;
@@ -20,10 +20,7 @@ import org.springframework.test.context.TestPropertySource;
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
 @Import(TestRsaKeysConfig.class)
-@TestPropertySource(properties = {
-        "app.ratelimit.enabled=true",
-        "app.ratelimit.jwks-per-minute=2"
-})
+@TestPropertySource(properties = {"app.ratelimit.enabled=true", "app.ratelimit.jwks-per-minute=2"})
 class RateLimitIT {
 
     @LocalServerPort

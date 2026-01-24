@@ -1,8 +1,8 @@
 package com.mealflow.appapi.web.ratelimit;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.is;
 
 import com.mealflow.appapi.support.MongoTestContainerConfig;
 import com.mealflow.appapi.support.TestAccessTokenFactory;
@@ -24,10 +24,7 @@ import org.springframework.test.context.TestPropertySource;
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
 @Import(TestJwtConfig.class)
-@TestPropertySource(properties = {
-        "app.ratelimit.enabled=true",
-        "app.ratelimit.api-per-minute=2"
-})
+@TestPropertySource(properties = {"app.ratelimit.enabled=true", "app.ratelimit.api-per-minute=2"})
 class RateLimitIT extends MongoTestContainerConfig {
 
     @LocalServerPort

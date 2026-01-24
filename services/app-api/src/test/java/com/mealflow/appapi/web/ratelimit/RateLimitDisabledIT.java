@@ -23,10 +23,7 @@ import org.springframework.test.context.TestPropertySource;
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
 @Import(TestJwtConfig.class)
-@TestPropertySource(properties = {
-        "app.ratelimit.enabled=false",
-        "app.ratelimit.api-per-minute=1"
-})
+@TestPropertySource(properties = {"app.ratelimit.enabled=false", "app.ratelimit.api-per-minute=1"})
 class RateLimitDisabledIT extends MongoTestContainerConfig {
 
     @LocalServerPort
