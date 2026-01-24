@@ -27,6 +27,12 @@ public class RateLimitProperties {
     @Min(1)
     private int jwksPerMinute = 120;
 
+    @Min(1)
+    private int bucketTtlMinutes = 15;
+
+    @Min(100)
+    private int maxBuckets = 10_000;
+
     public boolean isEnabled() {
         return enabled;
     }
@@ -73,5 +79,21 @@ public class RateLimitProperties {
 
     public void setJwksPerMinute(int jwksPerMinute) {
         this.jwksPerMinute = jwksPerMinute;
+    }
+
+    public int getBucketTtlMinutes() {
+        return bucketTtlMinutes;
+    }
+
+    public void setBucketTtlMinutes(int bucketTtlMinutes) {
+        this.bucketTtlMinutes = bucketTtlMinutes;
+    }
+
+    public int getMaxBuckets() {
+        return maxBuckets;
+    }
+
+    public void setMaxBuckets(int maxBuckets) {
+        this.maxBuckets = maxBuckets;
     }
 }

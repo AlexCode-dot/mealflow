@@ -1,5 +1,7 @@
 package com.mealflow.identity.web.ratelimit;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import io.github.bucket4j.BandwidthBuilder;
 import io.github.bucket4j.Bucket;
 import io.github.bucket4j.ConsumptionProbe;
@@ -11,7 +13,6 @@ import java.io.IOException;
 import java.time.Clock;
 import java.time.Duration;
 import java.util.Objects;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
@@ -25,12 +26,16 @@ public class RateLimitFilter extends OncePerRequestFilter {
     private final RateLimitProperties props;
     private final ObjectMapper objectMapper;
     private final Clock clock;
-    private final ConcurrentHashMap<String, Bucket> buckets = new ConcurrentHashMap<>();
+    private final Cache<String, Bucket> buckets;
 
     public RateLimitFilter(RateLimitProperties props, ObjectMapper objectMapper, Clock clock) {
         this.props = props;
         this.objectMapper = objectMapper;
         this.clock = clock;
+        this.buckets = Caffeine.newBuilder()
+                .expireAfterAccess(Duration.ofMinutes(props.getBucketTtlMinutes()))
+                .maximumSize(props.getMaxBuckets())
+                .build();
     }
 
     @Override
@@ -49,7 +54,7 @@ public class RateLimitFilter extends OncePerRequestFilter {
         }
 
         String key = rule.keyPrefix + ":" + clientIp(request);
-        Bucket bucket = buckets.computeIfAbsent(key, ignored -> Bucket.builder()
+        Bucket bucket = buckets.get(key, ignored -> Bucket.builder()
                 .addLimit(BandwidthBuilder.builder()
                         .capacity(rule.limit)
                         .refillGreedy(rule.limit, Duration.ofMinutes(1))

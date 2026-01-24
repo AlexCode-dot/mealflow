@@ -15,6 +15,12 @@ public class RateLimitProperties {
     @Min(1)
     private int apiPerMinute = 120;
 
+    @Min(1)
+    private int bucketTtlMinutes = 15;
+
+    @Min(100)
+    private int maxBuckets = 10_000;
+
     public boolean isEnabled() {
         return enabled;
     }
@@ -29,5 +35,21 @@ public class RateLimitProperties {
 
     public void setApiPerMinute(int apiPerMinute) {
         this.apiPerMinute = apiPerMinute;
+    }
+
+    public int getBucketTtlMinutes() {
+        return bucketTtlMinutes;
+    }
+
+    public void setBucketTtlMinutes(int bucketTtlMinutes) {
+        this.bucketTtlMinutes = bucketTtlMinutes;
+    }
+
+    public int getMaxBuckets() {
+        return maxBuckets;
+    }
+
+    public void setMaxBuckets(int maxBuckets) {
+        this.maxBuckets = maxBuckets;
     }
 }
