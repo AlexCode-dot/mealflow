@@ -14,12 +14,10 @@ import {
   type AddTabKey,
 } from '@/src/features/weekly-plans/hooks/useWeeklyPlanDetailsScreen';
 import {
-  Button,
   BottomActionBar,
   Card,
   Chip,
   ConfirmSheet,
-  ErrorText,
   FormSheet,
   LoadingScreen,
   PickerSheetOverlay,
@@ -29,6 +27,7 @@ import {
   SegmentedTabs,
   TextField,
   ToastBanner,
+  useGlobalToast,
 } from '@/src/shared/ui';
 import { theme } from '@/src/shared/theme/theme';
 import { SECTION_DRAFT_ID } from '@/src/features/weekly-plans/constants/weeklyPlanDefaults';
@@ -37,6 +36,7 @@ export default function WeeklyPlanDetailScreen() {
   const view = useWeeklyPlanDetailsScreen();
   const { state, actions, toast, dayPicker, data, addSheet, editSheet, sectionSheet, confirms } =
     view;
+  const { toast: globalToast } = useGlobalToast();
 
   const {
     editPickerOpen,
@@ -116,7 +116,7 @@ export default function WeeklyPlanDetailScreen() {
     setEditSection,
   ]);
   const toastBanner =
-    toast.state.toast && toast.showToast ? (
+    toast.state.toast && toast.showToast && !globalToast ? (
       <View style={styles.toastOverlay} pointerEvents="box-none">
         <View style={[styles.toastWrap, { marginTop: toast.topInset + 8 }]} pointerEvents="none">
           <ToastBanner
@@ -146,13 +146,6 @@ export default function WeeklyPlanDetailScreen() {
         contentStyle={styles.screenContent}
       >
         <View style={[styles.contentWrap, { paddingBottom: state.contentPaddingBottom }]}>
-          {state.error ? (
-            <View style={styles.errorBlock}>
-              <ErrorText>{state.error}</ErrorText>
-              <Button title="Retry" onPress={actions.load} variant="secondary" />
-            </View>
-          ) : null}
-
           {state.plan ? (
             <WeeklyPlanDayPicker
               days={dayPicker.dayTabs}
@@ -595,9 +588,6 @@ const styles = StyleSheet.create({
     paddingTop: theme.spacing.s3,
     paddingBottom: 140,
     gap: theme.spacing.s4,
-  },
-  errorBlock: {
-    gap: theme.spacing.s2,
   },
   toastOverlay: {
     ...StyleSheet.absoluteFillObject,

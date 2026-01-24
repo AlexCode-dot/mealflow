@@ -5,12 +5,11 @@ import {
   UnderlineTabs,
   Screen,
   Card,
-  Button,
   EmptyState,
-  ErrorText,
-  LoadingScreen,
   ToastBanner,
+  LoadingScreen,
   ConfirmSheet,
+  useGlobalToast,
 } from '@/src/shared/ui';
 import type { UnderlineTab } from '@/src/shared/ui/UnderlineTabs';
 import { theme } from '@/src/shared/theme/theme';
@@ -20,6 +19,7 @@ import { ArchivedListCard } from '@/src/features/shopping-lists/ui/ArchivedListC
 export default function ShoppingListOverviewScreen() {
   const view = useShoppingListOverviewScreen();
   const { state, data, actions, confirms, toast } = view;
+  const { toast: globalToast } = useGlobalToast();
 
   const tabs = useMemo<UnderlineTab[]>(
     () => [
@@ -43,7 +43,7 @@ export default function ShoppingListOverviewScreen() {
   }
 
   const toastBanner =
-    toast.state.toast && toast.showToast ? (
+    toast.state.toast && toast.showToast && !globalToast ? (
       <View style={styles.toastOverlay} pointerEvents="box-none">
         <View style={[styles.toastWrap, { marginTop: toast.topInset + 8 }]} pointerEvents="none">
           <ToastBanner
@@ -66,13 +66,6 @@ export default function ShoppingListOverviewScreen() {
         }
         contentStyle={styles.content}
       >
-        {state.error ? (
-          <View style={styles.errorBlock}>
-            <ErrorText>{state.error}</ErrorText>
-            <Button title="Retry" onPress={actions.load} variant="secondary" />
-          </View>
-        ) : null}
-
         <Card style={styles.summaryCard} variant="premium">
           <View style={styles.summaryHeader}>
             <View style={styles.summaryText}>
@@ -210,9 +203,6 @@ const styles = StyleSheet.create({
   },
   content: {
     gap: theme.spacing.s1,
-  },
-  errorBlock: {
-    gap: theme.spacing.s2,
   },
   summaryCard: {
     gap: theme.spacing.s4,

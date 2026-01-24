@@ -37,7 +37,7 @@ Both backend services are independent Spring Boot applications.
 |---------|-----|
 | Identity Service | `http://localhost:8081` |
 | App API | `http://localhost:8082` |
-| Expo Web | `http://localhost:19006` |
+| Expo Web | `http://localhost:8083` |
 
 ### Mobile devices
 Physical devices **cannot use `localhost`**.
@@ -125,8 +125,8 @@ Both services must allow Expo Web and LAN origins.
 ```java
 registry.addMapping("/auth/**")
   .allowedOrigins(
-    "http://localhost:19006",
-    "http://192.168.x.x:19006"
+    "http://localhost:8083",
+    "http://192.168.x.x:8083"
   )
   .allowedMethods("GET","POST","OPTIONS")
   .allowedHeaders("Content-Type","Authorization");
@@ -137,8 +137,8 @@ registry.addMapping("/auth/**")
 ```java
 registry.addMapping("/api/**")
   .allowedOrigins(
-    "http://localhost:19006",
-    "http://192.168.x.x:19006"
+    "http://localhost:8083",
+    "http://192.168.x.x:8083"
   )
   .allowedMethods("GET","POST","PUT","PATCH","DELETE","OPTIONS")
   .allowedHeaders("Content-Type","Authorization");
@@ -218,9 +218,69 @@ A successful response confirms backend connectivity.
 ### Mobile device uses localhost
 Use LAN IP.
 
+---
+
+## 11. Rate Limiting (Dev + Prod Notes)
+
+MealFlow includes **in-app rate limiting** in both backend services using
+Bucket4j (in-memory). This is free and works well for single-instance
+deployments.
+
+### Configure (env vars)
+
+Identity Service:
+```
+RATE_LIMIT_ENABLED=true
+RATE_LIMIT_LOGIN_PER_MINUTE=10
+RATE_LIMIT_REGISTER_PER_MINUTE=5
+RATE_LIMIT_REFRESH_PER_MINUTE=30
+RATE_LIMIT_LOGOUT_PER_MINUTE=60
+RATE_LIMIT_JWKS_PER_MINUTE=120
+RATE_LIMIT_BUCKET_TTL_MINUTES=15
+RATE_LIMIT_MAX_BUCKETS=10000
+```
+
+App API:
+```
+RATE_LIMIT_ENABLED=true
+RATE_LIMIT_API_PER_MINUTE=120
+RATE_LIMIT_BUCKET_TTL_MINUTES=15
+RATE_LIMIT_MAX_BUCKETS=10000
+```
+
+**What these do**
+- `RATE_LIMIT_BUCKET_TTL_MINUTES`: how long an unused rate-limit bucket stays in memory before eviction.
+- `RATE_LIMIT_MAX_BUCKETS`: maximum number of distinct buckets kept in memory (safety cap).
+
+### Production recommendation (Cloudflare)
+
+Place an edge layer (e.g. Cloudflare) in front of both services and add
+basic rules to stop abuse before it reaches your infra. Suggested rules:
+
+- **/auth/login**: 10 req/min per IP
+- **/auth/register**: 5 req/min per IP
+- **/auth/refresh**: 30 req/min per IP
+- **/api/**: 120 req/min per IP (or per user if using a token-based rule)
+
+Cloudflare has a free tier that is often enough for early-stage apps.
+
+### Scaling note (Redis later)
+
+When running multiple instances, in-memory limits are per-instance.
+Switch to a shared store (e.g. Redis) for consistent limits across instances.
+
+### Trusted proxy headers (production)
+
+If you deploy behind a proxy (Cloudflare, Render, etc.), enable trusted
+forwarded headers so rate-limiting uses the real client IP:
+
+```
+FORWARD_HEADERS_STRATEGY=framework
+```
+
 ### CORS errors
 Ensure both services allow:
-- `http://localhost:19006`
+- `http://localhost:8083`
 - Authorization header
 
 ### Token refresh issues

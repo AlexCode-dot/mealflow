@@ -6,6 +6,7 @@ export type ApiProblemDetails = {
   status?: number;
   path?: string;
   instance?: string;
+  retryAfterSeconds?: number;
 
   // backend may return: errors: [{ field, message }]
   errors?: unknown;
@@ -14,6 +15,7 @@ export type ApiProblemDetails = {
 export type ApiError = {
   kind: ApiErrorKind;
   status?: number;
+  retryAfterSeconds?: number;
 
   // best-effort from problem+json
   title?: string;

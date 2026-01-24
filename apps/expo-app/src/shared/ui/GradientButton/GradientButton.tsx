@@ -1,4 +1,4 @@
-import { Pressable, Text, StyleSheet, View, type ViewStyle } from 'react-native';
+import { Pressable, Text, StyleSheet, View, type TextStyle, type ViewStyle } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { theme } from '@/src/shared/theme/theme';
 
@@ -109,4 +109,4 @@ const sizeStyles = {
       fontSize: 15,
     },
   }),
-} satisfies Record<'md' | 'lg', { gradient: ViewStyle; text: any }>;
+} satisfies Record<'md' | 'lg', { gradient: ViewStyle; text: TextStyle }>;

@@ -6,22 +6,25 @@ import { useProfileEditScreen } from '@/src/features/profile/hooks/useProfileEdi
 import { ThemePickerSheet } from '@/src/features/settings/ui/ThemePickerSheet';
 import {
   Card,
-  ErrorText,
   LoadingScreen,
   Screen,
   TextField,
   ToastBanner,
   ListRow,
   useBottomBarActions,
+  useGlobalToast,
 } from '@/src/shared/ui';
 import { theme } from '@/src/shared/theme/theme';
 import { TAB_BAR } from '@/src/shared/ui/layout/tabBar';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export function ProfileEditScreen() {
   const view = useProfileEditScreen();
   const { state, form, data, actions, toast } = view;
   const [themeOpen, setThemeOpen] = useState(false);
   const isFocused = useIsFocused();
+  const insets = useSafeAreaInsets();
+  const { toast: globalToast } = useGlobalToast();
 
   const actionItems = useMemo(
     () => [
@@ -67,9 +70,16 @@ export function ProfileEditScreen() {
         showProfileIcon={false}
         contentStyle={{ paddingBottom: state.contentPaddingBottom }}
       >
-        {state.error ? (
-          <View style={styles.errorBlock}>
-            <ErrorText>{state.error}</ErrorText>
+        {toast.toast && !globalToast ? (
+          <View style={styles.toastOverlay} pointerEvents="box-none">
+            <View style={[styles.toastWrap, { marginTop: insets.top + 8 }]} pointerEvents="none">
+              <ToastBanner
+                variant={toast.toast.variant}
+                title={toast.toast.title}
+                message={toast.toast.message}
+                onTimeout={toast.clear}
+              />
+            </View>
           </View>
         ) : null}
 
@@ -107,15 +117,6 @@ export function ProfileEditScreen() {
             />
           </View>
         </Card>
-
-        {toast.toast ? (
-          <ToastBanner
-            variant={toast.toast.variant}
-            title={toast.toast.title}
-            message={toast.toast.message}
-            onTimeout={toast.clear}
-          />
-        ) : null}
       </Screen>
 
       <ThemePickerSheet
@@ -133,8 +134,15 @@ const styles = StyleSheet.create({
   root: {
     flex: 1,
   },
-  errorBlock: {
-    gap: theme.spacing.s3,
+  toastOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: theme.spacing.s3,
+    right: theme.spacing.s3,
+    zIndex: 10,
+  },
+  toastWrap: {
+    width: '100%',
   },
   avatarCard: {
     alignItems: 'center',

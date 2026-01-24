@@ -10,7 +10,7 @@ import {
   UserRound,
 } from 'lucide-react-native';
 import { useProfileScreen } from '@/src/features/profile/hooks/useProfileScreen';
-import { Button, Card, ErrorText, LoadingScreen, Screen, ToastBanner } from '@/src/shared/ui';
+import { Card, LoadingScreen, Screen, ToastBanner, useGlobalToast } from '@/src/shared/ui';
 import { theme } from '@/src/shared/theme/theme';
 
 type Props = {
@@ -20,9 +20,10 @@ type Props = {
 export function ProfileScreen({ showBack = false }: Props) {
   const view = useProfileScreen();
   const { state, data, actions, toast } = view;
+  const { toast: globalToast } = useGlobalToast();
 
   const toastBanner =
-    toast.state.toast && toast.showToast ? (
+    toast.state.toast && toast.showToast && !globalToast ? (
       <View style={styles.toastOverlay} pointerEvents="box-none">
         <View style={[styles.toastWrap, { marginTop: toast.topInset + 8 }]} pointerEvents="none">
           <ToastBanner
@@ -52,13 +53,6 @@ export function ProfileScreen({ showBack = false }: Props) {
         }
       >
         {toastBanner}
-
-        {state.error ? (
-          <View style={styles.errorBlock}>
-            <ErrorText>{state.error}</ErrorText>
-            <Button title="Retry" onPress={actions.load} variant="secondary" />
-          </View>
-        ) : null}
 
         <View style={styles.heroCard}>
           <View style={styles.heroAvatar}>
@@ -273,9 +267,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '800',
     color: theme.colors.error,
-  },
-  errorBlock: {
-    gap: theme.spacing.s3,
   },
   toastOverlay: {
     position: 'absolute',

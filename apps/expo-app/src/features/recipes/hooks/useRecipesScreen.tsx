@@ -8,6 +8,7 @@ import { useRecipeListView } from '@/src/features/recipes/hooks/useRecipeListVie
 import { useRecipesList } from '@/src/features/recipes/hooks/useRecipesList';
 import type { InspirationListItem, RecipeListItem } from '@/src/features/recipes/types';
 import { useToastState } from '@/src/shared/hooks/useToastState';
+import { useGlobalToast } from '@/src/shared/ui';
 import { inspirationApi } from '@/src/features/recipes/api/inspirationApi';
 import { recipesApi } from '@/src/features/recipes/api/recipesApi';
 import { buildInspirationCreatePayload } from '@/src/features/recipes/utils/inspiration';
@@ -84,6 +85,7 @@ export function useRecipesScreen(): RecipesScreenView {
     enabled: view.tab === 'inspiration',
   });
   const toastState = useToastState();
+  const { showApiError, showValidationError } = useGlobalToast();
   const [showToast, setShowToast] = useState(false);
   const isFocused = useIsFocused();
   const discoveryListRef = useRef<FlatList<InspirationListItem> | null>(null);
@@ -141,7 +143,7 @@ export function useRecipesScreen(): RecipesScreenView {
     let timeoutId: ReturnType<typeof setTimeout> | null = null;
     timeoutId = setTimeout(() => {
       if (toastParam === 'deleted') {
-        toastState.show({ variant: 'error', message: 'Deleted successfully' });
+        toastState.show({ variant: 'success', message: 'Deleted successfully' });
       }
       router.setParams({ toast: undefined });
     }, 320);
@@ -171,7 +173,7 @@ export function useRecipesScreen(): RecipesScreenView {
 
   const handleSaveConfirm = useCallback(async () => {
     if (!saveCategory) {
-      toastState.show({ variant: 'error', message: 'Choose a category before saving.' });
+      showValidationError('Choose a category before saving.');
       return;
     }
     if (!saveTarget) return;
@@ -188,11 +190,11 @@ export function useRecipesScreen(): RecipesScreenView {
       await loadSaved();
     } catch (e) {
       const uiErr = mapCommonError(toApiError(e));
-      toastState.show({ variant: 'error', title: 'Save failed', message: uiErr.message });
+      showApiError(uiErr, 'Save failed');
     } finally {
       setIsSaving(false);
     }
-  }, [loadSaved, saveCategory, saveTarget, toastState]);
+  }, [loadSaved, saveCategory, saveTarget, showApiError, showValidationError, toastState]);
 
   const handleDiscoveryScroll = useCallback((offsetY: number) => {
     setShowScrollTop(offsetY > 500);

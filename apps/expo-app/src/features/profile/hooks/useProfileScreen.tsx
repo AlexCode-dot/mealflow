@@ -8,17 +8,19 @@ import { routes } from '@/src/core/navigation/routes';
 import { buildHref } from '@/src/core/navigation/buildHref';
 import { normalizePath } from '@/src/core/navigation/normalizePath';
 import { mapCommonError } from '@/src/shared/errors/mapCommonError';
+import type { UiError } from '@/src/shared/errors/errorTypes';
 import { toApiError } from '@/src/core/http/toApiError';
 import { useToastState } from '@/src/shared/hooks/useToastState';
 import { forceLogout } from '@/src/features/auth/actions/forceLogout';
 import { recipesApi } from '@/src/features/recipes/api/recipesApi';
 import { weeklyPlansApi } from '@/src/features/weekly-plans/api/weeklyPlansApi';
 import { shoppingListsApi } from '@/src/features/shopping-lists/api/shoppingListsApi';
+import { useGlobalToast } from '@/src/shared/ui';
 
 type ProfileScreenState = {
   isLoading: boolean;
   isRefreshing: boolean;
-  error: string | null;
+  error: UiError | null;
 };
 
 type ProfileScreenData = {
@@ -65,6 +67,7 @@ export function useProfileScreen(): ProfileScreenView {
   const isFocused = useIsFocused();
   const insets = useSafeAreaInsets();
   const toastState = useToastState();
+  const { showError } = useGlobalToast();
   const [showToast, setShowToast] = useState(false);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [recipeCount, setRecipeCount] = useState(0);
@@ -72,7 +75,7 @@ export function useProfileScreen(): ProfileScreenView {
   const [listCount, setListCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<UiError | null>(null);
 
   const load = useCallback(async () => {
     setError(null);
@@ -88,7 +91,8 @@ export function useProfileScreen(): ProfileScreenView {
       setProfile(profileResult.value);
     } else {
       const uiErr = mapCommonError(toApiError(profileResult.reason));
-      setError(uiErr.message);
+      setError(uiErr);
+      showError(uiErr, { onRetry: load });
       return;
     }
 
@@ -106,7 +110,7 @@ export function useProfileScreen(): ProfileScreenView {
     if (archivedListsResult.status === 'fulfilled') {
       setListCount(archivedListsResult.value.length);
     }
-  }, []);
+  }, [showError]);
 
   useFocusEffect(
     useCallback(() => {

@@ -7,20 +7,21 @@ import { useShoppingListDetailsScreen } from '@/src/features/shopping-lists/hook
 import {
   Button,
   ConfirmSheet,
-  ErrorText,
+  ToastBanner,
   FormSheet,
   LoadingScreen,
   ModalSheet,
   Screen,
   SegmentedTabs,
   TextField,
-  ToastBanner,
+  useGlobalToast,
 } from '@/src/shared/ui';
 import { theme } from '@/src/shared/theme/theme';
 
 export default function ShoppingListDetailsScreen() {
   const view = useShoppingListDetailsScreen();
   const { state, data, actions, toast, addSheet, editSheet, renameSheet, confirms, options } = view;
+  const { toast: globalToast } = useGlobalToast();
 
   const filterTabs = useMemo(
     () => [
@@ -32,7 +33,7 @@ export default function ShoppingListDetailsScreen() {
   );
 
   const toastBanner =
-    toast.state.toast && toast.showToast ? (
+    toast.state.toast && toast.showToast && !globalToast ? (
       <View style={styles.toastOverlay} pointerEvents="box-none">
         <View style={[styles.toastWrap, { marginTop: toast.topInset + 8 }]} pointerEvents="none">
           <ToastBanner
@@ -62,13 +63,6 @@ export default function ShoppingListDetailsScreen() {
         }
         contentStyle={[styles.content, { paddingBottom: state.contentPaddingBottom }]}
       >
-        {state.error ? (
-          <View style={styles.errorBlock}>
-            <ErrorText>{state.error}</ErrorText>
-            <Button title="Retry" onPress={actions.load} variant="secondary" />
-          </View>
-        ) : null}
-
         <View style={styles.summaryCard}>
           <View style={styles.summaryHeader}>
             <View style={styles.summaryText}>
@@ -347,9 +341,6 @@ const styles = StyleSheet.create({
   },
   content: {
     gap: theme.spacing.s4,
-  },
-  errorBlock: {
-    gap: theme.spacing.s3,
   },
   summaryCard: {
     borderRadius: theme.radius.lg,

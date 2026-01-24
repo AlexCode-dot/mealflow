@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef } from 'react';
 import type { ReactNode } from 'react';
-import { Animated, Easing, StyleSheet, Text, View } from 'react-native';
+import { Animated, Easing, Pressable, StyleSheet, Text, View } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
 import { Check, Minus } from 'lucide-react-native';
 import { theme } from '@/src/shared/theme/theme';
@@ -10,10 +10,14 @@ type Variant = 'success' | 'error' | 'info';
 type Props = {
   title?: string;
   message: string;
+  meta?: string;
   icon?: ReactNode;
   variant?: Variant;
   durationMs?: number;
   onTimeout?: () => void;
+  actionLabel?: string;
+  onAction?: () => void;
+  actionDisabled?: boolean;
 };
 
 const variantStyles = {
@@ -42,10 +46,14 @@ const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 export function ToastBanner({
   title,
   message,
+  meta,
   icon,
   variant = 'info',
   durationMs = 2200,
   onTimeout,
+  actionLabel,
+  onAction,
+  actionDisabled = false,
 }: Props) {
   const palette = variantStyles[variant];
   const progress = useRef(new Animated.Value(1)).current;
@@ -121,36 +129,51 @@ export function ToastBanner({
     };
   }, [durationMs, message, onTimeout, opacity, progress, title, translateY, variant]);
 
-  const timerRing = durationMs ? (
-    <View style={styles.timer}>
-      <Svg width={ringSize} height={ringSize}>
-        <Circle
-          cx={ringSize / 2}
-          cy={ringSize / 2}
-          r={ringRadius}
-          stroke={palette.borderColor}
-          strokeOpacity={0.2}
-          strokeWidth={ringStroke}
-          fill="none"
-        />
-        <AnimatedCircle
-          cx={ringSize / 2}
-          cy={ringSize / 2}
-          r={ringRadius}
-          stroke={palette.borderColor}
-          strokeWidth={ringStroke}
-          strokeLinecap="round"
-          strokeDasharray={`${ringCircumference} ${ringCircumference}`}
-          strokeDashoffset={progress.interpolate({
-            inputRange: [0, 1],
-            outputRange: [ringCircumference, 0],
-          })}
-          fill="none"
-          transform={`rotate(-90 ${ringSize / 2} ${ringSize / 2})`}
-        />
-      </Svg>
-    </View>
-  ) : null;
+  const timerRing =
+    durationMs && !actionLabel ? (
+      <View style={styles.timer}>
+        <Svg width={ringSize} height={ringSize}>
+          <Circle
+            cx={ringSize / 2}
+            cy={ringSize / 2}
+            r={ringRadius}
+            stroke={palette.borderColor}
+            strokeOpacity={0.2}
+            strokeWidth={ringStroke}
+            fill="none"
+          />
+          <AnimatedCircle
+            cx={ringSize / 2}
+            cy={ringSize / 2}
+            r={ringRadius}
+            stroke={palette.borderColor}
+            strokeWidth={ringStroke}
+            strokeLinecap="round"
+            strokeDasharray={`${ringCircumference} ${ringCircumference}`}
+            strokeDashoffset={progress.interpolate({
+              inputRange: [0, 1],
+              outputRange: [ringCircumference, 0],
+            })}
+            fill="none"
+            transform={`rotate(-90 ${ringSize / 2} ${ringSize / 2})`}
+          />
+        </Svg>
+      </View>
+    ) : null;
+
+  const action =
+    actionLabel && onAction ? (
+      <Pressable
+        onPress={onAction}
+        disabled={actionDisabled}
+        style={[
+          styles.action,
+          { borderColor: palette.borderColor, opacity: actionDisabled ? 0.45 : 1 },
+        ]}
+      >
+        <Text style={[styles.actionText, { color: palette.textColor }]}>{actionLabel}</Text>
+      </Pressable>
+    ) : null;
 
   return (
     <Animated.View
@@ -177,7 +200,9 @@ export function ToastBanner({
       <View style={styles.text}>
         {title ? <Text style={[styles.title, { color: palette.textColor }]}>{title}</Text> : null}
         <Text style={[styles.message, { color: palette.textColor }]}>{message}</Text>
+        {meta ? <Text style={[styles.meta, { color: palette.textColor }]}>{meta}</Text> : null}
       </View>
+      {action}
       {timerRing}
     </Animated.View>
   );
@@ -217,6 +242,21 @@ const styles = StyleSheet.create({
   message: {
     fontSize: 13,
     fontWeight: '600',
+  },
+  meta: {
+    fontSize: 12,
+    fontWeight: '600',
+    opacity: 0.7,
+  },
+  action: {
+    borderWidth: 2,
+    borderRadius: 999,
+    paddingHorizontal: theme.spacing.s3,
+    paddingVertical: theme.spacing.s1,
+  },
+  actionText: {
+    fontSize: 12,
+    fontWeight: '700',
   },
   timer: {
     width: 28,
