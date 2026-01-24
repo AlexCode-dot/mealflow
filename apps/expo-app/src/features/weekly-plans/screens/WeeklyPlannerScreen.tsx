@@ -1,12 +1,5 @@
 import { StyleSheet, View } from 'react-native';
-import {
-  Button,
-  EmptyState,
-  ErrorText,
-  LoadingScreen,
-  Screen,
-  UnderlineTabs,
-} from '@/src/shared/ui';
+import { EmptyState, LoadingScreen, Screen, UnderlineTabs } from '@/src/shared/ui';
 import type { UnderlineTab } from '@/src/shared/ui/UnderlineTabs/UnderlineTabs';
 import {
   useWeeklyPlannerScreen,
@@ -47,13 +40,6 @@ export default function WeeklyPlannerScreen() {
         />
       </View>
 
-      {state.error ? (
-        <View style={styles.errorBlock}>
-          <ErrorText>{state.error}</ErrorText>
-          <Button title="Retry" onPress={actions.reload} variant="secondary" />
-        </View>
-      ) : null}
-
       {listItems.length === 0 ? (
         <EmptyState
           title="No weekly plans yet"
@@ -89,9 +75,6 @@ const styles = StyleSheet.create({
     marginBottom: 0,
   },
   list: {
-    gap: theme.spacing.s2,
-  },
-  errorBlock: {
     gap: theme.spacing.s2,
   },
 });

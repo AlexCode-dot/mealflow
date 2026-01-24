@@ -5,20 +5,23 @@ import { weeklyPlansApi } from '@/src/features/weekly-plans/api/weeklyPlansApi';
 import type { WeeklyPlanListItem } from '@/src/features/weekly-plans/types';
 import { toApiError } from '@/src/core/http/toApiError';
 import { mapCommonError } from '@/src/shared/errors/mapCommonError';
+import type { UiError } from '@/src/shared/errors/errorTypes';
+import { useGlobalToast } from '@/src/shared/ui';
 
 type UseWeeklyPlansListResult = {
   items: WeeklyPlanListItem[];
   isLoading: boolean;
-  error: string | null;
+  error: UiError | null;
   load: () => Promise<void>;
   refreshControl: ReactElement<RefreshControlProps>;
 };
 
 export function useWeeklyPlansList(): UseWeeklyPlansListResult {
+  const { showError } = useGlobalToast();
   const [items, setItems] = useState<WeeklyPlanListItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<UiError | null>(null);
 
   const load = useCallback(async () => {
     setError(null);
@@ -28,7 +31,8 @@ export function useWeeklyPlansList(): UseWeeklyPlansListResult {
       setItems(list);
     } catch (e) {
       const uiErr = mapCommonError(toApiError(e));
-      setError(uiErr.message);
+      setError(uiErr);
+      showError(uiErr, { onRetry: load });
       setItems([]);
     } finally {
       setIsLoading(false);

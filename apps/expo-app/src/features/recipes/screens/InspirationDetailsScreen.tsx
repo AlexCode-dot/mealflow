@@ -4,13 +4,13 @@ import { useLocalSearchParams, router } from 'expo-router';
 import { Bookmark, MapPin, ShoppingBasket, Utensils } from 'lucide-react-native';
 import {
   Button,
-  ErrorText,
   IconStatRow,
   ModalSheet,
   Screen,
   Shimmer,
   ToastBanner,
   useBottomBarActions,
+  useGlobalToast,
 } from '@/src/shared/ui';
 import { theme } from '@/src/shared/theme/theme';
 import { useInspirationDetails, useRecipesList } from '@/src/features/recipes/hooks';
@@ -41,6 +41,7 @@ export function InspirationDetailsScreen() {
   const [stepIndex, setStepIndex] = useState<number | null>(null);
   const [titleOpen, setTitleOpen] = useState(false);
   const { toast, show, clear } = useToastState();
+  const { toast: globalToast, showApiError, showError, showValidationError } = useGlobalToast();
 
   const openStep = useCallback((text: string, index: number) => {
     setStepText(text);
@@ -50,9 +51,9 @@ export function InspirationDetailsScreen() {
 
   useEffect(() => {
     if (state.saveError) {
-      show({ variant: 'error', title: 'Save failed', message: state.saveError });
+      showApiError({ kind: 'unknown', message: state.saveError }, 'Save failed');
     }
-  }, [state.saveError, show]);
+  }, [showApiError, state.saveError]);
 
   const onSave = useCallback(() => {
     setPickerOpen(true);
@@ -60,7 +61,7 @@ export function InspirationDetailsScreen() {
 
   const onSaveWithCategory = useCallback(async () => {
     if (!mealType) {
-      show({ variant: 'error', message: 'Choose a category before saving.' });
+      showValidationError('Choose a category before saving.');
       return;
     }
 
@@ -69,7 +70,7 @@ export function InspirationDetailsScreen() {
     if (created) {
       router.replace(routes.recipeView(created.id, 'saved'));
     }
-  }, [mealType, actions, show]);
+  }, [mealType, actions, showValidationError]);
 
   const actionItems = useMemo(
     () => [
@@ -135,7 +136,7 @@ export function InspirationDetailsScreen() {
       contentStyle={styles.screenContent}
     >
       <View style={styles.root}>
-        {toast ? (
+        {toast && !globalToast ? (
           <View style={styles.toast}>
             <ToastBanner
               variant={toast.variant}
@@ -143,14 +144,6 @@ export function InspirationDetailsScreen() {
               message={toast.message}
               onTimeout={clear}
             />
-          </View>
-        ) : null}
-
-        {state.error ? (
-          <View style={styles.errorCard}>
-            <ErrorText>{state.error}</ErrorText>
-            <View style={styles.errorSpacer} />
-            <Button title="Try again" onPress={actions.load} />
           </View>
         ) : null}
 
@@ -263,17 +256,6 @@ const styles = StyleSheet.create({
     padding: theme.spacing.s6,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  errorCard: {
-    margin: theme.spacing.s4,
-    padding: theme.spacing.s4,
-    borderRadius: theme.radius.lg,
-    borderWidth: 1.5,
-    borderColor: theme.colors.borderNeutral,
-    backgroundColor: theme.colors.bgLight,
-  },
-  errorSpacer: {
-    height: theme.spacing.s3,
   },
   heroImage: {
     width: '100%',

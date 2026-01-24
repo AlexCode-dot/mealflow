@@ -4,6 +4,8 @@ import { recipesApi } from '@/src/features/recipes/api/recipesApi';
 import type { InspirationRecipe, Recipe } from '@/src/features/recipes/types';
 import { toApiError } from '@/src/core/http/toApiError';
 import { mapCommonError } from '@/src/shared/errors/mapCommonError';
+import type { UiError } from '@/src/shared/errors/errorTypes';
+import { useGlobalToast } from '@/src/shared/ui';
 import { buildInspirationCreatePayload } from '@/src/features/recipes/utils/inspiration';
 
 type SaveOptions = {
@@ -13,7 +15,7 @@ type SaveOptions = {
 export type InspirationDetailsState = {
   recipe: InspirationRecipe | null;
   isLoading: boolean;
-  error: string | null;
+  error: UiError | null;
   isSaving: boolean;
   saveError: string | null;
 };
@@ -29,15 +31,16 @@ export type InspirationDetailsView = {
 };
 
 export function useInspirationDetails(id: string): InspirationDetailsView {
+  const { showError } = useGlobalToast();
   const [recipe, setRecipe] = useState<InspirationRecipe | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<UiError | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     if (!id) {
-      setError('Missing recipe id.');
+      setError({ kind: 'unknown', message: 'Missing recipe id.' });
       setIsLoading(false);
       return;
     }
@@ -50,7 +53,8 @@ export function useInspirationDetails(id: string): InspirationDetailsView {
       setRecipe(data);
     } catch (e) {
       const uiErr = mapCommonError(toApiError(e));
-      setError(uiErr.message);
+      setError(uiErr);
+      showError(uiErr, { onRetry: load });
       setRecipe(null);
     } finally {
       setIsLoading(false);

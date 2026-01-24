@@ -69,12 +69,20 @@ export function toApiError(err: unknown): ApiError {
     const fieldErrorsFromObject =
       fieldErrorsFromArray ?? asFieldErrorsObject(problem.errors) ?? undefined;
 
+    const retryAfterSeconds =
+      typeof (problem as any).retryAfterSeconds === 'number'
+        ? (problem as any).retryAfterSeconds
+        : typeof (problem as any).retryAfterSeconds === 'string'
+          ? Number.parseInt((problem as any).retryAfterSeconds, 10)
+          : undefined;
+
     return {
       kind: 'http',
       status: err.status,
       title: typeof problem.title === 'string' ? problem.title : undefined,
       detail: typeof problem.detail === 'string' ? problem.detail : undefined,
       fieldErrors: fieldErrorsFromObject,
+      retryAfterSeconds: Number.isFinite(retryAfterSeconds) ? retryAfterSeconds : undefined,
       body: err.body,
     };
   }

@@ -8,17 +8,18 @@ import { ThemePickerSheet } from '@/src/features/settings/ui/ThemePickerSheet';
 import {
   Button,
   ConfirmSheet,
-  ErrorText,
+  ToastBanner,
   LoadingScreen,
   ModalSheet,
   Screen,
-  ToastBanner,
+  useGlobalToast,
 } from '@/src/shared/ui';
 import { theme } from '@/src/shared/theme/theme';
 
 export function SettingsScreen() {
   const view = useSettingsScreen();
   const { state, data, actions, modal, toast } = view;
+  const { toast: globalToast } = useGlobalToast();
 
   const appVersion = Constants.expoConfig?.version ?? Constants.expoConfig?.sdkVersion ?? '0.1';
 
@@ -27,7 +28,7 @@ export function SettingsScreen() {
   }, [data.theme, data.themeOptions]);
 
   const toastBanner =
-    toast.state.toast && toast.showToast ? (
+    toast.state.toast && toast.showToast && !globalToast ? (
       <View style={styles.toastOverlay} pointerEvents="box-none">
         <View style={[styles.toastWrap, { marginTop: toast.topInset + 8 }]} pointerEvents="none">
           <ToastBanner
@@ -53,13 +54,6 @@ export function SettingsScreen() {
           <RefreshControl refreshing={state.isRefreshing} onRefresh={actions.handleRefresh} />
         }
       >
-        {state.error ? (
-          <View style={styles.errorBlock}>
-            <ErrorText>{state.error}</ErrorText>
-            <Button title="Retry" onPress={actions.load} variant="secondary" />
-          </View>
-        ) : null}
-
         <View style={styles.list}>
           <ProfileBanner onPress={actions.openProfileEdit} />
 
@@ -140,9 +134,6 @@ const styles = StyleSheet.create({
   root: { flex: 1 },
   list: {
     gap: theme.spacing.s4,
-  },
-  errorBlock: {
-    gap: theme.spacing.s3,
   },
   aboutSheet: {
     gap: theme.spacing.s3,

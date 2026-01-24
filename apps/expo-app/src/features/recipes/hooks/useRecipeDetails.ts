@@ -3,11 +3,13 @@ import { recipesApi } from '@/src/features/recipes/api/recipesApi';
 import type { Recipe } from '@/src/features/recipes/types';
 import { toApiError } from '@/src/core/http/toApiError';
 import { mapCommonError } from '@/src/shared/errors/mapCommonError';
+import type { UiError } from '@/src/shared/errors/errorTypes';
+import { useGlobalToast } from '@/src/shared/ui';
 
 export type RecipeDetailsState = {
   recipe: Recipe | null;
   isLoading: boolean;
-  error: string | null;
+  error: UiError | null;
   isDeleting: boolean;
 };
 
@@ -22,14 +24,15 @@ export type RecipeDetailsView = {
 };
 
 export function useRecipeDetails(id: string): RecipeDetailsView {
+  const { showError } = useGlobalToast();
   const [recipe, setRecipe] = useState<Recipe | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<UiError | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
   const load = useCallback(async () => {
     if (!id) {
-      setError('Missing recipe id.');
+      setError({ kind: 'unknown', message: 'Missing recipe id.' });
       setIsLoading(false);
       return;
     }
@@ -42,7 +45,8 @@ export function useRecipeDetails(id: string): RecipeDetailsView {
       setRecipe(r);
     } catch (e) {
       const uiErr = mapCommonError(toApiError(e));
-      setError(uiErr.message);
+      setError(uiErr);
+      showError(uiErr, { onRetry: load });
       setRecipe(null);
     } finally {
       setIsLoading(false);
@@ -64,7 +68,7 @@ export function useRecipeDetails(id: string): RecipeDetailsView {
       return true;
     } catch (e) {
       const uiErr = mapCommonError(toApiError(e));
-      setError(uiErr.message);
+      setError(uiErr);
       return false;
     } finally {
       setIsDeleting(false);

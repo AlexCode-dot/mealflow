@@ -2,7 +2,14 @@ import { useCallback } from 'react';
 import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { ArrowUp } from 'lucide-react-native';
 import { router } from 'expo-router';
-import { Screen, ErrorText, EmptyState, FilterSheet, Button, ToastBanner } from '@/src/shared/ui';
+import {
+  Screen,
+  EmptyState,
+  FilterSheet,
+  Button,
+  ToastBanner,
+  useGlobalToast,
+} from '@/src/shared/ui';
 import { theme } from '@/src/shared/theme/theme';
 import { routes } from '@/src/core/navigation/routes';
 import type { InspirationListItem, RecipeListItem } from '@/src/features/recipes/types';
@@ -18,10 +25,11 @@ import { useRecipesScreen, type RecipeListTabKey } from '@/src/features/recipes/
 export function RecipesScreen() {
   const view = useRecipesScreen();
   const { state, filters, data, actions, toast, discoveryListRef } = view;
+  const { toast: globalToast } = useGlobalToast();
 
   const active = state.tab === 'saved' ? data.saved : data.discovery;
   const toastBanner =
-    toast.state.toast && state.showToast ? (
+    toast.state.toast && state.showToast && !globalToast ? (
       <View style={styles.toast}>
         <ToastBanner
           variant={toast.state.toast.variant}
@@ -84,15 +92,6 @@ export function RecipesScreen() {
             onFilterPress={() => filters.setFiltersOpen(true)}
             activeFilterCount={filters.activeFilterCount}
           />
-
-          {list.error ? (
-            <View style={styles.errorBox}>
-              <ErrorText>{list.error}</ErrorText>
-              <Pressable onPress={list.load} style={styles.retryBtn}>
-                <Text style={styles.retryText}>Try again</Text>
-              </Pressable>
-            </View>
-          ) : null}
 
           {list.isLoading ? <Text style={styles.muted}>Loading recipes…</Text> : null}
 
@@ -163,7 +162,10 @@ export function RecipesScreen() {
         )}
 
         {state.tab === 'inspiration' && state.showScrollTop ? (
-          <Pressable style={[styles.scrollTop, { top: 17, left: '50%' }]} onPress={actions.handleScrollTop}>
+          <Pressable
+            style={[styles.scrollTop, { top: 17, left: '50%' }]}
+            onPress={actions.handleScrollTop}
+          >
             <ArrowUp color={theme.colors.textOnPrimary} size={20} strokeWidth={2.5} />
           </Pressable>
         ) : null}
@@ -212,25 +214,6 @@ const styles = StyleSheet.create({
     gap: theme.spacing.s3,
     paddingTop: theme.spacing.s3,
     paddingBottom: theme.spacing.s4,
-  },
-  errorBox: {
-    gap: theme.spacing.s2,
-    padding: theme.spacing.s3,
-    borderWidth: 1,
-    borderColor: theme.colors.borderNeutral,
-    borderRadius: theme.radius.md,
-    backgroundColor: theme.colors.bgLight,
-  },
-  retryBtn: {
-    alignSelf: 'flex-start',
-    paddingVertical: theme.spacing.s1,
-    paddingHorizontal: theme.spacing.s3,
-    borderRadius: theme.radius.md,
-    backgroundColor: theme.colors.primaryLight,
-  },
-  retryText: {
-    color: theme.colors.primaryDark,
-    fontWeight: '700',
   },
   muted: {
     color: theme.colors.textMuted,

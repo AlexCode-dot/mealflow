@@ -3,12 +3,14 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { profileApi } from '@/src/features/profile/api/profileApi';
 import { mapCommonError } from '@/src/shared/errors/mapCommonError';
+import type { UiError } from '@/src/shared/errors/errorTypes';
 import { toApiError } from '@/src/core/http/toApiError';
 import { routes } from '@/src/core/navigation/routes';
 import { buildHref } from '@/src/core/navigation/buildHref';
 import { normalizePath } from '@/src/core/navigation/normalizePath';
 import { useToastState } from '@/src/shared/hooks/useToastState';
 import { TAB_BAR } from '@/src/shared/ui/layout/tabBar';
+import { useGlobalToast } from '@/src/shared/ui';
 
 type ThemeOption = {
   label: string;
@@ -18,7 +20,7 @@ type ThemeOption = {
 type ProfileEditState = {
   isLoading: boolean;
   isSaving: boolean;
-  error: string | null;
+  error: UiError | null;
   contentPaddingBottom: number;
 };
 
@@ -61,11 +63,12 @@ export function useProfileEditScreen(): ProfileEditView {
   );
   const insets = useSafeAreaInsets();
   const toast = useToastState();
+  const { showError } = useGlobalToast();
   const [displayName, setDisplayName] = useState('');
   const [theme, setTheme] = useState('default');
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<UiError | null>(null);
 
   const load = useCallback(async () => {
     setError(null);
@@ -75,9 +78,10 @@ export function useProfileEditScreen(): ProfileEditView {
       setTheme(res.theme ?? 'default');
     } catch (err) {
       const uiErr = mapCommonError(toApiError(err));
-      setError(uiErr.message);
+      setError(uiErr);
+      showError(uiErr, { onRetry: load });
     }
-  }, []);
+  }, [showError]);
 
   useEffect(() => {
     setIsLoading(true);
@@ -109,12 +113,12 @@ export function useProfileEditScreen(): ProfileEditView {
       }
     } catch (err) {
       const uiErr = mapCommonError(toApiError(err));
-      setError(uiErr.message);
-      toast.show({ variant: 'error', message: uiErr.message });
+      setError(uiErr);
+      showError(uiErr, { onRetry: save });
     } finally {
       setIsSaving(false);
     }
-  }, [displayName, isSaving, parentReturnTo, returnTo, theme, toast]);
+  }, [displayName, isSaving, parentReturnTo, returnTo, showError, theme, toast]);
 
   const cancel = useCallback(() => {
     if (returnTo) {

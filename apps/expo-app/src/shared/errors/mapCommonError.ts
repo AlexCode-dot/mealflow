@@ -7,6 +7,19 @@ export function mapCommonError(apiErr: ApiError): UiError {
   }
 
   if (apiErr.kind === 'http') {
+    if (apiErr.status === 429) {
+      const retry =
+        typeof apiErr.retryAfterSeconds === 'number' && apiErr.retryAfterSeconds > 0
+          ? apiErr.retryAfterSeconds
+          : undefined;
+      return {
+        kind: 'rate_limit',
+        message: retry ? 'Too many requests.' : 'Too many requests. Try again in a moment.',
+        status: apiErr.status,
+        retryAfterSeconds: retry,
+      };
+    }
+
     // keep generic (don’t leak backend titles all over UI)
     return { kind: 'unknown', message: apiErr.detail || 'Something went wrong. Please try again.' };
   }

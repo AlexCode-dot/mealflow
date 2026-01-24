@@ -6,9 +6,11 @@ import { profileApi } from '@/src/features/profile/api/profileApi';
 import { routes } from '@/src/core/navigation/routes';
 import { buildHref } from '@/src/core/navigation/buildHref';
 import { mapCommonError } from '@/src/shared/errors/mapCommonError';
+import type { UiError } from '@/src/shared/errors/errorTypes';
 import { toApiError } from '@/src/core/http/toApiError';
 import { useToastState } from '@/src/shared/hooks/useToastState';
 import { forceLogout } from '@/src/features/auth/actions/forceLogout';
+import { useGlobalToast } from '@/src/shared/ui';
 
 type ThemeOption = {
   label: string;
@@ -19,7 +21,7 @@ type SettingsState = {
   isLoading: boolean;
   isRefreshing: boolean;
   isSaving: boolean;
-  error: string | null;
+  error: UiError | null;
 };
 
 type SettingsData = {
@@ -70,12 +72,13 @@ export function useSettingsScreen(): SettingsView {
   const isFocused = useIsFocused();
   const insets = useSafeAreaInsets();
   const toastState = useToastState();
+  const { showError } = useGlobalToast();
   const [showToast, setShowToast] = useState(false);
   const [theme, setThemeValue] = useState('default');
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<UiError | null>(null);
   const [themeOpen, setThemeOpen] = useState(false);
   const [aboutOpen, setAboutOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -87,9 +90,10 @@ export function useSettingsScreen(): SettingsView {
       setThemeValue(res.theme ?? 'default');
     } catch (err) {
       const uiErr = mapCommonError(toApiError(err));
-      setError(uiErr.message);
+      setError(uiErr);
+      showError(uiErr, { onRetry: load });
     }
-  }, []);
+  }, [showError]);
 
   useFocusEffect(
     useCallback(() => {
@@ -154,14 +158,14 @@ export function useSettingsScreen(): SettingsView {
         toastState.show({ variant: 'success', message: 'Theme updated.' });
       } catch (err) {
         const uiErr = mapCommonError(toApiError(err));
-        toastState.show({ variant: 'error', message: uiErr.message });
-        setError(uiErr.message);
+        showError(uiErr, { onRetry: () => setTheme(value) });
+        setError(uiErr);
       } finally {
         setIsSaving(false);
         setThemeOpen(false);
       }
     },
-    [isSaving, theme, toastState],
+    [isSaving, showError, theme, toastState],
   );
 
   const confirmDelete = useCallback(() => {

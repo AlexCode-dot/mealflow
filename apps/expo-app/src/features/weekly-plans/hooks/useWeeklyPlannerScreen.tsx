@@ -4,6 +4,7 @@ import { weeklyPlansApi } from '@/src/features/weekly-plans/api/weeklyPlansApi';
 import type { WeeklyPlan } from '@/src/features/weekly-plans/types';
 import { routes } from '@/src/core/navigation/routes';
 import { useWeeklyPlansList } from '@/src/features/weekly-plans/hooks/useWeeklyPlansList';
+import type { UiError } from '@/src/shared/errors/errorTypes';
 import {
   buildWeekDays,
   currentWeekStartIso,
@@ -28,7 +29,7 @@ export type WeeklyPlannerListItem = {
 
 export type WeeklyPlannerState = {
   isLoading: boolean;
-  error: string | null;
+  error: UiError | null;
   refreshControl: ReturnType<typeof useWeeklyPlansList>['refreshControl'];
   tab: WeeklyPlannerTab;
   isCreating: boolean;

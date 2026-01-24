@@ -23,7 +23,9 @@ import {
   formatWeekRange,
 } from '@/src/features/weekly-plans/utils/weeklyPlanDates';
 import { useToastState } from '@/src/shared/hooks/useToastState';
+import { useGlobalToast } from '@/src/shared/ui';
 import { mapCommonError } from '@/src/shared/errors/mapCommonError';
+import type { UiError } from '@/src/shared/errors/errorTypes';
 import { theme } from '@/src/shared/theme/theme';
 import { TAB_BAR } from '@/src/shared/ui/layout/tabBar';
 import type { BottomActionBarItem } from '@/src/shared/ui';
@@ -46,7 +48,7 @@ type WeeklyPlanDay = ReturnType<typeof buildWeekDays>[number];
 export type WeeklyPlanDetailsState = {
   plan: WeeklyPlan | null;
   isLoading: boolean;
-  error: string | null;
+  error: UiError | null;
   title: string;
   isRefreshing: boolean;
   isSaving: boolean;
@@ -242,6 +244,7 @@ export function useWeeklyPlanDetailsScreen(): WeeklyPlanDetailsView {
   const [isSectionSaving, setIsSectionSaving] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const toastState = useToastState();
+  const { showApiError, showError, showValidationError } = useGlobalToast();
   const { height: screenHeight } = useWindowDimensions();
   const handleBack = useCallback(() => {
     router.push(routes.weeklyPlanner);
@@ -249,7 +252,7 @@ export function useWeeklyPlanDetailsScreen(): WeeklyPlanDetailsView {
 
   const handleGenerateList = useCallback(async () => {
     if (!planId) {
-      toastState.show({ variant: 'error', message: 'Missing weekly plan.' });
+      showValidationError('Missing weekly plan.');
       return;
     }
 
@@ -259,15 +262,15 @@ export function useWeeklyPlanDetailsScreen(): WeeklyPlanDetailsView {
       router.push(routes.shoppingListDetail(list.id));
     } catch (err) {
       const uiErr = mapCommonError(toApiError(err));
-      toastState.show({ variant: 'error', title: 'Generate failed', message: uiErr.message });
+      showApiError(uiErr, 'Generate failed');
     } finally {
       setIsGenerating(false);
     }
-  }, [planId, toastState]);
+  }, [planId, showError, showValidationError]);
 
   const requestGenerateList = useCallback(async () => {
     if (!planId) {
-      toastState.show({ variant: 'error', message: 'Missing weekly plan.' });
+      showValidationError('Missing weekly plan.');
       return;
     }
     try {
@@ -280,9 +283,9 @@ export function useWeeklyPlanDetailsScreen(): WeeklyPlanDetailsView {
       setConfirmGenerateOpen(true);
     } catch (err) {
       const uiErr = mapCommonError(toApiError(err));
-      toastState.show({ variant: 'error', title: 'Generate failed', message: uiErr.message });
+      showApiError(uiErr, 'Generate failed');
     }
-  }, [handleGenerateList, planId, toastState]);
+  }, [handleGenerateList, planId, showError, showValidationError]);
 
   const actionItems = useMemo(
     () => [
@@ -769,7 +772,7 @@ export function useWeeklyPlanDetailsScreen(): WeeklyPlanDetailsView {
       const updated = await weeklyPlansApi.patch(plan.id, { entries: nextEntries });
       setPlan(updated);
       setEditOpen(false);
-      toastState.show({ variant: 'error', message: 'Meal removed.' });
+      toastState.show({ variant: 'success', message: 'Meal removed.' });
     } finally {
       setIsSaving(false);
     }
@@ -793,7 +796,7 @@ export function useWeeklyPlanDetailsScreen(): WeeklyPlanDetailsView {
         sections: DEFAULT_WEEKLY_SECTIONS,
       });
       setPlan(updated);
-      toastState.show({ variant: 'error', message: 'Week cleared.' });
+      toastState.show({ variant: 'success', message: 'Week cleared.' });
     } finally {
       setIsSaving(false);
       setConfirmClearWeekOpen(false);
@@ -953,7 +956,7 @@ export function useWeeklyPlanDetailsScreen(): WeeklyPlanDetailsView {
     } catch (e) {
       setFormError('Could not save entry. Please try again.');
       const uiErr = mapCommonError(toApiError(e));
-      toastState.show({ variant: 'error', title: 'Save failed', message: uiErr.message });
+      showApiError(uiErr, 'Save failed');
     } finally {
       setIsSaving(false);
     }
@@ -966,7 +969,7 @@ export function useWeeklyPlanDetailsScreen(): WeeklyPlanDetailsView {
     plan,
     selectedRecipeId,
     setPlan,
-    toastState,
+    showError,
   ]);
 
   const contentPaddingBottom = TAB_BAR.BOX_HEIGHT + TAB_BAR.PADDING_TOP + 40;

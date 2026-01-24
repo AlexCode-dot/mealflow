@@ -6,6 +6,12 @@ export type ToastState = {
   variant: ToastVariant;
   title?: string;
   message: string;
+  meta?: string;
+  durationMs?: number;
+  actionLabel?: string;
+  actionDisabled?: boolean;
+  onAction?: () => void;
+  retryAfterSeconds?: number;
 };
 
 export function useToastState() {

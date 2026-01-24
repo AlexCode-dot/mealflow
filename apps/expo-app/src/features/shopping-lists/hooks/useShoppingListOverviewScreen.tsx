@@ -6,17 +6,19 @@ import { shoppingListsApi } from '@/src/features/shopping-lists/api/shoppingList
 import type { ShoppingList, ShoppingListListItem } from '@/src/features/shopping-lists/types';
 import { routes } from '@/src/core/navigation/routes';
 import { mapCommonError } from '@/src/shared/errors/mapCommonError';
+import type { UiError } from '@/src/shared/errors/errorTypes';
 import { toApiError } from '@/src/core/http/toApiError';
 import { useToastState } from '@/src/shared/hooks/useToastState';
 import { weeklyPlansApi } from '@/src/features/weekly-plans/api/weeklyPlansApi';
 import { currentWeekStartIso } from '@/src/features/weekly-plans/utils/weeklyPlanDates';
+import { useGlobalToast } from '@/src/shared/ui';
 
 export type ShoppingListOverviewState = {
   tab: 'current' | 'archived';
   isLoading: boolean;
   isRefreshing: boolean;
   isGenerating: boolean;
-  error: string | null;
+  error: UiError | null;
 };
 
 export type ShoppingListOverviewData = {
@@ -59,14 +61,16 @@ export function useShoppingListOverviewScreen(): ShoppingListOverviewView {
   const isFocused = useIsFocused();
   const insets = useSafeAreaInsets();
   const toastState = useToastState();
+  const { showApiError } = useGlobalToast();
   const [showToast, setShowToast] = useState(false);
+  const { showError } = useGlobalToast();
   const [tab, setTab] = useState<'current' | 'archived'>('current');
   const [activeList, setActiveList] = useState<ShoppingList | null>(null);
   const [archivedLists, setArchivedLists] = useState<ShoppingListListItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<UiError | null>(null);
   const [confirmGenerateOpen, setConfirmGenerateOpen] = useState(false);
 
   const load = useCallback(async () => {
@@ -96,9 +100,10 @@ export function useShoppingListOverviewScreen(): ShoppingListOverviewView {
       setArchivedLists(archived);
     } catch (err) {
       const uiErr = mapCommonError(toApiError(err));
-      setError(uiErr.message);
+      setError(uiErr);
+      showError(uiErr, { onRetry: load });
     }
-  }, []);
+  }, [showError]);
 
   useFocusEffect(
     useCallback(() => {
@@ -168,11 +173,11 @@ export function useShoppingListOverviewScreen(): ShoppingListOverviewView {
       router.push(routes.shoppingListDetail(list.id));
     } catch (err) {
       const uiErr = mapCommonError(toApiError(err));
-      toastState.show({ variant: 'error', title: 'Generate failed', message: uiErr.message });
+      showApiError(uiErr, 'Generate failed');
     } finally {
       setIsGenerating(false);
     }
-  }, [toastState]);
+  }, [showApiError]);
 
   const confirmGenerate = useCallback(async () => {
     setConfirmGenerateOpen(false);

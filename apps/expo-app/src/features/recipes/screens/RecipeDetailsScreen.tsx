@@ -5,7 +5,6 @@ import { useFocusEffect, useIsFocused } from '@react-navigation/native';
 import { Clock3, ShoppingBasket, Utensils, Users, Pencil, Trash2 } from 'lucide-react-native';
 import {
   Screen,
-  ErrorText,
   Button,
   Shimmer,
   IconStatRow,
@@ -13,6 +12,7 @@ import {
   ToastBanner,
   useBottomBarActions,
   ModalSheet,
+  useGlobalToast,
 } from '@/src/shared/ui';
 import { theme } from '@/src/shared/theme/theme';
 import { routes } from '@/src/core/navigation/routes';
@@ -58,6 +58,7 @@ export function RecipeDetailsScreen() {
   const [addListOpen, setAddListOpen] = useState(false);
   const [addListPortions, setAddListPortions] = useState('');
   const { toast, show, clear } = useToastState();
+  const { showError, showValidationError, toast: globalToast } = useGlobalToast();
   const { isAdding: isAddingToList, addRecipeToShoppingList } = useAddRecipeToShoppingList();
   const didInitialFocusLoad = useRef(false);
   const isFocused = useIsFocused();
@@ -123,10 +124,10 @@ export function RecipeDetailsScreen() {
         return;
       }
       if (result.reason === 'error') {
-        show({ variant: 'error', message: result.message });
+        showError({ kind: 'unknown', message: result.message });
       }
     },
-    [show],
+    [show, showError],
   );
 
   const onAddToShoppingList = useCallback(async () => {
@@ -153,7 +154,7 @@ export function RecipeDetailsScreen() {
     if (isAddingToList) return;
     const selected = parsePortions(addListPortions);
     if (!selected) {
-      show({ variant: 'error', message: 'Pick a valid portions value.' });
+      showValidationError('Pick a valid portions value.');
       return;
     }
     setAddListOpen(false);
@@ -165,6 +166,8 @@ export function RecipeDetailsScreen() {
     handleAddResult,
     isAddingToList,
     show,
+    showError,
+    showValidationError,
     state.recipe,
   ]);
 
@@ -255,11 +258,7 @@ export function RecipeDetailsScreen() {
       return;
     }
     setIsLeaving(false);
-    show({
-      variant: 'error',
-      title: 'Delete failed',
-      message: 'Please try again.',
-    });
+    showError({ kind: 'unknown', message: 'Delete failed. Please try again.' });
   };
 
   const onRefresh = useCallback(async () => {
@@ -301,7 +300,7 @@ export function RecipeDetailsScreen() {
       contentStyle={styles.screenContent}
     >
       <View style={styles.root}>
-        {toast && showToast ? (
+        {toast && showToast && !globalToast ? (
           <View style={styles.toast}>
             <ToastBanner
               variant={toast.variant}
@@ -309,14 +308,6 @@ export function RecipeDetailsScreen() {
               message={toast.message}
               onTimeout={clear}
             />
-          </View>
-        ) : null}
-
-        {state.error ? (
-          <View style={styles.errorCard}>
-            <ErrorText>{state.error}</ErrorText>
-            <View style={styles.errorSpacer} />
-            <Button title="Try again" onPress={actions.load} />
           </View>
         ) : null}
 
@@ -463,15 +454,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: theme.colors.bg,
   },
-  errorCard: {
-    margin: theme.spacing.s4,
-    borderWidth: 1,
-    borderColor: theme.colors.borderNeutral,
-    backgroundColor: theme.colors.bgLight,
-    borderRadius: theme.radius.md,
-    padding: theme.spacing.s4,
-    gap: theme.spacing.s3,
-  },
   toast: {
     position: 'absolute',
     top: -theme.spacing.s6 - theme.spacing.s4,
@@ -484,9 +466,6 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.bg,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  errorSpacer: {
-    height: theme.spacing.s3,
   },
   hero: {
     backgroundColor: theme.colors.bgLight,
