@@ -1,4 +1,5 @@
 import { createContext, useCallback, useContext, useLayoutEffect, useMemo, useState } from 'react';
+import { useIsFocused } from '@react-navigation/native';
 import type { ReactNode } from 'react';
 import type { BottomActionBarItem } from '@/src/shared/ui/BottomActionBar';
 
@@ -66,9 +67,10 @@ export function useBottomBarActions(
   },
 ) {
   const { setConfig } = useBottomBarState();
+  const isFocused = useIsFocused();
 
   useLayoutEffect(() => {
-    if (!actions || actions.length === 0) {
+    if (!isFocused || !actions || actions.length === 0) {
       setConfig({ mode: 'default', actions: null, centerAction: null });
       return () => setConfig({ mode: 'default', actions: null, centerAction: null });
     }
@@ -80,5 +82,5 @@ export function useBottomBarActions(
     });
 
     return () => setConfig({ mode: 'default', actions: null, centerAction: null });
-  }, [actions, options?.centerAction, options?.mode, setConfig]);
+  }, [actions, isFocused, options?.centerAction, options?.mode, setConfig]);
 }
