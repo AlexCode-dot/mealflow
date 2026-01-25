@@ -10,7 +10,7 @@ type Props = {
 
 export function WebFrame({ children }: Props) {
   const { width } = useWindowDimensions();
-  const useFramedShell = isWeb ? true : width > WEB.frameMaxWidth + WEB.shellPadding * 2;
+  const useFramedShell = isWeb ? width >= WEB.frameMaxWidth + WEB.shellPadding * 2 : false;
 
   const Shell = isWeb ? LinearGradient : View;
   const shellProps = isWeb
@@ -30,6 +30,7 @@ export function WebFrame({ children }: Props) {
         isWeb && !useFramedShell && styles.shellWebFullBleed,
       ]}
     >
+      {isWeb ? <ShellBackdrop /> : null}
       <View
         style={[
           styles.frame,
@@ -41,6 +42,27 @@ export function WebFrame({ children }: Props) {
         {isWeb ? <FadeEdges /> : null}
       </View>
     </Shell>
+  );
+}
+
+function ShellBackdrop() {
+  return (
+    <View pointerEvents="none" style={styles.shellBackdrop}>
+      <LinearGradient
+        colors={['rgba(0,0,0,0.12)', 'rgba(0,0,0,0)', 'rgba(0,0,0,0.22)']}
+        locations={[0, 0.4, 1]}
+        start={{ x: 0.1, y: 0 }}
+        end={{ x: 0.9, y: 1 }}
+        style={styles.shellGlow}
+      />
+      <LinearGradient
+        colors={['rgba(255,255,255,0.06)', 'rgba(255,255,255,0)']}
+        locations={[0, 1]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.shellMist}
+      />
+    </View>
   );
 }
 
@@ -96,6 +118,15 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     overflow: 'hidden',
     position: 'relative',
+  },
+  shellBackdrop: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  shellGlow: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  shellMist: {
+    ...StyleSheet.absoluteFillObject,
   },
   fadeLayer: {
     ...StyleSheet.absoluteFillObject,
