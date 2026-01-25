@@ -56,7 +56,7 @@ The following concerns are handled by other subsystems:
 
 #### Weekly Planner
 - Users shall be able to create and update weekly meal plans.
-- Weekly plans shall contain entries per day and meal type.
+- Weekly plans shall contain entries per day and section.
 - Plan entries may reference a recipe or be free-text custom entries.
 - Plan entries may contain extra items and notes.
 
@@ -98,7 +98,7 @@ The following concerns are handled by other subsystems:
 
 ### Epic B – Weekly Planning
 - Create and update weekly meal plans
-- Assign recipes to days and meal types
+- Assign recipes to days and sections
 - Add custom and free-text entries
 
 ### Epic C – Shopping Lists
@@ -126,7 +126,7 @@ save selected recipes as their own.
 
 ### UC-3 – Plan Weekly Meals
 Users create and update weekly plans by assigning recipes or custom
-entries to days and meal types, including extra items and notes.
+entries to days and sections, including extra items and notes.
 
 ---
 

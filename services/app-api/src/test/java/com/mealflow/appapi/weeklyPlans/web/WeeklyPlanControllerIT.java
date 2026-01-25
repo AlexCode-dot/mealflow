@@ -52,7 +52,7 @@ class WeeklyPlanControllerIT extends MongoTestContainerConfig {
 
         HttpResponse<String> created = post("/api/weekly-plans", token, """
 {
-  "weeklyStart":"2024-12-09",
+  "weeklyStart":"2026-01-01",
   "entries":[
     {
       "day":"TUE",
@@ -78,7 +78,7 @@ class WeeklyPlanControllerIT extends MongoTestContainerConfig {
 
         HttpResponse<String> getOne = get("/api/weekly-plans/" + planId, token);
         assertThat(getOne.statusCode(), is(200));
-        assertThat(JsonPath.read(getOne.body(), "$.weeklyStart").toString(), is("2024-12-09"));
+        assertThat(JsonPath.read(getOne.body(), "$.weeklyStart").toString(), is("2026-01-01"));
 
         HttpResponse<String> patched = patch("/api/weekly-plans/" + planId, token, """
 {
@@ -106,7 +106,7 @@ class WeeklyPlanControllerIT extends MongoTestContainerConfig {
 
         HttpResponse<String> created = post("/api/weekly-plans", tokenUser1, """
 {
-  "weeklyStart":"2024-12-09",
+  "weeklyStart":"2026-01-08",
   "entries":[{"day":"MON","section":"Breakfast","customTitle":"Oats"}]
 }
 """);
@@ -129,7 +129,7 @@ class WeeklyPlanControllerIT extends MongoTestContainerConfig {
 
         HttpResponse<String> created = post("/api/weekly-plans", tokenUser1, """
 {
-  "weeklyStart":"2024-12-09",
+  "weeklyStart":"2026-01-15",
   "entries":[{"day":"MON","section":"Breakfast","recipeId":"%s"}]
 }
 """.formatted(otherUsersRecipe));
@@ -153,7 +153,7 @@ class WeeklyPlanControllerIT extends MongoTestContainerConfig {
 
         HttpResponse<String> created = post("/api/weekly-plans", token, """
 {
-  "weeklyStart":"2024-12-09",
+  "weeklyStart":"2026-01-22",
   "entries":[{"day":"Mo","section":"Breakfast","customTitle":"Oats"}]
 }
 """);
@@ -168,7 +168,7 @@ class WeeklyPlanControllerIT extends MongoTestContainerConfig {
 
         HttpResponse<String> created = post("/api/weekly-plans", token, """
 {
-  "weeklyStart":"2024-12-09",
+  "weeklyStart":"2026-01-29",
   "sections":["Dinner","Snack","Breakfast"],
   "entries":[]
 }
@@ -186,7 +186,7 @@ class WeeklyPlanControllerIT extends MongoTestContainerConfig {
 
         HttpResponse<String> created = post("/api/weekly-plans", token, """
 {
-  "weeklyStart":"2024-12-09",
+  "weeklyStart":"2026-02-05",
   "sections":["Breakfast","Lunch"],
   "entries":[{"day":"MON","section":"Breakfast","customTitle":"Oats"}]
 }

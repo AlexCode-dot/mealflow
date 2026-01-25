@@ -11,6 +11,8 @@ public interface WeeklyPlanRepository extends MongoRepository<WeeklyPlan, String
 
     List<WeeklyPlan> findAllByUserIdAndWeeklyStart(String userId, String weeklyStart);
 
+    boolean existsByUserIdAndWeeklyStart(String userId, String weeklyStart);
+
     Optional<WeeklyPlan> findByIdAndUserId(String id, String userId);
 
     long deleteByIdAndUserId(String id, String userId);

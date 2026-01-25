@@ -37,7 +37,6 @@ The flow described here is consistent across mobile (iOS / Android) and web.
 Payload:
 - email
 - password
-- optional display name
 
 3. Identity Service:
 - validates input
@@ -50,7 +49,7 @@ Payload:
 
 4. Identity Service responds:
 ```json
-{ "access_token": "...", "refresh_token": "..." }
+{ "accessToken": "...", "refreshToken": "..." }
 ```
 
 5. Client:
@@ -66,7 +65,7 @@ Payload:
 2. Client sends `POST /auth/login`.
 3. Identity Service:
 - verifies password
-- rotates refresh token
+- issues a new refresh token
 - issues new access and refresh tokens
 4. Client stores tokens and enters the app.
 
@@ -84,7 +83,7 @@ After authentication, all domain screens interact with the **App API**:
 
 All requests include:
 ```
-Authorization: Bearer <access_token>
+Authorization: Bearer <accessToken>
 ```
 
 The Identity Service is only contacted for:
@@ -139,20 +138,20 @@ Saved inspiration recipes behave exactly like user-created recipes.
 ### 5.1 Weekly Planner Updates
 
 User actions:
-- add recipe to day / meal
+- add recipe to day / section
 - add custom entries
-- change servings
+- change portions
 - remove entries
 
 Flow:
 1. Client sends update to App API.
-2. App API validates JWT and updates `app-db.plans`.
+2. App API validates JWT and updates `app-db.weekly_plans`.
 
 ---
 
 ### 5.2 Generate Shopping List
 
-1. Client sends `POST /api/shopping-lists` with week reference.
+1. Client sends `POST /api/shopping-lists` with `weeklyPlanId`.
 2. App API:
 - loads weekly plan
 - loads referenced recipes

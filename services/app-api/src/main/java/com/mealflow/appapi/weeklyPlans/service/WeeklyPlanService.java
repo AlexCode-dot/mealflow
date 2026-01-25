@@ -52,6 +52,7 @@ public class WeeklyPlanService {
 
     public WeeklyPlan create(String userId, String weeklyStart, List<String> sections, List<PlanEntry> entries) {
         String normalizedWeeklyStart = normalizeWeeklyStart(weeklyStart);
+        ensureUniqueWeeklyStart(userId, normalizedWeeklyStart, null);
         List<PlanEntry> normalizedEntries = normalizeEntries(entries);
         List<String> normalizedSections = normalizeSections(
                 sections, sections == null || sections.isEmpty() ? normalizedEntries : null, DEFAULT_SECTIONS);
@@ -68,6 +69,9 @@ public class WeeklyPlanService {
         WeeklyPlan existing = getForUser(userId, planId);
 
         String normalizedWeeklyStart = weeklyStart == null ? null : normalizeWeeklyStart(weeklyStart);
+        if (normalizedWeeklyStart != null) {
+            ensureUniqueWeeklyStart(userId, normalizedWeeklyStart, existing.getId());
+        }
         List<PlanEntry> normalizedEntries = entries == null ? null : normalizeEntries(entries);
         List<String> normalizedSections = sections == null ? null : normalizeSections(sections, null, DEFAULT_SECTIONS);
 
@@ -85,6 +89,7 @@ public class WeeklyPlanService {
             String userId, String planId, String weeklyStart, List<String> sections, List<PlanEntry> entries) {
         WeeklyPlan existing = getForUser(userId, planId);
         String normalizedWeeklyStart = normalizeWeeklyStart(weeklyStart);
+        ensureUniqueWeeklyStart(userId, normalizedWeeklyStart, existing.getId());
         List<PlanEntry> normalizedEntries = normalizeEntries(entries);
         List<String> normalizedSections = normalizeSections(
                 sections, sections == null || sections.isEmpty() ? normalizedEntries : null, DEFAULT_SECTIONS);
@@ -217,6 +222,20 @@ public class WeeklyPlanService {
                 .size();
         if (found != recipeIds.size()) {
             throw new WeeklyPlanValidationException("Weekly plan references recipes not owned by user");
+        }
+    }
+
+    private void ensureUniqueWeeklyStart(String userId, String weeklyStart, String currentPlanId) {
+        if (!weeklyPlanRepository.existsByUserIdAndWeeklyStart(userId, weeklyStart)) {
+            return;
+        }
+        if (currentPlanId == null) {
+            throw new WeeklyPlanValidationException("Weekly plan already exists for this week");
+        }
+        boolean differentPlan = weeklyPlanRepository.findAllByUserIdAndWeeklyStart(userId, weeklyStart).stream()
+                .anyMatch(plan -> !plan.getId().equals(currentPlanId));
+        if (differentPlan) {
+            throw new WeeklyPlanValidationException("Weekly plan already exists for this week");
         }
     }
 }
