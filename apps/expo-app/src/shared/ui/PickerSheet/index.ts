@@ -1,1 +1,1 @@
-export { PickerSheet, PickerSheetContent, PickerSheetOverlay } from './PickerSheet';
+export { PickerSheet, PickerSheetContent, PickerSheetOverlay, PickerSelect } from './PickerSheet';

@@ -13,6 +13,7 @@ import { TabItem } from './TabItem';
 import { BottomActionBar } from '@/src/shared/ui/BottomActionBar';
 import type { BottomActionBarItem } from '@/src/shared/ui/BottomActionBar';
 import { useBottomBarState } from '@/src/shared/ui/BottomBar';
+import { WEB, isWeb } from '@/src/shared/ui/webStyles';
 
 type TabRoute = {
   route: BottomTabBarProps['state']['routes'][number];
@@ -62,7 +63,11 @@ function TabBarBackground({ width, height }: TabBarBackgroundProps) {
 
 export function AppTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
   const insets = useSafeAreaInsets();
-  const paddingBottom = insets.bottom > 0 ? Math.max(8, insets.bottom - 6) : 10;
+  const paddingBottom = isWeb
+    ? WEB.tabBarPaddingBottom
+    : insets.bottom > 0
+      ? Math.max(8, insets.bottom - 6)
+      : 10;
   const barHeight = TAB_BAR.BOX_HEIGHT + TAB_BAR.PADDING_TOP + paddingBottom;
   const [layoutWidth, setLayoutWidth] = useState(0);
   const { actions, mode, centerAction } = useBottomBarState();

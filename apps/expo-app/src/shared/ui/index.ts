@@ -24,7 +24,7 @@ export { IconStat } from './IconStat';
 export { IconStatRow } from './IconStatRow';
 export { EmptyState } from './EmptyState';
 export { FilterSheet } from './FilterSheet';
-export { PickerSheet, PickerSheetContent, PickerSheetOverlay } from './PickerSheet';
+export { PickerSheet, PickerSheetContent, PickerSheetOverlay, PickerSelect } from './PickerSheet';
 export { FormSheet } from './FormSheet';
 export { ConfirmSheet } from './ConfirmSheet';
 export { ToastBanner } from './ToastBanner';
@@ -37,6 +37,7 @@ export { ListRow } from './ListRow';
 export { Chip } from './Chip';
 export { ModalSheet } from './ModalSheet';
 export { Shimmer } from './Shimmer';
+export { WebFrame } from './WebFrame';
 
 // Animations (export the actual named exports)
 export { EnterFadeUp } from './animations';

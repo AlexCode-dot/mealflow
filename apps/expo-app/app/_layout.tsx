@@ -1,9 +1,11 @@
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { StyleSheet } from 'react-native';
 import { Stack, router } from 'expo-router';
 import { useEffect } from 'react';
 import { authEvents } from '@/src/core/auth/authEvents';
 import { routes } from '@/src/core/navigation/routes';
 import { GlobalToastHost, GlobalToastProvider } from '@/src/shared/ui';
+import { WebFrame } from '@/src/shared/ui/WebFrame';
 
 export default function RootLayout() {
   useEffect(() => {
@@ -15,14 +17,20 @@ export default function RootLayout() {
   }, []);
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
+    <GestureHandlerRootView style={styles.root}>
       <GlobalToastProvider>
-        <GlobalToastHost />
-        <Stack screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="(auth)" />
-          <Stack.Screen name="(app)" />
-        </Stack>
+        <WebFrame>
+          <GlobalToastHost />
+          <Stack screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="(auth)" />
+            <Stack.Screen name="(app)" />
+          </Stack>
+        </WebFrame>
       </GlobalToastProvider>
     </GestureHandlerRootView>
   );
 }
+
+const styles = StyleSheet.create({
+  root: { flex: 1 },
+});

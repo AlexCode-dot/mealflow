@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { Modal, Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 import { theme } from '@/src/shared/theme/theme';
+import { WEB, isWeb } from '@/src/shared/ui/webStyles';
 
 type Props = {
   visible: boolean;
@@ -28,10 +29,10 @@ export function ModalSheet({
       statusBarTranslucent
       onRequestClose={onClose}
     >
-      <View style={styles.backdrop}>
+      <View style={[styles.backdrop, isWeb && styles.backdropWeb]}>
         <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
         {overlay ? <View style={styles.overlay}>{overlay}</View> : null}
-        <View style={[styles.sheet, sheetStyle]}>
+        <View style={[styles.sheet, isWeb && styles.sheetWeb, sheetStyle]}>
           <View style={[styles.sheetInner, sheetInnerStyle]}>
             <View style={styles.handle} />
             {children}
@@ -48,6 +49,11 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
     backgroundColor: 'rgba(0,0,0,0.35)',
   },
+  backdropWeb: {
+    alignItems: 'center',
+    paddingHorizontal: WEB.modalSheetPaddingHorizontal,
+    paddingBottom: WEB.modalSheetPaddingBottom,
+  },
   sheet: {
     backgroundColor: theme.colors.bg,
     borderTopLeftRadius: 36,
@@ -55,6 +61,11 @@ const styles = StyleSheet.create({
     padding: theme.spacing.s4,
     borderWidth: 1,
     borderColor: theme.colors.borderNeutral,
+  },
+  sheetWeb: {
+    width: '100%',
+    maxWidth: WEB.modalSheetMaxWidth,
+    borderRadius: 24,
   },
   sheetInner: {
     transform: [{ translateY: -5 }],

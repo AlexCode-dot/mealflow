@@ -4,6 +4,7 @@ import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { theme } from '@/src/shared/theme/theme';
+import { WEB, WEB_TEXT_ELLIPSIS, isWeb } from '@/src/shared/ui/webStyles';
 
 type Props = {
   title?: string;
@@ -24,6 +25,7 @@ export function AppHeader({
   onTitlePress,
 }: Props) {
   const insets = useSafeAreaInsets();
+  const topInset = isWeb ? WEB.headerTopInset : insets.top;
 
   const handleBack = () => {
     if (onBackPress) return onBackPress();
@@ -35,8 +37,8 @@ export function AppHeader({
       style={[
         styles.root,
         {
-          paddingTop: insets.top,
-          height: HEADER_HEIGHT + insets.top,
+          paddingTop: topInset,
+          height: HEADER_HEIGHT + topInset,
         },
       ]}
     >
@@ -65,9 +67,13 @@ export function AppHeader({
         <View style={styles.center}>
           {title ? (
             onTitlePress ? (
-              <Pressable onPress={onTitlePress} hitSlop={6}>
+              <Pressable onPress={onTitlePress} hitSlop={6} style={styles.titlePressable}>
                 <Text
-                  style={[styles.title, title.length > 15 ? styles.titleCompact : null]}
+                  style={[
+                    styles.title,
+                    title.length > 15 ? styles.titleCompact : null,
+                    isWeb ? styles.titleWeb : null,
+                  ]}
                   numberOfLines={1}
                   ellipsizeMode="tail"
                 >
@@ -76,7 +82,11 @@ export function AppHeader({
               </Pressable>
             ) : (
               <Text
-                style={[styles.title, title.length > 15 ? styles.titleCompact : null]}
+                style={[
+                  styles.title,
+                  title.length > 15 ? styles.titleCompact : null,
+                  isWeb ? styles.titleWeb : null,
+                ]}
                 numberOfLines={1}
                 ellipsizeMode="tail"
               >
@@ -119,16 +129,28 @@ const styles = StyleSheet.create({
 
   center: {
     flex: 1,
+    minWidth: 0,
     alignItems: 'center',
     justifyContent: 'center',
+    overflow: 'hidden',
   },
 
   title: {
     color: theme.colors.textOnPrimary,
     fontSize: 26,
     fontWeight: '500',
+    maxWidth: '100%',
+    flexShrink: 1,
+    textAlign: 'center',
   },
   titleCompact: {
     fontSize: 22,
+  },
+  titlePressable: {
+    maxWidth: '100%',
+    flexShrink: 1,
+  },
+  titleWeb: {
+    ...WEB_TEXT_ELLIPSIS,
   },
 });

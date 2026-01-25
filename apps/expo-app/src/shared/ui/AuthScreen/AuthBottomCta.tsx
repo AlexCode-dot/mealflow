@@ -1,7 +1,7 @@
 import { View, Text, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { theme } from '@/src/shared/theme/theme';
-import { GradientButton } from '@/src/shared/ui';
+import { GradientButton } from '@/src/shared/ui/GradientButton';
 
 type Props = {
   text: string;
