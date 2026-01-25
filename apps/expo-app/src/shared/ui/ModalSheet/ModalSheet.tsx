@@ -10,6 +10,7 @@ type Props = {
   sheetStyle?: StyleProp<ViewStyle>;
   sheetInnerStyle?: StyleProp<ViewStyle>;
   overlay?: ReactNode;
+  webFullBleed?: boolean;
 };
 
 export function ModalSheet({
@@ -19,6 +20,7 @@ export function ModalSheet({
   sheetStyle,
   sheetInnerStyle,
   overlay,
+  webFullBleed = false,
 }: Props) {
   return (
     <Modal
@@ -29,10 +31,23 @@ export function ModalSheet({
       statusBarTranslucent
       onRequestClose={onClose}
     >
-      <View style={[styles.backdrop, isWeb && styles.backdropWeb]}>
+      <View
+        style={[
+          styles.backdrop,
+          isWeb && styles.backdropWeb,
+          isWeb && webFullBleed && styles.backdropWebFullBleed,
+        ]}
+      >
         <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
         {overlay ? <View style={styles.overlay}>{overlay}</View> : null}
-        <View style={[styles.sheet, isWeb && styles.sheetWeb, sheetStyle]}>
+        <View
+          style={[
+            styles.sheet,
+            isWeb && styles.sheetWeb,
+            isWeb && webFullBleed && styles.sheetWebFullBleed,
+            sheetStyle,
+          ]}
+        >
           <View style={[styles.sheetInner, sheetInnerStyle]}>
             <View style={styles.handle} />
             {children}
@@ -54,6 +69,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: WEB.modalSheetPaddingHorizontal,
     paddingBottom: WEB.modalSheetPaddingBottom,
   },
+  backdropWebFullBleed: {
+    paddingHorizontal: 0,
+    paddingBottom: 0,
+  },
   sheet: {
     backgroundColor: theme.colors.bg,
     borderTopLeftRadius: 36,
@@ -66,6 +85,10 @@ const styles = StyleSheet.create({
     width: '100%',
     maxWidth: WEB.modalSheetMaxWidth,
     borderRadius: 24,
+  },
+  sheetWebFullBleed: {
+    maxWidth: WEB.frameMaxWidth,
+    borderRadius: 20,
   },
   sheetInner: {
     transform: [{ translateY: -5 }],

@@ -3,8 +3,8 @@ import { Platform, type TextStyle } from 'react-native';
 export const isWeb = Platform.OS === 'web';
 
 export const WEB = {
-  frameMaxWidth: 520,
-  shellPadding: 8,
+  frameMaxWidth: 980,
+  shellPadding: 24,
   headerTopInset: 12,
   tabBarPaddingBottom: 16,
   modalSheetMaxWidth: 520,

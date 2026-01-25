@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { StyleSheet, View, useWindowDimensions } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { theme } from '@/src/shared/theme/theme';
 import { WEB, isWeb } from '@/src/shared/ui/webStyles';
 
@@ -9,10 +10,20 @@ type Props = {
 
 export function WebFrame({ children }: Props) {
   const { width } = useWindowDimensions();
-  const useFramedShell = !isWeb ? false : width > WEB.frameMaxWidth + WEB.shellPadding * 2;
+  const useFramedShell = isWeb ? true : width > WEB.frameMaxWidth + WEB.shellPadding * 2;
+
+  const Shell = isWeb ? LinearGradient : View;
+  const shellProps = isWeb
+    ? {
+        colors: [theme.colors.primaryDark, theme.colors.bgLight],
+        start: { x: 0.2, y: 0 },
+        end: { x: 0.8, y: 1 },
+      }
+    : {};
 
   return (
-    <View
+    <Shell
+      {...shellProps}
       style={[
         styles.shell,
         isWeb && styles.shellWeb,
@@ -27,7 +38,39 @@ export function WebFrame({ children }: Props) {
         ]}
       >
         {children}
+        {isWeb ? <FadeEdges /> : null}
       </View>
+    </Shell>
+  );
+}
+
+function FadeEdges() {
+  return (
+    <View pointerEvents="none" style={styles.fadeLayer}>
+      <LinearGradient
+        colors={['rgba(0,0,0,0.12)', 'rgba(0,0,0,0)']}
+        start={{ x: 0.5, y: 0 }}
+        end={{ x: 0.5, y: 1 }}
+        style={[styles.fadeEdge, styles.fadeTop]}
+      />
+      <LinearGradient
+        colors={['rgba(0,0,0,0)', 'rgba(0,0,0,0.12)']}
+        start={{ x: 0.5, y: 0 }}
+        end={{ x: 0.5, y: 1 }}
+        style={[styles.fadeEdge, styles.fadeBottom]}
+      />
+      <LinearGradient
+        colors={['rgba(0,0,0,0.12)', 'rgba(0,0,0,0)']}
+        start={{ x: 0, y: 0.5 }}
+        end={{ x: 1, y: 0.5 }}
+        style={[styles.fadeEdge, styles.fadeLeft]}
+      />
+      <LinearGradient
+        colors={['rgba(0,0,0,0)', 'rgba(0,0,0,0.12)']}
+        start={{ x: 0, y: 0.5 }}
+        end={{ x: 1, y: 0.5 }}
+        style={[styles.fadeEdge, styles.fadeRight]}
+      />
     </View>
   );
 }
@@ -50,13 +93,40 @@ const styles = StyleSheet.create({
     maxWidth: WEB.frameMaxWidth,
     flex: 1,
     backgroundColor: theme.colors.bg,
-    borderRadius: 24,
+    borderRadius: 14,
     overflow: 'hidden',
     position: 'relative',
-    shadowColor: 'rgba(0,0,0,0.28)',
-    shadowOpacity: 1,
-    shadowRadius: 24,
-    shadowOffset: { width: 0, height: 16 },
+  },
+  fadeLayer: {
+    ...StyleSheet.absoluteFillObject,
+    borderRadius: 14,
+  },
+  fadeEdge: {
+    position: 'absolute',
+  },
+  fadeTop: {
+    left: 0,
+    right: 0,
+    top: 0,
+    height: 36,
+  },
+  fadeBottom: {
+    left: 0,
+    right: 0,
+    bottom: 0,
+    height: 36,
+  },
+  fadeLeft: {
+    top: 0,
+    bottom: 0,
+    left: 0,
+    width: 36,
+  },
+  fadeRight: {
+    top: 0,
+    bottom: 0,
+    right: 0,
+    width: 36,
   },
   frameWebFullBleed: {
     maxWidth: '100%',

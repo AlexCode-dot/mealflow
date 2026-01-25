@@ -78,7 +78,7 @@ export function PickerSheet({
   doneLabel = 'Done',
 }: Props) {
   return (
-    <ModalSheet visible={visible} onClose={onClose}>
+    <ModalSheet visible={visible} onClose={onClose} webFullBleed>
       <PickerSheetContent title={title} onClose={onClose} onDone={onDone} doneLabel={doneLabel}>
         {children}
       </PickerSheetContent>
@@ -161,7 +161,7 @@ const styles = StyleSheet.create({
   pickerWrapWeb: {
     alignSelf: 'center',
     width: '100%',
-    maxWidth: WEB.pickerListMaxWidth,
+    maxWidth: WEB.frameMaxWidth,
   },
   button: {
     borderRadius: theme.radius.pill,
@@ -178,8 +178,8 @@ const styles = StyleSheet.create({
   overlaySheetWeb: {
     alignSelf: 'center',
     width: '100%',
-    maxWidth: WEB.modalSheetMaxWidth,
-    borderRadius: 24,
+    maxWidth: WEB.frameMaxWidth,
+    borderRadius: 16,
   },
   overlaySheetWebWrap: {
     width: '100%',
@@ -195,19 +195,19 @@ const styles = StyleSheet.create({
     marginBottom: theme.spacing.s3,
   },
   webList: {
-    maxHeight: 280,
-    borderRadius: theme.radius.md,
-    borderWidth: 1,
-    borderColor: theme.colors.borderNeutral,
+    maxHeight: 320,
+    borderRadius: 12,
     backgroundColor: theme.colors.bgLight,
     width: '100%',
   },
   webListContent: {
-    paddingVertical: theme.spacing.s2,
+    paddingVertical: theme.spacing.s1,
   },
   webItem: {
-    paddingVertical: theme.spacing.s3,
+    paddingVertical: theme.spacing.s2,
     paddingHorizontal: theme.spacing.s4,
+    borderBottomWidth: 1,
+    borderBottomColor: theme.colors.borderNeutral,
   },
   webItemActive: {
     backgroundColor: theme.colors.primaryLight,
@@ -226,7 +226,6 @@ const styles = StyleSheet.create({
   },
   webListWrap: {
     gap: theme.spacing.s2,
-    alignItems: 'center',
     width: '100%',
   },
 });
