@@ -25,10 +25,13 @@ import { useToastState } from '@/src/shared/hooks/useToastState';
 import { TAB_BAR } from '@/src/shared/ui/layout/tabBar';
 import { RECIPE_CATEGORY_OPTIONS } from '@/src/features/recipes/constants/recipePickerOptions';
 import { routes } from '@/src/core/navigation/routes';
+import { normalizePath } from '@/src/core/navigation/normalizePath';
+import { buildHref } from '@/src/core/navigation/buildHref';
 
 export function InspirationDetailsScreen() {
-  const params = useLocalSearchParams<{ id?: string }>();
+  const params = useLocalSearchParams<{ id?: string; returnTo?: string }>();
   const id = typeof params.id === 'string' ? params.id : '';
+  const returnTo = normalizePath(typeof params.returnTo === 'string' ? params.returnTo : null);
   const view = useInspirationDetails(id);
   const { state, actions } = view;
   const saved = useRecipesList();
@@ -67,9 +70,11 @@ export function InspirationDetailsScreen() {
     setPickerOpen(false);
     const created = await actions.save({ mealType });
     if (created) {
-      router.replace(routes.recipeView(created.id, 'saved'));
+      router.replace(
+        buildHref(routes.recipeView(created.id, 'saved'), { returnTo: returnTo ?? undefined }),
+      );
     }
-  }, [mealType, actions, showValidationError]);
+  }, [mealType, actions, returnTo, showValidationError]);
 
   const actionItems = useMemo(
     () => [
@@ -130,6 +135,13 @@ export function InspirationDetailsScreen() {
       title={state.isLoading ? 'Inspiration' : (state.recipe?.title ?? 'Inspiration')}
       showBack
       showProfileIcon={false}
+      onBack={() => {
+        if (returnTo) {
+          router.replace(buildHref(returnTo));
+          return;
+        }
+        router.back();
+      }}
       onTitlePress={() => setTitleOpen(true)}
       scroll={false}
       contentStyle={styles.screenContent}

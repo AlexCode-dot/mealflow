@@ -1,5 +1,4 @@
-import { Picker } from '@react-native-picker/picker';
-import { PickerSheet } from '@/src/shared/ui';
+import { PickerSelect, PickerSheet } from '@/src/shared/ui';
 
 type Option = {
   label: string;
@@ -17,11 +16,12 @@ type Props = {
 export function ThemePickerSheet({ visible, value, options, onChange, onClose }: Props) {
   return (
     <PickerSheet visible={visible} title="Theme" onClose={onClose} onDone={onClose}>
-      <Picker selectedValue={value} onValueChange={(next) => onChange(String(next))}>
-        {options.map((option) => (
-          <Picker.Item key={option.value} label={option.label} value={option.value} />
-        ))}
-      </Picker>
+      <PickerSelect
+        value={value}
+        onChange={onChange}
+        options={options}
+        placeholder="Select theme"
+      />
     </PickerSheet>
   );
 }

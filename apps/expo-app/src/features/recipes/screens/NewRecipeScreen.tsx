@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import DraggableFlatList from 'react-native-draggable-flatlist';
 import { Screen, ErrorText, SectionEmpty, useBottomBarActions } from '@/src/shared/ui';
 import { theme } from '@/src/shared/theme/theme';
@@ -26,8 +26,12 @@ import {
 import { Plus, Download, XCircle } from 'lucide-react-native';
 import { TAB_BAR } from '@/src/shared/ui/layout/tabBar';
 import { routes } from '@/src/core/navigation/routes';
+import { normalizePath } from '@/src/core/navigation/normalizePath';
+import { buildHref } from '@/src/core/navigation/buildHref';
 
 export function NewRecipeScreen() {
+  const params = useLocalSearchParams<{ returnTo?: string }>();
+  const returnTo = normalizePath(typeof params.returnTo === 'string' ? params.returnTo : null);
   const view = useCreateRecipe();
   const { state, form, data, actions } = view;
   const editorState = useRecipeEditorUiState();
@@ -118,7 +122,19 @@ export function NewRecipeScreen() {
   ]);
 
   return (
-    <Screen title="Add Recipe" showBack scroll={false} contentStyle={styles.screenContent}>
+    <Screen
+      title="Add Recipe"
+      showBack
+      onBack={() => {
+        if (returnTo) {
+          router.replace(buildHref(returnTo));
+          return;
+        }
+        router.back();
+      }}
+      scroll={false}
+      contentStyle={styles.screenContent}
+    >
       <View style={styles.root}>
         <RecipeSheetLayout
           hero={<RecipeHero imageUrl={form.imageUrl} />}
