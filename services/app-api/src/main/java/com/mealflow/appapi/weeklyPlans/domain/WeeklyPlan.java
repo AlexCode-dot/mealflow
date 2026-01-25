@@ -4,9 +4,11 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.CompoundIndex;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document(collection = "weekly_plans")
+@CompoundIndex(name = "weekly_plan_user_week", def = "{'userId': 1, 'weeklyStart': 1}", unique = true)
 public class WeeklyPlan {
 
     @Id

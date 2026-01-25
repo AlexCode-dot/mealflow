@@ -90,7 +90,7 @@ The **App API** contains all MealFlow domain logic.
 - `app-db` (MongoDB)
   - profiles
   - recipes
-  - weekly plans
+  - weekly plans (`weekly_plans`)
   - shopping lists
 
 The App API never receives refresh tokens.
@@ -121,9 +121,8 @@ Each service uses its own MongoDB connection.
 ### Identity Service
 ```yaml
 spring:
-  data:
-    mongodb:
-      uri: mongodb://localhost:27017/identity-db
+  mongodb:
+    uri: mongodb://localhost:27017/identity-db
 server:
   port: 8081
 ```
@@ -131,9 +130,8 @@ server:
 ### App API
 ```yaml
 spring:
-  data:
-    mongodb:
-      uri: mongodb://localhost:27018/app-db
+  mongodb:
+    uri: mongodb://localhost:27018/app-db
 server:
   port: 8082
 ```
@@ -154,15 +152,16 @@ MongoDB Atlas cluster with separate logical databases.
 
 ### App API
 - `/api/recipes`
-- `/api/plans`
+- `/api/weekly-plans`
 - `/api/shopping-lists`
 - `/api/profile`
 - `/api/inspiration`
+- `/api/me`
 
 All App API requests include:
 
 ```
-Authorization: Bearer <access_token>
+Authorization: Bearer <accessToken>
 ```
 
 The App API verifies tokens using JWKS and scopes all data by `userId`.

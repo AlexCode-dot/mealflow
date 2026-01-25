@@ -39,8 +39,8 @@ Both backend services must:
 Set environment variables for Expo Web:
 
 ```env
-IDENTITY_BASE_URL=https://identity.example.com
-APP_API_BASE_URL=https://api.example.com
+EXPO_PUBLIC_IDENTITY_BASE_URL=https://identity.example.com
+EXPO_PUBLIC_APP_API_BASE_URL=https://api.example.com
 ```
 
 Build and deploy Expo Web.
