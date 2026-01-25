@@ -136,15 +136,34 @@ export function useWeeklyPlannerScreen(): WeeklyPlannerView {
     return new Map(items.map((item) => [item.weeklyStart, item]));
   }, [items]);
 
-  const recentItems = useMemo(() => {
-    return [...items].sort((a, b) => Date.parse(b.updatedAt) - Date.parse(a.updatedAt)).slice(0, 5);
+  const uniqueItems = useMemo(() => {
+    const byWeek = new Map<string, (typeof items)[number]>();
+    for (const item of items) {
+      const existing = byWeek.get(item.weeklyStart);
+      if (!existing) {
+        byWeek.set(item.weeklyStart, item);
+        continue;
+      }
+      const currentUpdated = Date.parse(item.updatedAt);
+      const existingUpdated = Date.parse(existing.updatedAt);
+      if (currentUpdated >= existingUpdated) {
+        byWeek.set(item.weeklyStart, item);
+      }
+    }
+    return Array.from(byWeek.values());
   }, [items]);
 
+  const recentItems = useMemo(() => {
+    return [...uniqueItems]
+      .sort((a, b) => Date.parse(b.updatedAt) - Date.parse(a.updatedAt))
+      .slice(0, 5);
+  }, [uniqueItems]);
+
   const allCreatedItems = useMemo(() => {
-    return [...items].sort(
+    return [...uniqueItems].sort(
       (a, b) => parseIsoDate(b.weeklyStart).getTime() - parseIsoDate(a.weeklyStart).getTime(),
     );
-  }, [items]);
+  }, [uniqueItems]);
 
   const weekWindowItems = useMemo(() => {
     return Array.from({ length: 8 }, (_, idx) => {
