@@ -232,9 +232,7 @@ public class WeeklyPlanService {
         if (currentPlanId == null) {
             throw new WeeklyPlanValidationException("Weekly plan already exists for this week");
         }
-        boolean differentPlan = weeklyPlanRepository
-                .findAllByUserIdAndWeeklyStart(userId, weeklyStart)
-                .stream()
+        boolean differentPlan = weeklyPlanRepository.findAllByUserIdAndWeeklyStart(userId, weeklyStart).stream()
                 .anyMatch(plan -> !plan.getId().equals(currentPlanId));
         if (differentPlan) {
             throw new WeeklyPlanValidationException("Weekly plan already exists for this week");
