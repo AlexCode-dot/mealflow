@@ -73,12 +73,14 @@ export type RecipesScreenView = {
 };
 
 export function useRecipesScreen(): RecipesScreenView {
-  const params = useLocalSearchParams<{ toast?: string }>();
+  const params = useLocalSearchParams<{ toast?: string; tab?: string }>();
   const toastParam = typeof params.toast === 'string' ? params.toast : null;
+  const tabParam = typeof params.tab === 'string' ? params.tab : null;
   const saved = useRecipesList();
   const view = useRecipeListView({
     savedItems: saved.items,
   });
+  const { setTab } = view;
   const discovery = useRecipeDiscovery({
     query: view.query,
     filters: view.discoveryFilters,
@@ -152,6 +154,14 @@ export function useRecipesScreen(): RecipesScreenView {
       if (timeoutId) clearTimeout(timeoutId);
     };
   }, [isFocused, toastParam, toastState]);
+
+  useEffect(() => {
+    if (!isFocused || !tabParam) return;
+    if (tabParam === 'saved' || tabParam === 'inspiration') {
+      setTab(tabParam);
+      router.setParams({ tab: undefined });
+    }
+  }, [isFocused, setTab, tabParam]);
 
   useEffect(() => {
     if (!toastState.toast || !isFocused) {
@@ -271,7 +281,7 @@ export function useRecipesScreen(): RecipesScreenView {
 
   const actions = useMemo<RecipesScreenActions>(
     () => ({
-      setTab: view.setTab,
+      setTab,
       setSaveCategory,
       setSavePickerOpen,
       handleScrollTop,
@@ -279,7 +289,7 @@ export function useRecipesScreen(): RecipesScreenView {
       handleSaveConfirm,
       handleDiscoveryScroll,
     }),
-    [view.setTab, handleScrollTop, handleSavePress, handleSaveConfirm, handleDiscoveryScroll],
+    [setTab, handleScrollTop, handleSavePress, handleSaveConfirm, handleDiscoveryScroll],
   );
 
   const toast = useMemo<RecipesScreenToast>(

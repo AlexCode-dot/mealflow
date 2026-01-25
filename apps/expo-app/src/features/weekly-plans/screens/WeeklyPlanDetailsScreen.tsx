@@ -1,6 +1,5 @@
 import { useMemo } from 'react';
 import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { Picker } from '@react-native-picker/picker';
 import DraggableFlatList, { type RenderItemParams } from 'react-native-draggable-flatlist';
 import { Check, CalendarDays, GripVertical, List, Plus, Users, X } from 'lucide-react-native';
 import { RECIPE_PORTIONS_OPTIONS } from '@/src/features/recipes/constants/recipePickerOptions';
@@ -20,6 +19,7 @@ import {
   ConfirmSheet,
   FormSheet,
   LoadingScreen,
+  PickerSelect,
   PickerSheetOverlay,
   SearchField,
   Screen,
@@ -60,11 +60,14 @@ export default function WeeklyPlanDetailScreen() {
         <View style={styles.pickerOverlay}>
           <Pressable style={StyleSheet.absoluteFill} onPress={close} />
           <PickerSheetOverlay title="Day" onClose={close} onDone={close}>
-            <Picker selectedValue={editDay} onValueChange={(value) => setEditDay(String(value))}>
-              {editDayOptions.map((option) => (
-                <Picker.Item key={option.value} label={option.label} value={option.value} />
-              ))}
-            </Picker>
+            <PickerSelect
+              value={editDay}
+              onChange={setEditDay}
+              options={editDayOptions.map((option) => ({
+                label: option.label,
+                value: option.value,
+              }))}
+            />
           </PickerSheetOverlay>
         </View>
       );
@@ -75,14 +78,11 @@ export default function WeeklyPlanDetailScreen() {
         <View style={styles.pickerOverlay}>
           <Pressable style={StyleSheet.absoluteFill} onPress={close} />
           <PickerSheetOverlay title="Section" onClose={close} onDone={close}>
-            <Picker
-              selectedValue={editSection}
-              onValueChange={(value) => setEditSection(String(value))}
-            >
-              {data.sectionOptions.map((section) => (
-                <Picker.Item key={section} label={section} value={section} />
-              ))}
-            </Picker>
+            <PickerSelect
+              value={editSection}
+              onChange={setEditSection}
+              options={data.sectionOptions.map((section) => ({ label: section, value: section }))}
+            />
           </PickerSheetOverlay>
         </View>
       );
@@ -92,14 +92,14 @@ export default function WeeklyPlanDetailScreen() {
       <View style={styles.pickerOverlay}>
         <Pressable style={StyleSheet.absoluteFill} onPress={close} />
         <PickerSheetOverlay title="Portions" onClose={close} onDone={close}>
-          <Picker
-            selectedValue={editPortions}
-            onValueChange={(value) => setEditPortions(String(value))}
-          >
-            {RECIPE_PORTIONS_OPTIONS.map((option) => (
-              <Picker.Item key={option.value} label={option.label} value={option.value} />
-            ))}
-          </Picker>
+          <PickerSelect
+            value={editPortions}
+            onChange={setEditPortions}
+            options={RECIPE_PORTIONS_OPTIONS.map((option) => ({
+              label: option.label,
+              value: option.value,
+            }))}
+          />
         </PickerSheetOverlay>
       </View>
     );

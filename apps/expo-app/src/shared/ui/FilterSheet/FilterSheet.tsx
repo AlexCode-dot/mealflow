@@ -1,10 +1,9 @@
 import { useMemo, useState, type ReactNode } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { PickerSelect } from '@/src/shared/ui/PickerSheet/PickerSheet';
+import { PickerSelect, PickerSheet } from '@/src/shared/ui/PickerSheet/PickerSheet';
 import { X, ChevronDown, XCircle } from 'lucide-react-native';
 import { theme } from '@/src/shared/theme/theme';
 import { Button } from '@/src/shared/ui/Button';
-import { PickerSheet } from '@/src/shared/ui/PickerSheet/PickerSheet';
 import { Chip } from '@/src/shared/ui/Chip';
 import { ModalSheet } from '@/src/shared/ui/ModalSheet';
 import { TextField } from '@/src/shared/ui/TextField';
