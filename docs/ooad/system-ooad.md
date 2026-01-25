@@ -122,7 +122,7 @@ with communication only through well-defined interfaces.
 Each backend service owns its own database:
 
 - `identity-db` → users, refresh tokens
-- `app-db` → recipes, plans, shopping lists, profiles
+- `app-db` → recipes, weekly plans, shopping lists, profiles
 
 Rules:
 - No shared collections

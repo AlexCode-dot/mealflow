@@ -91,7 +91,7 @@ Derived from the `sub` claim in the JWT and used to scope all user-owned data.
 ---
 
 ## Weekly Plan
-A user-created plan defining meals per day and meal type for a given week.
+A user-created plan defining meals per day and section for a given week.
 Stored and managed by the App API.
 
 ---

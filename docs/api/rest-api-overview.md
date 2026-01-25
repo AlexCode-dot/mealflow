@@ -38,7 +38,6 @@ Create a new user account.
 **Body:**
 - `email`
 - `password`
-- `displayName` (optional)
 
 **Success (201):**
 ```json
@@ -72,7 +71,7 @@ Authenticate an existing user.
 
 Notes:
 - Password verification uses Argon2
-- Refresh token is rotated on every login
+- A new refresh token is issued on every login
 
 ---
 
@@ -192,6 +191,13 @@ Delete recipe.
 **GET** `/api/inspiration`  
 Retrieve a list of inspiration recipes from an external provider.
 
+Optional query params:
+- `q`
+- `ingredient`
+- `category`
+- `area`
+- `limit`
+
 **GET** `/api/inspiration/{externalId}`  
 Retrieve detailed inspiration recipe.
 
@@ -221,7 +227,7 @@ Retrieve a specific weekly plan.
 **PATCH** `/api/weekly-plans/{id}`  
 Partial update (recommended):
 - add or remove entries
-- change servings
+- change portions
 - add `extraItems`
 
 **PUT** `/api/weekly-plans/{id}`  
@@ -235,10 +241,17 @@ Delete weekly plan.
 ## 2.4 Shopping Lists
 
 **GET** `/api/shopping-lists`  
-List all shopping lists.
+List all shopping lists (optionally filtered by status).
+
+Optional query params:
+- `status` → `active` | `archived`
 
 **POST** `/api/shopping-lists`  
 Generate a shopping list from a weekly plan.
+
+Optional:
+- body: `weeklyPlanId`, `title`
+- query param: `mode=merge|replace` (default: merge)
 
 Server-side behavior:
 - loads weekly plan
@@ -254,12 +267,17 @@ Retrieve shopping list.
 
 **PATCH** `/api/shopping-lists/{id}`  
 Partial update (recommended):
-- check/uncheck items
-- adjust quantities
-- add or remove custom items
+- set `status` (`active` | `archived`)
+- update `title`
 
-**PUT** `/api/shopping-lists/{id}`  
-Full replacement (rare).
+**POST** `/api/shopping-lists/{id}/items`  
+Add a custom item to a list.
+
+**PATCH** `/api/shopping-lists/{id}/items/{itemId}`  
+Update an item (name, quantity, unit, checked).
+
+**DELETE** `/api/shopping-lists/{id}/items/{itemId}`  
+Remove an item from a list.
 
 **DELETE** `/api/shopping-lists/{id}`  
 Delete shopping list.
@@ -277,8 +295,12 @@ Partial update (recommended):
 - theme
 - avatar URL
 
-**PUT** `/api/profile`  
-Full replacement (rare).
+---
+
+## 2.6 Me (Auth Debug)
+
+**GET** `/api/me`  
+Returns the authenticated user’s `userId`, token issuer, and expiry.
 
 ---
 
@@ -309,6 +331,7 @@ MealFlow follows standard REST conventions:
 - Weekly Planner → `/api/weekly-plans`
 - Shopping Lists → `/api/shopping-lists`
 - Profile → `/api/profile`
+- Me → `/api/me`
 
 This API design aligns with the documented requirements, use cases,
 and OOAD artifacts in the MealFlow documentation.

@@ -14,6 +14,7 @@ This guide explains how to run MealFlow during local development:
 For architectural context, see:
 - `docs/system/system-overview.md`
 - `docs/ooad/system-ooad.md`
+ - `docs/dev/project-structure.md`
 
 ---
 
@@ -57,25 +58,23 @@ apps/expo-app/.env.local
 ```
 
 ```env
-IDENTITY_BASE_URL=http://localhost:8081
-APP_API_BASE_URL=http://localhost:8082
+EXPO_PUBLIC_IDENTITY_BASE_URL=http://localhost:8081
+EXPO_PUBLIC_APP_API_BASE_URL=http://localhost:8082
 ```
 
 Access variables in the frontend:
 
 ```ts
-export const IDENTITY_BASE_URL =
-  process.env.EXPO_PUBLIC_IDENTITY_BASE_URL ?? process.env.IDENTITY_BASE_URL;
+export const IDENTITY_BASE_URL = process.env.EXPO_PUBLIC_IDENTITY_BASE_URL;
 
-export const APP_API_BASE_URL =
-  process.env.EXPO_PUBLIC_APP_API_BASE_URL ?? process.env.APP_API_BASE_URL;
+export const APP_API_BASE_URL = process.env.EXPO_PUBLIC_APP_API_BASE_URL;
 ```
 
 ### Physical device example
 
 ```env
-IDENTITY_BASE_URL=http://192.168.x.x:8081
-APP_API_BASE_URL=http://192.168.x.x:8082
+EXPO_PUBLIC_IDENTITY_BASE_URL=http://192.168.x.x:8081
+EXPO_PUBLIC_APP_API_BASE_URL=http://192.168.x.x:8082
 ```
 
 ---
@@ -120,28 +119,14 @@ Each service connects to its own logical database:
 
 Both services must allow Expo Web and LAN origins.
 
-### Identity Service
+### Identity Service + App API
 
-```java
-registry.addMapping("/auth/**")
-  .allowedOrigins(
-    "http://localhost:8083",
-    "http://192.168.x.x:8083"
-  )
-  .allowedMethods("GET","POST","OPTIONS")
-  .allowedHeaders("Content-Type","Authorization");
+Set `CORS_ALLOWED_ORIGINS` (comma-separated) in each service.
+
+Example:
+
 ```
-
-### App API
-
-```java
-registry.addMapping("/api/**")
-  .allowedOrigins(
-    "http://localhost:8083",
-    "http://192.168.x.x:8083"
-  )
-  .allowedMethods("GET","POST","PUT","PATCH","DELETE","OPTIONS")
-  .allowedHeaders("Content-Type","Authorization");
+CORS_ALLOWED_ORIGINS=http://localhost:8083,http://192.168.x.x:8083
 ```
 
 ---
@@ -163,19 +148,26 @@ Shortcuts:
 
 ## 7. Connectivity Check
 
-### App API ping endpoint
+### App API me endpoint
 
-```java
-@GetMapping("/api/ping")
-public Map<String, String> ping() {
-  return Map.of("ok", "true");
-}
+The App API exposes:
+
+```
+GET /api/me
+```
+
+Requires:
+
+```
+Authorization: Bearer <accessToken>
 ```
 
 ### Expo test screen
 
 ```ts
-const res = await fetch(`${APP_API_BASE_URL}/api/ping`);
+const res = await fetch(`${APP_API_BASE_URL}/api/me`, {
+  headers: { Authorization: `Bearer ${accessToken}` },
+});
 ```
 
 A successful response confirms backend connectivity.
@@ -236,21 +228,21 @@ RATE_LIMIT_REGISTER_PER_MINUTE=5
 RATE_LIMIT_REFRESH_PER_MINUTE=30
 RATE_LIMIT_LOGOUT_PER_MINUTE=60
 RATE_LIMIT_JWKS_PER_MINUTE=120
-RATE_LIMIT_BUCKET_TTL_MINUTES=15
-RATE_LIMIT_MAX_BUCKETS=10000
+APP_RATELIMIT_BUCKET_TTL_MINUTES=15
+APP_RATELIMIT_MAX_BUCKETS=10000
 ```
 
 App API:
 ```
 RATE_LIMIT_ENABLED=true
 RATE_LIMIT_API_PER_MINUTE=120
-RATE_LIMIT_BUCKET_TTL_MINUTES=15
-RATE_LIMIT_MAX_BUCKETS=10000
+APP_RATELIMIT_BUCKET_TTL_MINUTES=15
+APP_RATELIMIT_MAX_BUCKETS=10000
 ```
 
 **What these do**
-- `RATE_LIMIT_BUCKET_TTL_MINUTES`: how long an unused rate-limit bucket stays in memory before eviction.
-- `RATE_LIMIT_MAX_BUCKETS`: maximum number of distinct buckets kept in memory (safety cap).
+- `APP_RATELIMIT_BUCKET_TTL_MINUTES`: how long an unused rate-limit bucket stays in memory before eviction.
+- `APP_RATELIMIT_MAX_BUCKETS`: maximum number of distinct buckets kept in memory (safety cap).
 
 ### Production recommendation (Cloudflare)
 
@@ -285,5 +277,5 @@ Ensure both services allow:
 
 ### Token refresh issues
 Ensure refresh endpoint returns **both**:
-- new access token
-- new refresh token
+- new `accessToken`
+- new `refreshToken`

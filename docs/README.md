@@ -16,13 +16,21 @@ The documentation is structured to be readable both for:
 
 ## Start Here
 
-- **Project Overview**  
-  `overview.md`  
-  High-level description of the project goals, scope, and context.
-
 - **System Overview**  
   `system/system-overview.md`  
   Describes the overall system architecture and responsibilities.
+- **Project Structure**  
+  `dev/project-structure.md`  
+  High-level map of the repository layout and ownership.
+- **Testing**  
+  `dev/testing.md`  
+  Current test coverage and why it is scoped this way.
+- **Docker & Compose**  
+  `dev/docker.md`  
+  What the Dockerfiles and Compose configs do in this repo.
+- **Environment Variables**  
+  `dev/environment-variables.md`  
+  All env vars used across services and deployment.
 
 ---
 
@@ -39,6 +47,10 @@ The documentation is structured to be readable both for:
 - **Glossary**  
   `system/glossary.md`  
   Definitions of key terms used across diagrams, documentation, and code.
+
+- **Why MongoDB**  
+  `system/mongodb-choice.md`  
+  Rationale for using a document database in this project.
 
 ---
 

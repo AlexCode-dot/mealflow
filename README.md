@@ -27,6 +27,11 @@ MealFlow is structured as a **monorepo** with clear service boundaries:
 Detailed architecture, OOAD, and UML diagrams can be found in:
 
 -> **[`/docs`](./docs)**
+-> **[`docs/dev/project-structure.md`](./docs/dev/project-structure.md)**
+-> **[`docs/dev/testing.md`](./docs/dev/testing.md)**
+-> **[`docs/dev/docker.md`](./docs/dev/docker.md)**
+-> **[`docs/system/mongodb-choice.md`](./docs/system/mongodb-choice.md)**
+-> **[`docs/dev/environment-variables.md`](./docs/dev/environment-variables.md)**
 
 ---
 
@@ -127,3 +132,7 @@ This includes:
 - requirements traceability
 - authentication design
 - sequence, activity, class, and use-case diagrams
+- testing approach and current coverage
+- Docker + Compose setup notes
+- MongoDB rationale
+- environment variables for deployment

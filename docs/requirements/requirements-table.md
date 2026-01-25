@@ -44,7 +44,7 @@ The requirements are structured to provide **clear traceability** between:
 | ID | Requirement |
 |----|-------------|
 | APR-3.1 | The system shall allow users to create weekly meal plans. |
-| APR-3.2 | Weekly plans shall contain entries with day, meal type, recipe or custom item, and servings. |
+| APR-3.2 | Weekly plans shall contain entries with day, section, recipe or custom item, and portions. |
 | APR-3.3 | The system shall allow updating weekly plans. |
 | APR-3.4 | The system shall allow partial updates to weekly plans. |
 | APR-3.5 | The system shall allow users to delete weekly plans. |
