@@ -2,6 +2,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { CalendarDays, ChevronLeft, ChevronRight } from 'lucide-react-native';
 import { Card } from '@/src/shared/ui';
 import { theme } from '@/src/shared/theme/theme';
+import { WeekStrip } from './WeekStrip';
 
 export type WeekDayChip = {
   key: string;
@@ -72,35 +73,12 @@ export function WeeklyPlannerHeaderCard({
         </Pressable>
       </View>
 
-      <View style={styles.weekDaysRow}>
-        {weekDays.map((day) => {
-          const isActive = Boolean(activeDayKey) && day.key === activeDayKey;
-          const count = dayMealCounts[day.key] ?? 0;
-          const dotCount = Math.min(3, count);
-          return (
-            <View key={day.key} style={styles.weekDayColumn}>
-              <View style={[styles.weekDayChip, isActive ? styles.weekDayChipActive : null]}>
-                <Text style={[styles.weekDayLabel, isActive ? styles.weekDayLabelActive : null]}>
-                  {day.label}
-                </Text>
-                <Text style={[styles.weekDayDate, isActive ? styles.weekDayDateActive : null]}>
-                  {day.dateLabel}
-                </Text>
-              </View>
-              <View style={styles.dayDotsRow}>
-                {dotCount === 0
-                  ? null
-                  : Array.from({ length: dotCount }, (_, idx) => (
-                      <View
-                        key={`${day.key}-dot-${idx}`}
-                        style={[styles.dayDot, isActive ? styles.dayDotActive : null]}
-                      />
-                    ))}
-              </View>
-            </View>
-          );
-        })}
-      </View>
+      <WeekStrip
+        weekDays={weekDays}
+        dayMealCounts={dayMealCounts}
+        activeDayKey={activeDayKey}
+        tone="dark"
+      />
 
       <View style={styles.action}>
         <Pressable
@@ -181,51 +159,6 @@ const styles = StyleSheet.create({
   navDisabled: {
     opacity: 0.5,
   },
-  weekDaysRow: {
-    flexDirection: 'row',
-    gap: theme.spacing.s1,
-    marginTop: theme.spacing.s3,
-  },
-  weekDayColumn: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  weekDayChip: {
-    width: '100%',
-    backgroundColor: theme.colors.primary,
-    borderRadius: 6,
-    alignItems: 'center',
-    paddingVertical: 6,
-    minHeight: 58,
-    justifyContent: 'space-between',
-    borderWidth: 0,
-    borderColor: theme.colors.primaryLight,
-  },
-  weekDayChipActive: {
-    backgroundColor: theme.colors.surface,
-    borderWidth: 0,
-    borderColor: theme.colors.primary,
-  },
-  weekDayLabel: {
-    marginTop: 5,
-    color: theme.colors.primaryLight,
-    fontSize: 10,
-    fontWeight: '700',
-  },
-  weekDayLabelActive: {
-    color: theme.colors.primaryDark,
-    fontWeight: '800',
-  },
-  weekDayDate: {
-    marginTop: 5,
-    color: theme.colors.textOnPrimary,
-    fontSize: 16,
-    fontWeight: '800',
-  },
-  weekDayDateActive: {
-    color: theme.colors.primaryDark,
-    fontWeight: '900',
-  },
   weekDots: {
     flexDirection: 'row',
     justifyContent: 'center',
@@ -276,21 +209,5 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: theme.colors.iconMutedOnPrimary,
     textAlign: 'center',
-  },
-  dayDotsRow: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: 3,
-    marginTop: theme.spacing.s1,
-    minHeight: 8,
-  },
-  dayDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3.5,
-    backgroundColor: '#86EFAC',
-  },
-  dayDotActive: {
-    backgroundColor: theme.colors.surface,
   },
 });

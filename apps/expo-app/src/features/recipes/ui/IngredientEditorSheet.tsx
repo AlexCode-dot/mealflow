@@ -1,8 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { Picker } from '@react-native-picker/picker';
 import { Boxes, Scale, Trash2 } from 'lucide-react-native';
-import { PickerSheetOverlay } from '@/src/shared/ui';
+import { PickerSelect, PickerSheetOverlay } from '@/src/shared/ui';
 import { ErrorText } from '@/src/shared/ui/ErrorText';
 import { FormSheet } from '@/src/shared/ui/FormSheet';
 import { TextField } from '@/src/shared/ui/TextField';
@@ -69,12 +68,12 @@ export function IngredientEditorSheet({
       <Pressable style={StyleSheet.absoluteFill} onPress={() => setPickerOpen(null)} />
       {pickerOpen === 'unit' ? (
         <PickerSheetOverlay title="Unit" onClose={() => setPickerOpen(null)}>
-          <Picker selectedValue={unit} onValueChange={(v) => onChangeUnit(String(v))}>
-            <Picker.Item label="Select unit" value="" />
-            {UNITS.map((u) => (
-              <Picker.Item key={u.key} label={u.label} value={u.key} />
-            ))}
-          </Picker>
+          <PickerSelect
+            value={unit}
+            onChange={onChangeUnit}
+            options={UNITS.map((u) => ({ label: u.label, value: u.key }))}
+            placeholder="Select unit"
+          />
         </PickerSheetOverlay>
       ) : null}
     </View>

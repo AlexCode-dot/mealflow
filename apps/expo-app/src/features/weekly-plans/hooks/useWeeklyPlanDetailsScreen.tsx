@@ -16,6 +16,8 @@ import type {
   WeeklyPlanEntryInput,
 } from '@/src/features/weekly-plans/types';
 import { routes } from '@/src/core/navigation/routes';
+import { normalizePath } from '@/src/core/navigation/normalizePath';
+import { buildHref } from '@/src/core/navigation/buildHref';
 import { toApiError } from '@/src/core/http/toApiError';
 import {
   buildWeekDays,
@@ -195,10 +197,16 @@ const toEntryInput = (entry: WeeklyPlanEntry): WeeklyPlanEntryInput => ({
 });
 
 export function useWeeklyPlanDetailsScreen(): WeeklyPlanDetailsView {
-  const params = useLocalSearchParams<{ id?: string; editEntryId?: string; editDay?: string }>();
+  const params = useLocalSearchParams<{
+    id?: string;
+    editEntryId?: string;
+    editDay?: string;
+    returnTo?: string;
+  }>();
   const planId = typeof params.id === 'string' ? params.id : null;
   const pendingEntryId = typeof params.editEntryId === 'string' ? params.editEntryId : null;
   const pendingDay = typeof params.editDay === 'string' ? params.editDay : null;
+  const returnTo = normalizePath(typeof params.returnTo === 'string' ? params.returnTo : null);
   const { plan, isLoading, error, load, setPlan } = useWeeklyPlanDetails(planId);
   const isFocused = useIsFocused();
   const insets = useSafeAreaInsets();
@@ -245,8 +253,12 @@ export function useWeeklyPlanDetailsScreen(): WeeklyPlanDetailsView {
   const { showApiError, showValidationError } = useGlobalToast();
   const { height: screenHeight } = useWindowDimensions();
   const handleBack = useCallback(() => {
+    if (returnTo) {
+      router.replace(buildHref(returnTo));
+      return;
+    }
     router.push(routes.weeklyPlanner);
-  }, []);
+  }, [returnTo]);
 
   const handleGenerateList = useCallback(async () => {
     if (!planId) {

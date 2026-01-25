@@ -1,5 +1,4 @@
-import { Picker } from '@react-native-picker/picker';
-import { PickerSheet } from '@/src/shared/ui';
+import { PickerSelect, PickerSheet } from '@/src/shared/ui';
 
 type Option = {
   label: string;
@@ -35,11 +34,7 @@ export function RecipePickerSheet({
       onDone={onDone}
       doneLabel={doneLabel}
     >
-      <Picker selectedValue={value} onValueChange={(v) => onChange(String(v))}>
-        {options.map((option) => (
-          <Picker.Item key={option.value} label={option.label} value={option.value} />
-        ))}
-      </Picker>
+      <PickerSelect value={value} onChange={onChange} options={options} />
     </PickerSheet>
   );
 }

@@ -1,10 +1,9 @@
 import { useMemo, useState, type ReactNode } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { Picker } from '@react-native-picker/picker';
+import { PickerSelect, PickerSheet } from '@/src/shared/ui/PickerSheet/PickerSheet';
 import { X, ChevronDown, XCircle } from 'lucide-react-native';
 import { theme } from '@/src/shared/theme/theme';
 import { Button } from '@/src/shared/ui/Button';
-import { PickerSheet } from '@/src/shared/ui/PickerSheet';
 import { Chip } from '@/src/shared/ui/Chip';
 import { ModalSheet } from '@/src/shared/ui/ModalSheet';
 import { TextField } from '@/src/shared/ui/TextField';
@@ -306,17 +305,12 @@ export function FilterSheet({
         onClose={() => setActivePicker(null)}
       >
         {activePicker ? (
-          <Picker
-            selectedValue={selection[activePicker.key]?.[0] ?? ''}
-            onValueChange={(value) =>
-              onUpdateSelection(activePicker.key, value ? [String(value)] : [])
-            }
-          >
-            <Picker.Item label={activePicker.placeholder ?? 'Any'} value="" />
-            {activePicker.options.map((opt) => (
-              <Picker.Item key={opt.key} label={opt.label} value={opt.key} />
-            ))}
-          </Picker>
+          <PickerSelect
+            value={selection[activePicker.key]?.[0] ?? ''}
+            onChange={(value) => onUpdateSelection(activePicker.key, value ? [value] : [])}
+            options={activePicker.options.map((opt) => ({ label: opt.label, value: opt.key }))}
+            placeholder={activePicker.placeholder ?? 'Any'}
+          />
         ) : null}
       </PickerSheet>
     </ModalSheet>

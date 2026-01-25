@@ -13,6 +13,8 @@ import { useBottomBarActions, useGlobalToast, type BottomActionBarItem } from '@
 import { theme } from '@/src/shared/theme/theme';
 import { TAB_BAR } from '@/src/shared/ui/layout/tabBar';
 import { routes } from '@/src/core/navigation/routes';
+import { normalizePath } from '@/src/core/navigation/normalizePath';
+import { buildHref } from '@/src/core/navigation/buildHref';
 
 export type ShoppingListFilter = 'all' | 'unchecked' | 'checked';
 
@@ -130,8 +132,9 @@ export type ShoppingListDetailsView = {
 };
 
 export function useShoppingListDetailsScreen(): ShoppingListDetailsView {
-  const params = useLocalSearchParams<{ id?: string }>();
+  const params = useLocalSearchParams<{ id?: string; returnTo?: string }>();
   const listId = typeof params.id === 'string' ? params.id : null;
+  const returnTo = normalizePath(typeof params.returnTo === 'string' ? params.returnTo : null);
   const [list, setList] = useState<ShoppingList | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -191,7 +194,13 @@ export function useShoppingListDetailsScreen(): ShoppingListDetailsView {
     setIsRefreshing(false);
   }, [load]);
 
-  const handleBack = useCallback(() => router.back(), []);
+  const handleBack = useCallback(() => {
+    if (returnTo) {
+      router.replace(buildHref(returnTo));
+      return;
+    }
+    router.back();
+  }, [returnTo]);
 
   const parseQuantity = (value: string) => {
     const trimmed = value.trim();

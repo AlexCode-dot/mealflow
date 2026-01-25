@@ -16,7 +16,7 @@ export const RECIPE_PORTIONS_OPTIONS = [
 ];
 
 export const RECIPE_CATEGORY_OPTIONS = [
-  { label: 'Food category', value: '' },
+  { label: 'Select category', value: '' },
   { label: 'Breakfast', value: 'Breakfast' },
   { label: 'Lunch', value: 'Lunch' },
   { label: 'Dinner', value: 'Dinner' },

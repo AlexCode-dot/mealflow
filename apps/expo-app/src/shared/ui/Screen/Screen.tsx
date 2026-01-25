@@ -7,7 +7,7 @@ import {
   type StyleProp,
   type ViewStyle,
 } from 'react-native';
-import { AppHeader } from '@/src/shared/ui';
+import { AppHeader } from '@/src/shared/ui/AppHeader';
 import { theme } from '@/src/shared/theme/theme';
 import { ProfileButton } from './ProfileButton';
 
