@@ -12,6 +12,9 @@ The system allows users to:
 This repository contains the **full system implementation**, including backend services,
 mobile client, infrastructure, and technical documentation.
 
+Quick start:
+- **[`LOCAL_DEV.md`](./LOCAL_DEV.md)** (fastest way to run everything locally)
+
 ---
 
 ## Architecture Overview

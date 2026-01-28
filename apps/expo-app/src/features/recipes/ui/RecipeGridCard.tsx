@@ -8,6 +8,9 @@ import { formatDuration } from '@/src/features/recipes/utils/formatDuration';
 import { RECIPE_IMAGE_FADE_MODE } from '@/src/features/recipes/constants/recipeUiConfig';
 
 const IMAGE_HEIGHT = 166;
+const SHEET_HEIGHT = 120;
+const SHEET_OVERLAP = 16;
+const CARD_HEIGHT = IMAGE_HEIGHT + SHEET_HEIGHT - SHEET_OVERLAP;
 
 type Props = {
   title: string;
@@ -103,13 +106,17 @@ export function RecipeGridCard({
             </Text>
           </View>
 
-          {stats.length ? (
-            <View style={[styles.metaRow, stats.length <= 2 ? styles.metaRowSparse : null]}>
-              {stats.map((stat) => (
-                <IconStat key={stat.key} icon={stat.icon} label={stat.label} />
-              ))}
-            </View>
-          ) : null}
+          <View
+            style={[
+              styles.metaRow,
+              stats.length <= 2 ? styles.metaRowSparse : null,
+              stats.length === 0 ? styles.metaRowEmpty : null,
+            ]}
+          >
+            {stats.map((stat) => (
+              <IconStat key={stat.key} icon={stat.icon} label={stat.label} />
+            ))}
+          </View>
         </View>
       </Pressable>
     </View>
@@ -121,16 +128,17 @@ const styles = StyleSheet.create({
     flex: 1,
     marginBottom: 10,
     shadowColor: '#000',
-    shadowOpacity: 0.12,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 6 },
-    elevation: 6,
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 4,
   },
 
   card: {
-    borderRadius: 14,
-    borderWidth: 2,
-    borderColor: theme.colors.borderGreen,
+    height: CARD_HEIGHT,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: theme.colors.borderNeutral,
     backgroundColor: theme.colors.surface,
     overflow: 'hidden',
   },
@@ -154,29 +162,29 @@ const styles = StyleSheet.create({
   },
 
   sheet: {
-    marginTop: -16,
+    marginTop: -SHEET_OVERLAP,
+    height: SHEET_HEIGHT,
     paddingTop: theme.spacing.s2,
     paddingHorizontal: theme.spacing.s3,
     paddingBottom: theme.spacing.s2,
-    borderTopLeftRadius: 26,
-    borderTopRightRadius: 26,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
     backgroundColor: theme.colors.surface,
     borderTopWidth: 1,
     borderLeftWidth: 0,
     borderRightWidth: 0,
     borderColor: 'rgba(198,192,168,0.6)',
-    minHeight: 80,
   },
 
   cardTitle: {
     color: theme.colors.text,
-    fontSize: 17,
-    fontWeight: '600',
+    fontSize: 16,
+    fontWeight: '700',
     lineHeight: 22,
     textAlign: 'center',
   },
   titleWrap: {
-    height: 44,
+    height: 42,
     justifyContent: 'center',
     marginTop: 4,
   },
@@ -188,11 +196,15 @@ const styles = StyleSheet.create({
     gap: theme.spacing.s2,
     minHeight: 36,
   },
+  metaRowEmpty: {
+    opacity: 0,
+  },
   metaRowSparse: {
     gap: theme.spacing.s4,
   },
 
   pressed: {
-    opacity: 0.9,
+    opacity: 0.92,
+    transform: [{ scale: 0.99 }],
   },
 });

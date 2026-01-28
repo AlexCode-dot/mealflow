@@ -26,6 +26,7 @@ export function RecipesScreen() {
   const view = useRecipesScreen();
   const { state, filters, data, actions, toast, discoveryListRef } = view;
   const { toast: globalToast } = useGlobalToast();
+  const allowDiscoveryLoadMore = data.savedFilterMode !== 'saved';
 
   const active = state.tab === 'saved' ? data.saved : data.discovery;
   const toastBanner =
@@ -129,7 +130,7 @@ export function RecipesScreen() {
             keyExtractor={(r) => r.id}
             numColumns={1}
             showsVerticalScrollIndicator={false}
-            onEndReached={data.discovery.loadMore}
+            onEndReached={allowDiscoveryLoadMore ? data.discovery.loadMore : undefined}
             onEndReachedThreshold={0.4}
             onScroll={(event) => {
               const y = event.nativeEvent.contentOffset.y;
