@@ -25,20 +25,42 @@ docker compose -f infra/docker-compose.dev.yml up -d
 
 ## 2) Start backend services (two terminals)
 
+### RSA keys (Identity Service)
+
+Identity Service requires RSA keys in `services/identity-service/.secrets`:
+
+macOS / Linux:
+
+```bash
+mkdir -p services/identity-service/.secrets
+openssl genpkey -algorithm RSA -out services/identity-service/.secrets/private.pem -pkeyopt rsa_keygen_bits:2048
+openssl rsa -pubout -in services/identity-service/.secrets/private.pem -out services/identity-service/.secrets/public.pem
+```
+
+Windows (PowerShell):
+
+```powershell
+New-Item -ItemType Directory -Force services/identity-service/.secrets
+openssl genpkey -algorithm RSA -out services/identity-service/.secrets/private.pem -pkeyopt rsa_keygen_bits:2048
+openssl rsa -pubout -in services/identity-service/.secrets/private.pem -out services/identity-service/.secrets/public.pem
+```
+
 Identity Service:
 
 ```bash
-SPRING_PROFILES_ACTIVE=dev \
-IDENTITY_MONGODB_URI="mongodb://root:rootpass@localhost:27017/identity-db?authSource=admin" \
-(cd services/identity-service && ./mvnw spring-boot:run)
+export SPRING_PROFILES_ACTIVE=dev
+export IDENTITY_MONGODB_URI="mongodb://root:rootpass@localhost:27017/identity-db?authSource=admin"
+cd services/identity-service
+./mvnw spring-boot:run
 ```
 
 App API:
 
 ```bash
-SPRING_PROFILES_ACTIVE=dev \
-APP_API_MONGODB_URI="mongodb://root:rootpass@localhost:27018/app-db?authSource=admin" \
-(cd services/app-api && ./mvnw spring-boot:run)
+export SPRING_PROFILES_ACTIVE=dev
+export APP_API_MONGODB_URI="mongodb://root:rootpass@localhost:27018/app-db?authSource=admin"
+cd services/app-api
+./mvnw spring-boot:run
 ```
 
 Ports:
