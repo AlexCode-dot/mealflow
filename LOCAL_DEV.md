@@ -29,7 +29,7 @@ Identity Service:
 
 ```bash
 SPRING_PROFILES_ACTIVE=dev \
-SPRING_MONGODB_URI="mongodb://root:rootpass@localhost:27017/identity-db?authSource=admin" \
+IDENTITY_MONGODB_URI="mongodb://root:rootpass@localhost:27017/identity-db?authSource=admin" \
 (cd services/identity-service && ./mvnw spring-boot:run)
 ```
 
@@ -37,7 +37,7 @@ App API:
 
 ```bash
 SPRING_PROFILES_ACTIVE=dev \
-SPRING_MONGODB_URI="mongodb://root:rootpass@localhost:27018/app-db?authSource=admin" \
+APP_API_MONGODB_URI="mongodb://root:rootpass@localhost:27018/app-db?authSource=admin" \
 (cd services/app-api && ./mvnw spring-boot:run)
 ```
 
