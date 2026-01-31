@@ -15,21 +15,16 @@ If you do not agree with the terms of this Privacy Policy, please do not use the
 - Support communications you send to us
 
 ### Information collected automatically
-- Device information (such as device model, operating system version, and app version)
-- Usage information (such as screens viewed, features used, and in-app actions)
-- Log information (such as IP address, timestamps, and error logs)
-
-### Information from third parties
-If you use third-party services to sign in or link accounts, we may receive basic profile information from those services.
+- Basic technical information (such as device type, operating system version, and app version)
+- Error logs needed to diagnose issues
 
 ## How we use your information
 We use your information to:
 - Provide, operate, and maintain the App
 - Create and manage your account
-- Save and sync your data across devices
-- Improve and personalize your experience
+- Save your data in the App
+- Improve and personalize your experience within the App
 - Respond to support requests and communications
-- Monitor and analyze usage and performance
 - Detect, prevent, and address security or technical issues
 - Comply with legal obligations
 
@@ -41,12 +36,11 @@ We do not sell your personal information. We may share information in the follow
 - In connection with a business transfer (such as a merger, acquisition, or asset sale)
 
 ## Data retention
-We retain your information for as long as your account is active or as needed to provide the App. You may request deletion of your account and associated data by contacting us.
+We retain your information for as long as your account is active or as needed to provide the App. You can delete your account and associated data in the App, or by contacting us if you can’t access the App.
 
 ## Your choices
 - You can update or correct your account information in the App
-- You can request deletion of your account by contacting us
-- You can opt out of marketing emails (if any) by using the unsubscribe link
+- You can delete your account in the App or by contacting us if you can’t access the App
 
 ## Security
 We use reasonable administrative, technical, and physical safeguards to protect your information. No method of transmission or storage is 100% secure.
@@ -64,4 +58,4 @@ We may update this Privacy Policy from time to time. We will update the effectiv
 If you have questions or requests regarding this Privacy Policy, contact us at:
 
 MealFlow Support
-Email: mealflow.org@gmail.com
+Email: mealflows@gmail.com

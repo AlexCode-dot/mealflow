@@ -10,11 +10,11 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.mealflow.app",
+      "bundleIdentifier": "com.alexcode.mealflow",
       "buildNumber": "1"
     },
     "android": {
-      "package": "com.mealflow.app",
+      "package": "com.alexcode.mealflow",
       "versionCode": 1,
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
@@ -50,12 +50,12 @@
     },
     "extra": {
       "legal": {
-        "privacyUrl": "https://alexcode-dot.github.io/mealflow/legal/privacy",
-        "termsUrl": "https://alexcode-dot.github.io/mealflow/legal/terms",
-        "accountDeletionUrl": "https://alexcode-dot.github.io/mealflow/legal/account-deletion"
+        "privacyUrl": "https://alexcode-dot.github.io/mealflow-legal/privacy",
+        "termsUrl": "https://alexcode-dot.github.io/mealflow-legal/terms",
+        "accountDeletionUrl": "https://alexcode-dot.github.io/mealflow-legal/account-deletion"
       },
       "support": {
-        "email": "mealflow.org@gmail.com"
+        "email": "mealflows@gmail.com"
       }
     }
   }

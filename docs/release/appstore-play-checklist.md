@@ -13,6 +13,14 @@
 - Splash image added and referenced in `apps/expo-app/app.json`
 - Store listing screenshots (required sizes for iOS + Android)
 
+## Screenshot plan (suggested)
+- Overview / dashboard
+- Weekly Planner (calendar/week view)
+- Recipes list with filters
+- Recipe detail
+- Shopping list overview
+- Settings or Profile (legal + account deletion visible)
+
 ## Legal + support
 - Privacy Policy published at a public URL
 - Terms of Service published at a public URL

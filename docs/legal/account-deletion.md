@@ -10,8 +10,8 @@ If you want to delete your MealFlow account and all associated data, you can do 
 
 If you can’t access the app, request deletion by email:
 
-- Email: mealflow.org@gmail.com
+- Email: mealflows@gmail.com
 - Subject: Account Deletion Request
 - Include: the email address used for your MealFlow account
 
-We will process deletion as soon as possible.
+In-app deletions are processed immediately. Email requests are processed as soon as possible.

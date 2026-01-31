@@ -1,0 +1,28 @@
+<svg width="1024" height="500" viewBox="0 0 1024 500" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1024" y2="0" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#F7F3E8"/>
+      <stop offset="1" stop-color="#EFE7D4"/>
+    </linearGradient>
+    <linearGradient id="band" x1="0" y1="0" x2="1024" y2="0" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#24381A"/>
+      <stop offset="1" stop-color="#4F6F36"/>
+    </linearGradient>
+    <filter id="shadow" x="640" y="120" width="400" height="400" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feOffset dx="0" dy="18"/>
+      <feGaussianBlur stdDeviation="20"/>
+      <feColorMatrix type="matrix" values="0 0 0 0 0.141 0 0 0 0 0.219 0 0 0 0 0.102 0 0 0 0.18 0"/>
+      <feBlend in="SourceGraphic"/>
+    </filter>
+  </defs>
+
+  <rect width="1024" height="500" fill="url(#bg)"/>
+  <rect width="1024" height="110" fill="url(#band)"/>
+
+  <text x="70" y="210" font-family="Avenir Next, Avenir, Arial, sans-serif" font-size="68" font-weight="800" fill="#24381A">Plan meals. Cook smarter.</text>
+  <text x="70" y="270" font-family="Avenir Next, Avenir, Arial, sans-serif" font-size="30" font-weight="700" fill="#4F6F36">Recipes • Weekly plans • Shopping lists</text>
+
+  <g filter="url(#shadow)">
+    <rect x="710" y="140" width="280" height="280" rx="60" fill="#CDDCBE"/>
+  </g>
+</svg>
