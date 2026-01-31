@@ -14,4 +14,10 @@ export const identityAuthApi = {
       body: { refreshToken },
     });
   },
+
+  deleteAccount(accessToken: string): Promise<void> {
+    return request<void>(ENV.IDENTITY_BASE_URL, '/account', 'DELETE', {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+  },
 };

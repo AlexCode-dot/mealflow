@@ -1,14 +1,20 @@
 import type { ReactNode } from 'react';
-import { Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
+import { Linking, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
 import {
   CalendarDays,
+  ChevronRight,
+  Copy,
+  FileText,
   ListChecks,
   LogOut,
   Mail,
   NotebookText,
   Pencil,
+  ShieldCheck,
   UserRound,
 } from 'lucide-react-native';
+import * as Clipboard from 'expo-clipboard';
+import Constants from 'expo-constants';
 import { useProfileScreen } from '@/src/features/profile/hooks/useProfileScreen';
 import { Card, LoadingScreen, Screen, ToastBanner, useGlobalToast } from '@/src/shared/ui';
 import { theme } from '@/src/shared/theme/theme';
@@ -20,12 +26,52 @@ type Props = {
 export function ProfileScreen({ showBack = false }: Props) {
   const view = useProfileScreen();
   const { state, data, actions, toast } = view;
-  const { toast: globalToast } = useGlobalToast();
+  const { toast: globalToast, showValidationError, show } = useGlobalToast();
+  const legal = Constants.expoConfig?.extra?.legal as
+    | { privacyUrl?: string; termsUrl?: string }
+    | undefined;
+  const support = Constants.expoConfig?.extra?.support as { email?: string } | undefined;
+
+  const openLegalUrl = async (url?: string) => {
+    if (!url) {
+      showValidationError('Legal link is not configured yet.');
+      return;
+    }
+    const supported = await Linking.canOpenURL(url);
+    if (!supported) {
+      showValidationError('Unable to open this link on your device.');
+      return;
+    }
+    await Linking.openURL(url);
+  };
+
+  const copySupportEmail = async (email?: string) => {
+    if (!email) {
+      showValidationError('Support email is not configured yet.');
+      return;
+    }
+    await Clipboard.setStringAsync(email);
+    show({ variant: 'success', message: 'Support email copied.' });
+  };
+
+  const openEmail = async (email?: string) => {
+    if (!email) {
+      showValidationError('Support email is not configured yet.');
+      return;
+    }
+    const url = `mailto:${email}`;
+    const supported = await Linking.canOpenURL(url);
+    if (!supported) {
+      await copySupportEmail(email);
+      return;
+    }
+    await Linking.openURL(url);
+  };
 
   const toastBanner =
     toast.state.toast && toast.showToast && !globalToast ? (
-      <View style={styles.toastOverlay} pointerEvents="box-none">
-        <View style={[styles.toastWrap, { marginTop: toast.topInset + 8 }]} pointerEvents="none">
+      <View style={[styles.toastOverlay, { pointerEvents: 'box-none' }]}>
+        <View style={[styles.toastWrap, { marginTop: toast.topInset + 8, pointerEvents: 'none' }]}>
           <ToastBanner
             variant={toast.state.toast.variant}
             title={toast.state.toast.title}
@@ -103,6 +149,36 @@ export function ProfileScreen({ showBack = false }: Props) {
             value={data.memberSince}
             icon={<CalendarDays size={20} color="#7A3EE6" strokeWidth={2.4} />}
             iconBg="#F0E9FF"
+          />
+        </Card>
+
+        <Card style={styles.infoCard} variant="premium">
+          <Text style={styles.infoTitle}>Legal</Text>
+          <View style={styles.infoDivider} />
+          <LegalRow
+            label="Privacy Policy"
+            onPress={() => openLegalUrl(legal?.privacyUrl)}
+            icon={<ShieldCheck size={20} color="#0F9D58" strokeWidth={2.4} />}
+            iconBg="#E3F7EB"
+          />
+          <LegalRow
+            label="Terms of Service"
+            onPress={() => openLegalUrl(legal?.termsUrl)}
+            icon={<FileText size={20} color="#2463EB" strokeWidth={2.4} />}
+            iconBg="#E6EEFF"
+          />
+        </Card>
+
+        <Card style={styles.infoCard} variant="premium">
+          <Text style={styles.infoTitle}>Support</Text>
+          <View style={styles.infoDivider} />
+          <SupportRow
+            label="Contact support"
+            value={support?.email ?? 'Support email'}
+            icon={<Mail size={20} color="#2463EB" strokeWidth={2.4} />}
+            iconBg="#E6EEFF"
+            onPress={() => openEmail(support?.email)}
+            onCopy={() => copySupportEmail(support?.email)}
           />
         </Card>
 
@@ -247,6 +323,60 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: theme.colors.text,
   },
+  legalRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.s3,
+    paddingVertical: theme.spacing.s2,
+  },
+  legalText: {
+    flex: 1,
+    fontSize: 14,
+    fontWeight: '700',
+    color: theme.colors.text,
+  },
+  supportRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.s3,
+    paddingVertical: theme.spacing.s2,
+  },
+  supportMain: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.s3,
+  },
+  supportText: {
+    flex: 1,
+    gap: 2,
+  },
+  supportLabel: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: theme.colors.textMuted,
+  },
+  supportValue: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: theme.colors.text,
+  },
+  copyButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.s1,
+    paddingVertical: 6,
+    paddingHorizontal: theme.spacing.s3,
+    borderRadius: theme.radius.pill,
+    borderWidth: 1,
+    borderColor: theme.colors.borderNeutral,
+    backgroundColor: theme.colors.surface,
+  },
+  copyText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: theme.colors.text,
+  },
   signOut: {
     borderRadius: theme.radius.md,
     borderWidth: 1,
@@ -315,6 +445,60 @@ function InfoRow({
         <Text style={styles.infoLabel}>{label}</Text>
         <Text style={styles.infoValue}>{value}</Text>
       </View>
+    </View>
+  );
+}
+
+function LegalRow({
+  label,
+  icon,
+  iconBg,
+  onPress,
+}: {
+  label: string;
+  icon: ReactNode;
+  iconBg: string;
+  onPress: () => void;
+}) {
+  return (
+    <Pressable onPress={onPress}>
+      <View style={styles.legalRow}>
+        <View style={[styles.infoIconWrap, { backgroundColor: iconBg }]}>{icon}</View>
+        <Text style={styles.legalText}>{label}</Text>
+        <ChevronRight size={20} color={theme.colors.textMuted} strokeWidth={2.4} />
+      </View>
+    </Pressable>
+  );
+}
+
+function SupportRow({
+  label,
+  value,
+  icon,
+  iconBg,
+  onPress,
+  onCopy,
+}: {
+  label: string;
+  value: string;
+  icon: ReactNode;
+  iconBg: string;
+  onPress: () => void;
+  onCopy: () => void;
+}) {
+  return (
+    <View style={styles.supportRow}>
+      <Pressable style={styles.supportMain} onPress={onPress}>
+        <View style={[styles.infoIconWrap, { backgroundColor: iconBg }]}>{icon}</View>
+        <View style={styles.supportText}>
+          <Text style={styles.supportLabel}>{label}</Text>
+          <Text style={styles.supportValue}>{value}</Text>
+        </View>
+      </Pressable>
+      <Pressable style={styles.copyButton} onPress={onCopy}>
+        <Copy size={14} color={theme.colors.textMuted} strokeWidth={2.2} />
+        <Text style={styles.copyText}>Copy</Text>
+      </Pressable>
     </View>
   );
 }

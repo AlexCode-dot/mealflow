@@ -55,7 +55,7 @@ function TabBarBackground({ width, height }: TabBarBackgroundProps) {
   if (!path) return null;
 
   return (
-    <Svg width={width} height={height} style={styles.background} pointerEvents="none">
+    <Svg width={width} height={height} style={[styles.background, { pointerEvents: 'none' }]}>
       <Path d={path} fill={theme.colors.primary} />
     </Svg>
   );
@@ -190,7 +190,7 @@ export function AppTabBar({ state, descriptors, navigation }: BottomTabBarProps)
 
       {showAddRecipe ? (
         <View style={styles.centerOverlay}>
-          <View style={styles.addButtonWrap} pointerEvents="box-none">
+          <View style={[styles.addButtonWrap, { pointerEvents: 'box-none' }]}>
             <Pressable
               accessibilityRole="button"
               accessibilityLabel="Add recipe"
@@ -247,8 +247,8 @@ function NotchedActionBar({
         <ActionSlot key={item.key} item={item} />
       ))}
 
-      <View style={styles.centerOverlay} pointerEvents="box-none">
-        <View style={styles.addButtonWrap} pointerEvents="box-none">
+      <View style={[styles.centerOverlay, { pointerEvents: 'box-none' }]}>
+        <View style={[styles.addButtonWrap, { pointerEvents: 'box-none' }]}>
           <Pressable
             accessibilityRole="button"
             accessibilityLabel={centerAction.accessibilityLabel ?? centerAction.label}
@@ -272,7 +272,7 @@ function ActionSlot({ item }: { item: BottomActionBarItem }) {
     <Pressable onPress={item.onPress} style={styles.slot} disabled={item.disabled}>
       <View style={styles.box}>
         <View style={[styles.iconBox, { marginBottom: 8 }]}>{item.icon}</View>
-        <View style={styles.labelWrap} pointerEvents="none">
+        <View style={[styles.labelWrap, { pointerEvents: 'none' }]}>
           <Text style={styles.label} numberOfLines={1}>
             {item.label}
           </Text>

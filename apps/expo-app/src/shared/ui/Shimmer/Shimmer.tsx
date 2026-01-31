@@ -47,11 +47,11 @@ export function Shimmer({ height, borderRadius, style }: Props) {
 
       {/* shimmer sweep */}
       <Animated.View
-        pointerEvents="none"
         style={[
           styles.shimmerWrap,
           {
             transform: [{ translateX }],
+            pointerEvents: 'none',
           },
         ]}
       >
@@ -64,7 +64,7 @@ export function Shimmer({ height, borderRadius, style }: Props) {
       </Animated.View>
 
       {/* subtle noise/overlay */}
-      <View pointerEvents="none" style={styles.overlay} />
+      <View style={[styles.overlay, { pointerEvents: 'none' }]} />
     </View>
   );
 }

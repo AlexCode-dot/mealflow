@@ -1,38 +1,39 @@
 {
   "expo": {
-    "name": "expo-app",
-    "slug": "expo-app",
+    "name": "MealFlow",
+    "slug": "mealflow",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
-    "scheme": "expoapp",
+    "icon": "./assets/icons/mealflow_icon_1024.png",
+    "scheme": "mealflow",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
+      "bundleIdentifier": "com.mealflow.app",
       "buildNumber": "1"
     },
     "android": {
+      "package": "com.mealflow.app",
       "versionCode": 1,
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/images/android-icon-foreground.png",
-        "backgroundImage": "./assets/images/android-icon-background.png",
-        "monochromeImage": "./assets/images/android-icon-monochrome.png"
+        "foregroundImage": "./assets/android-adaptive/foreground.png",
+        "backgroundImage": "./assets/android-adaptive/background.png"
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false
     },
     "web": {
       "output": "static",
-      "favicon": "./assets/images/favicon.png"
+      "favicon": "./assets/icons/mealflow_icon_512.png"
     },
     "plugins": [
       "expo-router",
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/splash-icon.png",
+          "image": "./assets/splash/mealflow_splash_1242x2436.png",
           "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#ffffff",
@@ -46,6 +47,16 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "legal": {
+        "privacyUrl": "https://alexcode-dot.github.io/mealflow/legal/privacy",
+        "termsUrl": "https://alexcode-dot.github.io/mealflow/legal/terms",
+        "accountDeletionUrl": "https://alexcode-dot.github.io/mealflow/legal/account-deletion"
+      },
+      "support": {
+        "email": "mealflow.org@gmail.com"
+      }
     }
   }
 }

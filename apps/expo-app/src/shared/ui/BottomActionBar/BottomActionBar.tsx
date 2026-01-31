@@ -32,7 +32,7 @@ export function BottomActionBar({ items }: Props) {
         >
           <View style={styles.box}>
             <View style={styles.iconBox}>{item.icon}</View>
-            <View style={styles.labelWrap} pointerEvents="none">
+            <View style={[styles.labelWrap, { pointerEvents: 'none' }]}>
               <Text style={styles.label}>{item.label}</Text>
             </View>
           </View>

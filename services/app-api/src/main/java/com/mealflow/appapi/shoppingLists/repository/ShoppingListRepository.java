@@ -17,4 +17,6 @@ public interface ShoppingListRepository extends MongoRepository<ShoppingList, St
     Optional<ShoppingList> findFirstByUserIdAndStatusOrderByUpdatedAtDesc(String userId, ShoppingListStatus status);
 
     long deleteByIdAndUserId(String id, String userId);
+
+    long deleteByUserId(String userId);
 }

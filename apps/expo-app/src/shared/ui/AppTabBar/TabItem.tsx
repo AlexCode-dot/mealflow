@@ -53,7 +53,7 @@ export function TabItem({
           />
         </Animated.View>
 
-        <View style={styles.labelWrap} pointerEvents="none">
+        <View style={[styles.labelWrap, { pointerEvents: 'none' }]}>
           {isFocused ? (
             <Animated.Text
               numberOfLines={1}

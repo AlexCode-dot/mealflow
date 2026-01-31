@@ -47,7 +47,7 @@ export function WebFrame({ children }: Props) {
 
 function ShellBackdrop() {
   return (
-    <View pointerEvents="none" style={styles.shellBackdrop}>
+    <View style={[styles.shellBackdrop, { pointerEvents: 'none' }]}>
       <LinearGradient
         colors={['rgba(0,0,0,0.12)', 'rgba(0,0,0,0)', 'rgba(0,0,0,0.22)']}
         locations={[0, 0.4, 1]}
@@ -68,7 +68,7 @@ function ShellBackdrop() {
 
 function FadeEdges() {
   return (
-    <View pointerEvents="none" style={styles.fadeLayer}>
+    <View style={[styles.fadeLayer, { pointerEvents: 'none' }]}>
       <LinearGradient
         colors={['rgba(0,0,0,0.12)', 'rgba(0,0,0,0)']}
         start={{ x: 0.5, y: 0 }}

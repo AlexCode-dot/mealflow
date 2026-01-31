@@ -10,7 +10,11 @@ import type { UiError } from '@/src/shared/errors/errorTypes';
 import { toApiError } from '@/src/core/http/toApiError';
 import { useToastState } from '@/src/shared/hooks/useToastState';
 import { forceLogout } from '@/src/features/auth/actions/forceLogout';
+import { refreshSession } from '@/src/core/auth/authSession';
+import { tokenStore } from '@/src/core/auth/tokenStore';
+import { identityAuthApi } from '@/src/core/auth/identityAuthApi';
 import { useGlobalToast } from '@/src/shared/ui';
+import { accountApi } from '@/src/features/settings/api/accountApi';
 
 type ThemeOption = {
   label: string;
@@ -21,6 +25,7 @@ type SettingsState = {
   isLoading: boolean;
   isRefreshing: boolean;
   isSaving: boolean;
+  isDeleting: boolean;
   error: UiError | null;
 };
 
@@ -37,8 +42,7 @@ type SettingsActions = {
   openThemePicker: () => void;
   closeThemePicker: () => void;
   setTheme: (value: string) => void;
-  openAbout: () => void;
-  closeAbout: () => void;
+  openLegal: () => void;
   openDeleteConfirm: () => void;
   closeDeleteConfirm: () => void;
   confirmDelete: () => void;
@@ -50,7 +54,6 @@ type SettingsView = {
   actions: SettingsActions;
   modal: {
     themeOpen: boolean;
-    aboutOpen: boolean;
     deleteOpen: boolean;
   };
   toast: {
@@ -78,9 +81,9 @@ export function useSettingsScreen(): SettingsView {
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState<UiError | null>(null);
   const [themeOpen, setThemeOpen] = useState(false);
-  const [aboutOpen, setAboutOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
 
   const load = useCallback(async () => {
@@ -143,8 +146,9 @@ export function useSettingsScreen(): SettingsView {
 
   const openThemePicker = useCallback(() => setThemeOpen(true), []);
   const closeThemePicker = useCallback(() => setThemeOpen(false), []);
-  const openAbout = useCallback(() => setAboutOpen(true), []);
-  const closeAbout = useCallback(() => setAboutOpen(false), []);
+  const openLegal = useCallback(() => {
+    router.push(routes.settingsLegal);
+  }, []);
   const openDeleteConfirm = useCallback(() => setDeleteOpen(true), []);
   const closeDeleteConfirm = useCallback(() => setDeleteOpen(false), []);
 
@@ -168,17 +172,39 @@ export function useSettingsScreen(): SettingsView {
     [isSaving, showError, theme, toastState],
   );
 
+  const doDelete = useCallback(async () => {
+    if (isDeleting) return;
+    setIsDeleting(true);
+    try {
+      await accountApi.delete();
+    } catch (err) {
+      const uiErr = mapCommonError(toApiError(err));
+      setError(uiErr);
+      showError(uiErr, { onRetry: doDelete });
+      setIsDeleting(false);
+      return;
+    }
+
+    try {
+      const accessToken = tokenStore.getAccessToken() ?? (await refreshSession());
+      await identityAuthApi.deleteAccount(accessToken);
+      setDeleteOpen(false);
+      setIsDeleting(false);
+      await forceLogout();
+    } catch (err) {
+      const uiErr = mapCommonError(toApiError(err));
+      showError(uiErr);
+      setIsDeleting(false);
+    }
+  }, [isDeleting, showError]);
+
   const confirmDelete = useCallback(() => {
-    toastState.show({
-      variant: 'info',
-      message: 'Delete account is not available yet.',
-    });
-    setDeleteOpen(false);
-  }, [toastState]);
+    void doDelete();
+  }, [doDelete]);
 
   const state = useMemo<SettingsState>(
-    () => ({ isLoading, isRefreshing, isSaving, error }),
-    [error, isLoading, isRefreshing, isSaving],
+    () => ({ isLoading, isRefreshing, isSaving, isDeleting, error }),
+    [error, isDeleting, isLoading, isRefreshing, isSaving],
   );
 
   const data = useMemo<SettingsData>(() => ({ theme, themeOptions: THEME_OPTIONS }), [theme]);
@@ -192,20 +218,18 @@ export function useSettingsScreen(): SettingsView {
       openThemePicker,
       closeThemePicker,
       setTheme,
-      openAbout,
-      closeAbout,
+      openLegal,
       openDeleteConfirm,
       closeDeleteConfirm,
       confirmDelete,
     }),
     [
-      closeAbout,
       closeDeleteConfirm,
       closeThemePicker,
       confirmDelete,
       handleRefresh,
       load,
-      openAbout,
+      openLegal,
       openDeleteConfirm,
       openProfileEdit,
       logout,
@@ -221,7 +245,6 @@ export function useSettingsScreen(): SettingsView {
       actions,
       modal: {
         themeOpen,
-        aboutOpen,
         deleteOpen,
       },
       toast: {
@@ -230,6 +253,6 @@ export function useSettingsScreen(): SettingsView {
         topInset: insets.top,
       },
     }),
-    [actions, data, insets.top, showToast, state, themeOpen, aboutOpen, deleteOpen, toastState],
+    [actions, data, insets.top, showToast, state, themeOpen, deleteOpen, toastState],
   );
 }

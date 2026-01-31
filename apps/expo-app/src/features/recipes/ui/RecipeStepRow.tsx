@@ -49,7 +49,7 @@ export function RecipeStepRow({
             <GripVertical color={theme.colors.primaryDark} size={18} strokeWidth={2.5} />
           </Pressable>
         ) : (
-          <View style={styles.dragHandle} pointerEvents="none">
+          <View style={[styles.dragHandle, { pointerEvents: 'none' }]}>
             <GripVertical color={theme.colors.primaryDark} size={18} strokeWidth={2.5} />
           </View>
         )
