@@ -49,7 +49,7 @@ export function GlobalToastHost() {
   if (!toast) return null;
 
   return (
-    <View style={styles.overlay} pointerEvents="box-none">
+    <View style={[styles.overlay, { pointerEvents: 'box-none' }]}>
       <Animated.View
         style={[styles.wrap, { marginTop: insets.top + 8, transform: [{ translateY }] }]}
         {...panResponder.panHandlers}

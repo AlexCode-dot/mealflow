@@ -16,7 +16,7 @@ export function AuthBottomCta({ text, buttonTitle, onPress }: Props) {
   const bottom = Math.max(18, insets.bottom + 16);
 
   return (
-    <View pointerEvents="box-none" style={[styles.root, { bottom }]}>
+    <View style={[styles.root, { bottom, pointerEvents: 'box-none' }]}>
       <Text style={styles.text}>{text}</Text>
 
       <GradientButton title={buttonTitle} onPress={onPress} fullWidth size="lg" />

@@ -1,36 +1,70 @@
 import { useMemo } from 'react';
 import type { ReactNode } from 'react';
-import { Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
+import { Linking, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
 import Constants from 'expo-constants';
-import { ChevronRight, Info, LogOut, Palette, Trash2, UserRound } from 'lucide-react-native';
+import * as Clipboard from 'expo-clipboard';
+import {
+  ChevronRight,
+  FileText,
+  LogOut,
+  Mail,
+  Palette,
+  ShieldCheck,
+  Trash2,
+  UserRound,
+} from 'lucide-react-native';
 import { useSettingsScreen } from '@/src/features/settings/hooks/useSettingsScreen';
 import { ThemePickerSheet } from '@/src/features/settings/ui/ThemePickerSheet';
-import {
-  Button,
-  ConfirmSheet,
-  ToastBanner,
-  LoadingScreen,
-  ModalSheet,
-  Screen,
-  useGlobalToast,
-} from '@/src/shared/ui';
+import { ConfirmSheet, ToastBanner, LoadingScreen, Screen, useGlobalToast } from '@/src/shared/ui';
 import { theme } from '@/src/shared/theme/theme';
 
 export function SettingsScreen() {
   const view = useSettingsScreen();
   const { state, data, actions, modal, toast } = view;
-  const { toast: globalToast } = useGlobalToast();
+  const { toast: globalToast, showValidationError, show } = useGlobalToast();
 
   const appVersion = Constants.expoConfig?.version ?? Constants.expoConfig?.sdkVersion ?? '0.1';
+  const legal = Constants.expoConfig?.extra?.legal as
+    | { privacyUrl?: string; termsUrl?: string }
+    | undefined;
+  const support = Constants.expoConfig?.extra?.support as { email?: string } | undefined;
 
   const themeLabel = useMemo(() => {
     return data.themeOptions.find((option) => option.value === data.theme)?.label ?? data.theme;
   }, [data.theme, data.themeOptions]);
 
+  const openLegalUrl = async (url?: string) => {
+    if (!url) {
+      showValidationError('Legal link is not configured yet.');
+      return;
+    }
+    const supported = await Linking.canOpenURL(url);
+    if (!supported) {
+      showValidationError('Unable to open this link on your device.');
+      return;
+    }
+    await Linking.openURL(url);
+  };
+
+  const openEmail = async (email?: string) => {
+    if (!email) {
+      showValidationError('Support email is not configured yet.');
+      return;
+    }
+    const url = `mailto:${email}`;
+    const supported = await Linking.canOpenURL(url);
+    if (!supported) {
+      await Clipboard.setStringAsync(email);
+      show({ variant: 'success', message: 'Support email copied.' });
+      return;
+    }
+    await Linking.openURL(url);
+  };
+
   const toastBanner =
     toast.state.toast && toast.showToast && !globalToast ? (
-      <View style={styles.toastOverlay} pointerEvents="box-none">
-        <View style={[styles.toastWrap, { marginTop: toast.topInset + 8 }]} pointerEvents="none">
+      <View style={[styles.toastOverlay, { pointerEvents: 'box-none' }]}>
+        <View style={[styles.toastWrap, { marginTop: toast.topInset + 8, pointerEvents: 'none' }]}>
           <ToastBanner
             variant={toast.state.toast.variant}
             title={toast.state.toast.title}
@@ -68,12 +102,41 @@ export function SettingsScreen() {
               right={<ChevronRight size={22} color={theme.colors.textMuted} strokeWidth={2.4} />}
             />
             <SettingsRow
-              title="About"
+              title="About & Legal"
               subtitle={`Version ${appVersion}`}
-              onPress={actions.openAbout}
-              icon={<Info size={22} color={theme.colors.textMuted} strokeWidth={2.3} />}
+              onPress={actions.openLegal}
+              icon={<FileText size={22} color={theme.colors.textMuted} strokeWidth={2.3} />}
               iconBg={theme.colors.bgLight}
               right={<ChevronRight size={22} color={theme.colors.textMuted} strokeWidth={2.4} />}
+            />
+          </View>
+
+          <SectionHeader title="Legal" />
+          <View style={styles.sectionGroup}>
+            <SettingsRow
+              title="Privacy Policy"
+              subtitle="Read our privacy policy"
+              onPress={() => openLegalUrl(legal?.privacyUrl)}
+              icon={<ShieldCheck size={22} color={theme.colors.textMuted} strokeWidth={2.3} />}
+              iconBg={theme.colors.bgLight}
+            />
+            <SettingsRow
+              title="Terms of Service"
+              subtitle="Read the terms of service"
+              onPress={() => openLegalUrl(legal?.termsUrl)}
+              icon={<FileText size={22} color={theme.colors.textMuted} strokeWidth={2.3} />}
+              iconBg={theme.colors.bgLight}
+            />
+          </View>
+
+          <SectionHeader title="Support" />
+          <View style={styles.sectionGroup}>
+            <SettingsRow
+              title="Contact support"
+              subtitle={support?.email ?? 'Send us an email'}
+              onPress={() => openEmail(support?.email)}
+              icon={<Mail size={22} color={theme.colors.textMuted} strokeWidth={2.3} />}
+              iconBg={theme.colors.bgLight}
             />
           </View>
 
@@ -107,21 +170,13 @@ export function SettingsScreen() {
         onClose={actions.closeThemePicker}
       />
 
-      <ModalSheet visible={modal.aboutOpen} onClose={actions.closeAbout}>
-        <View style={styles.aboutSheet}>
-          <Text style={styles.sheetTitle}>About MealFlow</Text>
-          <Text style={styles.sheetText}>Version {appVersion}</Text>
-          <Text style={styles.sheetText}>Thanks for cooking with us.</Text>
-          <Button title="Close" onPress={actions.closeAbout} />
-        </View>
-      </ModalSheet>
-
       <ConfirmSheet
         visible={modal.deleteOpen}
         title="Delete account?"
-        description="This is not available yet. We'll let you know when account deletion is ready."
-        confirmLabel="Okay"
-        confirmVariant="secondary"
+        description="This will permanently delete your account and all your data. This cannot be undone."
+        confirmLabel={state.isDeleting ? 'Deleting…' : 'Delete account'}
+        confirmVariant="danger"
+        disabled={state.isDeleting}
         cancelLabel="Cancel"
         onConfirm={actions.confirmDelete}
         onCancel={actions.closeDeleteConfirm}
@@ -134,19 +189,6 @@ const styles = StyleSheet.create({
   root: { flex: 1 },
   list: {
     gap: theme.spacing.s4,
-  },
-  aboutSheet: {
-    gap: theme.spacing.s3,
-  },
-  sheetTitle: {
-    color: theme.colors.text,
-    fontSize: 18,
-    fontWeight: '900',
-  },
-  sheetText: {
-    color: theme.colors.textMuted,
-    fontSize: 13,
-    fontWeight: '600',
   },
   toastOverlay: {
     position: 'absolute',

@@ -34,8 +34,8 @@ export default function ShoppingListDetailsScreen() {
 
   const toastBanner =
     toast.state.toast && toast.showToast && !globalToast ? (
-      <View style={styles.toastOverlay} pointerEvents="box-none">
-        <View style={[styles.toastWrap, { marginTop: toast.topInset + 8 }]} pointerEvents="none">
+      <View style={[styles.toastOverlay, { pointerEvents: 'box-none' }]}>
+        <View style={[styles.toastWrap, { marginTop: toast.topInset + 8, pointerEvents: 'none' }]}>
           <ToastBanner
             variant={toast.state.toast.variant}
             title={toast.state.toast.title}

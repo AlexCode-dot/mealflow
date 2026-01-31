@@ -58,26 +58,24 @@ export function AuthScreen({ children, variant, scroll = true, bottomCta }: Prop
 
       {/* Premium “light” at the top (very subtle) */}
       <LinearGradient
-        pointerEvents="none"
         colors={['rgba(245,241,230,0.10)', 'rgba(245,241,230,0)']}
         locations={[0, 1]}
         start={{ x: 0.5, y: 0 }}
         end={{ x: 0.5, y: 0.55 }}
-        style={StyleSheet.absoluteFill}
+        style={[StyleSheet.absoluteFill, { pointerEvents: 'none' }]}
       />
 
       {/* Premium vignette (darken edges slightly) */}
       <LinearGradient
-        pointerEvents="none"
         colors={['rgba(0,0,0,0.22)', 'rgba(0,0,0,0)', 'rgba(0,0,0,0.18)']}
         locations={[0, 0.55, 1]}
         start={{ x: 0.5, y: 0 }}
         end={{ x: 0.5, y: 1 }}
-        style={StyleSheet.absoluteFill}
+        style={[StyleSheet.absoluteFill, { pointerEvents: 'none' }]}
       />
 
       {/* Tiny global overlay to unify everything */}
-      <View pointerEvents="none" style={styles.overlay} />
+      <View style={[styles.overlay, { pointerEvents: 'none' }]} />
 
       {scroll ? (
         <ScrollView

@@ -71,8 +71,8 @@ export function ProfileEditScreen() {
         contentStyle={{ paddingBottom: state.contentPaddingBottom }}
       >
         {toast.toast && !globalToast ? (
-          <View style={styles.toastOverlay} pointerEvents="box-none">
-            <View style={[styles.toastWrap, { marginTop: insets.top + 8 }]} pointerEvents="none">
+          <View style={[styles.toastOverlay, { pointerEvents: 'box-none' }]}>
+            <View style={[styles.toastWrap, { marginTop: insets.top + 8, pointerEvents: 'none' }]}>
               <ToastBanner
                 variant={toast.toast.variant}
                 title={toast.toast.title}

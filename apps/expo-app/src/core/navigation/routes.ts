@@ -17,6 +17,7 @@ export const routes = {
     }) as Href,
   shoppingListDetail: (id: string) => `/shopping-list/${id}` as Href,
   settings: '/settings' as const,
+  settingsLegal: '/settings/legal' as const,
   settingsWithToast: (toast: string) =>
     ({
       pathname: '/settings',
