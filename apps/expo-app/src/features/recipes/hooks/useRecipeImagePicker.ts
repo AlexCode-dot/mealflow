@@ -79,7 +79,7 @@ export function useRecipeImagePicker({ setImageUrl, setImageFileId, recipeId }: 
           allowsEditing: true,
           quality: 1,
         });
-      } catch (_pickerErr) {
+      } catch {
         showError({ kind: 'unknown', message: 'Could not open photo library.' });
         return;
       }
