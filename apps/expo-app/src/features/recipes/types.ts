@@ -23,6 +23,7 @@ export type Recipe = {
   title: string;
   description?: string | null;
   imageUrl?: string | null;
+  imageFileId?: string | null;
   ingredients: IngredientDto[];
   steps: string[];
   cookingTimeMinutes?: number | null;
@@ -37,6 +38,7 @@ export type CreateRecipeRequest = {
   title: string;
   description?: string | null;
   imageUrl?: string | null;
+  imageFileId?: string | null;
   ingredients?: IngredientDto[];
   steps?: string[];
   cookingTimeMinutes?: number | null;
@@ -49,6 +51,7 @@ export type UpdateRecipeRequest = {
   title?: string | null;
   description?: string | null;
   imageUrl?: string | null;
+  imageFileId?: string | null;
   ingredients?: IngredientDto[] | null;
   steps?: string[] | null;
   cookingTimeMinutes?: number | null;
@@ -79,4 +82,9 @@ export type InspirationRecipe = {
   area?: string | null;
   ingredients: InspirationIngredient[];
   steps: string[];
+};
+
+export type RecipeImageUploadResponse = {
+  imageUrl: string;
+  imageFileId: string;
 };

@@ -1,8 +1,11 @@
+import type { ReactNode } from 'react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Image,
+  Platform,
   Pressable,
   RefreshControl,
+  ScrollView,
   StyleSheet,
   Text,
   useWindowDimensions,
@@ -26,6 +29,10 @@ import { buildWeekDays } from '@/src/features/weekly-plans/utils/weeklyPlanDates
 import { WeekStrip } from '@/src/features/weekly-plans/ui/WeekStrip';
 
 export default function OverviewScreen() {
+  return Platform.OS === 'web' ? <OverviewScreenWeb /> : <OverviewScreenNative />;
+}
+
+function OverviewScreenNative() {
   const { state, data, actions } = useOverviewScreen();
   useBottomBarActions(null);
   const { width } = useWindowDimensions();
@@ -51,6 +58,186 @@ export default function OverviewScreen() {
     });
   }, [data.inspiration.length, initialIndex, layoutReady, progress]);
 
+  return (
+    <OverviewScreenLayout
+      state={state}
+      data={data}
+      actions={actions}
+      carouselNode={
+        <View
+          onLayout={(event) => {
+            const measuredWidth = Math.round(event.nativeEvent.layout.width);
+            if (measuredWidth && measuredWidth !== carouselWidth) {
+              setCarouselWidth(measuredWidth);
+            }
+            setLayoutReady(true);
+          }}
+        >
+          <Carousel
+            ref={carouselRef}
+            style={[styles.carousel, { width: carouselWidth, height: carousel.containerHeight }]}
+            data={data.inspiration}
+            loop={data.inspiration.length > 1}
+            itemWidth={itemWidth}
+            defaultIndex={initialIndex}
+            mode="parallax"
+            modeConfig={{
+              parallaxScrollingScale: 1.08,
+              parallaxAdjacentItemScale: 0.88,
+              parallaxScrollingOffset: 34,
+            }}
+            onProgressChange={(offset, absoluteProgress) => {
+              progress.value = absoluteProgress;
+            }}
+            renderItem={({ item }) => (
+              <View
+                style={[
+                  styles.carouselItemWrap,
+                  { width: itemWidth, height: carousel.containerHeight },
+                ]}
+              >
+                <Pressable
+                  onPress={() => actions.openInspiration(item.id)}
+                  style={({ pressed }) => [
+                    styles.carouselCard,
+                    { width: carousel.cardWidth, height: carousel.cardHeight },
+                    pressed ? styles.carouselPressed : null,
+                  ]}
+                >
+                  {item.imageUrl ? (
+                    <Image source={{ uri: item.imageUrl }} style={styles.carouselImage} />
+                  ) : (
+                    <View style={styles.carouselImageFallback} />
+                  )}
+                  <LinearGradient
+                    colors={['rgba(0,0,0,0)', 'rgba(0,0,0,0.2)', 'rgba(0,0,0,0.6)']}
+                    locations={[0, 0.55, 1]}
+                    style={styles.carouselFade}
+                  />
+                  <View style={styles.carouselText}>
+                    <Text style={styles.carouselTitle} numberOfLines={2}>
+                      {item.title}
+                    </Text>
+                    <Text style={styles.carouselSubtitle} numberOfLines={1}>
+                      {[item.category, item.area].filter(Boolean).join(' · ') || 'Discover recipe'}
+                    </Text>
+                  </View>
+                </Pressable>
+              </View>
+            )}
+            scrollAnimationDuration={420}
+            panGestureHandlerProps={{ activeOffsetX: [-10, 10] }}
+            containerStyle={styles.carouselContainer}
+          />
+        </View>
+      }
+      dotsNode={
+        <View style={styles.carouselDots}>
+          <Pagination.Basic
+            progress={progress}
+            data={data.inspiration}
+            dotStyle={styles.carouselDot}
+            activeDotStyle={styles.carouselDotActive}
+            containerStyle={styles.carouselDotRow}
+          />
+        </View>
+      }
+    />
+  );
+}
+
+function OverviewScreenWeb() {
+  const { state, data, actions } = useOverviewScreen();
+  useBottomBarActions(null);
+  const { width } = useWindowDimensions();
+  const [carouselWidth, setCarouselWidth] = useState(width);
+
+  const carousel = useMemo(() => {
+    const cardWidth = Math.min(carouselWidth * 0.82, 340);
+    const cardHeight = Math.round(cardWidth * 0.7);
+    const containerHeight = Math.round(cardHeight * 1.12);
+    return { cardWidth, cardHeight, containerHeight };
+  }, [carouselWidth]);
+
+  return (
+    <OverviewScreenLayout
+      state={state}
+      data={data}
+      actions={actions}
+      carouselNode={
+        <View
+          onLayout={(event) => {
+            const measuredWidth = Math.round(event.nativeEvent.layout.width);
+            if (measuredWidth && measuredWidth !== carouselWidth) {
+              setCarouselWidth(measuredWidth);
+            }
+          }}
+        >
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={[styles.carouselScroll, { height: carousel.containerHeight }]}
+          >
+            {data.inspiration.map((item) => (
+              <View
+                key={item.id}
+                style={[
+                  styles.carouselItemWrap,
+                  { width: carouselWidth, height: carousel.containerHeight },
+                ]}
+              >
+                <Pressable
+                  onPress={() => actions.openInspiration(item.id)}
+                  style={({ pressed }) => [
+                    styles.carouselCard,
+                    { width: carousel.cardWidth, height: carousel.cardHeight },
+                    pressed ? styles.carouselPressed : null,
+                  ]}
+                >
+                  {item.imageUrl ? (
+                    <Image source={{ uri: item.imageUrl }} style={styles.carouselImage} />
+                  ) : (
+                    <View style={styles.carouselImageFallback} />
+                  )}
+                  <LinearGradient
+                    colors={['rgba(0,0,0,0)', 'rgba(0,0,0,0.2)', 'rgba(0,0,0,0.6)']}
+                    locations={[0, 0.55, 1]}
+                    style={styles.carouselFade}
+                  />
+                  <View style={styles.carouselText}>
+                    <Text style={styles.carouselTitle} numberOfLines={2}>
+                      {item.title}
+                    </Text>
+                    <Text style={styles.carouselSubtitle} numberOfLines={1}>
+                      {[item.category, item.area].filter(Boolean).join(' · ') || 'Discover recipe'}
+                    </Text>
+                  </View>
+                </Pressable>
+              </View>
+            ))}
+          </ScrollView>
+        </View>
+      }
+      dotsNode={null}
+    />
+  );
+}
+
+type OverviewLayoutProps = {
+  state: ReturnType<typeof useOverviewScreen>['state'];
+  data: ReturnType<typeof useOverviewScreen>['data'];
+  actions: ReturnType<typeof useOverviewScreen>['actions'];
+  carouselNode: ReactNode;
+  dotsNode: ReactNode | null;
+};
+
+function OverviewScreenLayout({
+  state,
+  data,
+  actions,
+  carouselNode,
+  dotsNode,
+}: OverviewLayoutProps) {
   const hasPlan = Boolean(data.planId);
   const hasInspiration = data.inspiration.length > 0;
   const weekDays = useMemo(() => buildWeekDays(data.weekStart), [data.weekStart]);
@@ -76,73 +263,7 @@ export default function OverviewScreen() {
     >
       <View style={styles.carouselSection}>
         {hasInspiration ? (
-          <View
-            onLayout={(event) => {
-              const measuredWidth = Math.round(event.nativeEvent.layout.width);
-              if (measuredWidth && measuredWidth !== carouselWidth) {
-                setCarouselWidth(measuredWidth);
-              }
-              setLayoutReady(true);
-            }}
-          >
-            <Carousel
-              ref={carouselRef}
-              style={[styles.carousel, { width: carouselWidth, height: carousel.containerHeight }]}
-              data={data.inspiration}
-              loop={data.inspiration.length > 1}
-              itemWidth={itemWidth}
-              defaultIndex={initialIndex}
-              mode="parallax"
-              modeConfig={{
-                parallaxScrollingScale: 1.08,
-                parallaxAdjacentItemScale: 0.88,
-                parallaxScrollingOffset: 34,
-              }}
-              onProgressChange={(offset, absoluteProgress) => {
-                progress.value = absoluteProgress;
-              }}
-              renderItem={({ item }) => (
-                <View
-                  style={[
-                    styles.carouselItemWrap,
-                    { width: itemWidth, height: carousel.containerHeight },
-                  ]}
-                >
-                  <Pressable
-                    onPress={() => actions.openInspiration(item.id)}
-                    style={({ pressed }) => [
-                      styles.carouselCard,
-                      { width: carousel.cardWidth, height: carousel.cardHeight },
-                      pressed ? styles.carouselPressed : null,
-                    ]}
-                  >
-                    {item.imageUrl ? (
-                      <Image source={{ uri: item.imageUrl }} style={styles.carouselImage} />
-                    ) : (
-                      <View style={styles.carouselImageFallback} />
-                    )}
-                    <LinearGradient
-                      colors={['rgba(0,0,0,0)', 'rgba(0,0,0,0.2)', 'rgba(0,0,0,0.6)']}
-                      locations={[0, 0.55, 1]}
-                      style={styles.carouselFade}
-                    />
-                    <View style={styles.carouselText}>
-                      <Text style={styles.carouselTitle} numberOfLines={2}>
-                        {item.title}
-                      </Text>
-                      <Text style={styles.carouselSubtitle} numberOfLines={1}>
-                        {[item.category, item.area].filter(Boolean).join(' · ') ||
-                          'Discover recipe'}
-                      </Text>
-                    </View>
-                  </Pressable>
-                </View>
-              )}
-              scrollAnimationDuration={420}
-              panGestureHandlerProps={{ activeOffsetX: [-10, 10] }}
-              containerStyle={styles.carouselContainer}
-            />
-          </View>
+          carouselNode
         ) : (
           <SectionEmpty
             title="No inspiration yet"
@@ -153,17 +274,7 @@ export default function OverviewScreen() {
           />
         )}
 
-        {hasInspiration ? (
-          <View style={styles.carouselDots}>
-            <Pagination.Basic
-              progress={progress}
-              data={data.inspiration}
-              dotStyle={styles.carouselDot}
-              activeDotStyle={styles.carouselDotActive}
-              containerStyle={styles.carouselDotRow}
-            />
-          </View>
-        ) : null}
+        {hasInspiration ? dotsNode : null}
 
         <View style={styles.carouselFooter}>
           <Pressable
@@ -260,124 +371,26 @@ const styles = StyleSheet.create({
     gap: theme.spacing.s4,
   },
   carouselSection: {
-    marginHorizontal: -theme.spacing.s4,
     gap: theme.spacing.s3,
-  },
-  weekBadge: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: theme.radius.pill,
-    borderWidth: 1,
-    borderColor: theme.colors.borderNeutral,
-    backgroundColor: theme.colors.bgLight,
-  },
-  weekBadgeText: {
-    color: theme.colors.primaryDark,
-    fontSize: 12,
-    fontWeight: '800',
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    gap: theme.spacing.s3,
-  },
-  heroPlanned: {
-    color: theme.colors.text,
-    fontSize: 14,
-    fontWeight: '700',
-    marginBottom: -2,
-  },
-  statRow: {
-    justifyContent: 'space-between',
-  },
-  statLabel: {
-    color: theme.colors.textMuted,
-    fontSize: 11,
-    fontWeight: '700',
-  },
-  sectionTitle: {
-    color: theme.colors.text,
-    fontSize: 16,
-    fontWeight: '800',
-  },
-  sectionSubtitle: {
-    color: theme.colors.textMuted,
-    fontSize: 12,
-    fontWeight: '700',
-    marginTop: 6,
-    marginBottom: theme.spacing.s2,
-  },
-  quickRows: {
-    gap: theme.spacing.s2,
-  },
-  sectionSpacing: {
-    marginTop: theme.spacing.s2,
-  },
-  findCard: {
-    paddingVertical: theme.spacing.s4,
-    paddingHorizontal: theme.spacing.s5,
-    borderRadius: theme.radius.lg,
-    backgroundColor: theme.colors.surface,
-    borderWidth: 1,
-    borderColor: theme.colors.borderNeutral,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    shadowColor: '#000',
-    shadowOpacity: 0.08,
-    shadowRadius: 14,
-    shadowOffset: { width: 0, height: 10 },
-    elevation: 6,
-  },
-  findCardPressed: {
-    opacity: 0.92,
-    transform: [{ scale: 0.99 }],
-  },
-  findContent: {
-    flex: 1,
-    gap: theme.spacing.s1,
-    paddingRight: theme.spacing.s4,
-  },
-  findTitle: {
-    color: theme.colors.text,
-    fontSize: 18,
-    fontWeight: '800',
-  },
-  findSubtitle: {
-    color: theme.colors.textMuted,
-    fontSize: 13,
-    fontWeight: '600',
-  },
-  findChevronWrap: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: theme.colors.primaryLight,
   },
   carousel: {
-    height: 0,
+    alignSelf: 'center',
   },
   carouselContainer: {
-    paddingVertical: 0,
+    alignItems: 'center',
+  },
+  carouselScroll: {
+    alignItems: 'center',
+    paddingVertical: theme.spacing.s2,
   },
   carouselItemWrap: {
     alignItems: 'center',
     justifyContent: 'center',
   },
   carouselCard: {
-    borderRadius: 26,
+    borderRadius: 24,
     overflow: 'hidden',
-    backgroundColor: theme.colors.bgLight,
-    borderWidth: 0,
-    borderColor: 'transparent',
-    shadowColor: '#000',
-    shadowOpacity: 0.18,
-    shadowRadius: 18,
-    shadowOffset: { width: 0, height: 12 },
-    elevation: 10,
+    backgroundColor: theme.colors.surface,
   },
   carouselPressed: {
     transform: [{ scale: 0.98 }],
@@ -388,64 +401,115 @@ const styles = StyleSheet.create({
   },
   carouselImageFallback: {
     flex: 1,
-    backgroundColor: theme.colors.bg,
+    backgroundColor: theme.colors.surfaceAlt,
   },
   carouselFade: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
-    height: 120,
+    ...StyleSheet.absoluteFillObject,
   },
   carouselText: {
     position: 'absolute',
-    left: theme.spacing.s3,
-    right: theme.spacing.s3,
-    bottom: theme.spacing.s3,
-    gap: theme.spacing.s1,
+    left: theme.spacing.s4,
+    right: theme.spacing.s4,
+    bottom: theme.spacing.s4,
   },
   carouselTitle: {
-    color: theme.colors.surface,
+    color: '#fff',
     fontSize: 18,
-    fontWeight: '800',
-    textShadowColor: 'rgba(0,0,0,0.35)',
-    textShadowOffset: { width: 0, height: 2 },
-    textShadowRadius: 6,
-  },
-  carouselSubtitle: {
-    color: 'rgba(255,255,255,0.78)',
-    fontSize: 12,
     fontWeight: '700',
   },
+  carouselSubtitle: {
+    color: 'rgba(255,255,255,0.85)',
+    marginTop: 4,
+  },
   carouselDots: {
-    flexDirection: 'row',
-    alignSelf: 'center',
-    gap: 8,
-    marginTop: theme.spacing.s1,
-    paddingHorizontal: theme.spacing.s4,
+    alignItems: 'center',
   },
   carouselDotRow: {
-    gap: 8,
+    gap: 6,
   },
   carouselDot: {
-    width: 7,
-    height: 7,
-    borderRadius: 3.5,
-    backgroundColor: 'rgba(62,70,48,0.25)',
+    width: 6,
+    height: 6,
+    borderRadius: 999,
+    backgroundColor: theme.colors.surfaceAlt,
   },
   carouselDotActive: {
     width: 18,
-    backgroundColor: theme.colors.primaryDark,
+    borderRadius: 999,
+    backgroundColor: theme.colors.primary,
   },
   carouselFooter: {
+    marginTop: theme.spacing.s2,
+  },
+  findCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: 18,
+    backgroundColor: theme.colors.surface,
+    paddingVertical: theme.spacing.s3,
     paddingHorizontal: theme.spacing.s4,
   },
+  findCardPressed: {
+    opacity: 0.9,
+  },
+  findContent: {
+    flex: 1,
+  },
+  findTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: theme.colors.text,
+  },
+  findSubtitle: {
+    color: theme.colors.textMuted,
+    marginTop: 2,
+  },
+  findChevronWrap: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    backgroundColor: theme.colors.surfaceAlt,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  sectionSpacing: {
+    gap: theme.spacing.s3,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+  },
+  sectionTitle: {
+    fontSize: 17,
+    fontWeight: '700',
+    color: theme.colors.text,
+  },
+  sectionSubtitle: {
+    marginTop: 2,
+    color: theme.colors.textMuted,
+  },
+  weekBadge: {
+    backgroundColor: theme.colors.surfaceAlt,
+    borderRadius: 12,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+  },
+  weekBadgeText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: theme.colors.text,
+  },
+  heroPlanned: {
+    fontSize: 14,
+    color: theme.colors.textMuted,
+  },
   weeklyCta: {
-    marginTop: theme.spacing.s1,
-    paddingVertical: theme.spacing.s4,
-    paddingHorizontal: theme.spacing.s5,
-    borderRadius: theme.radius.lg,
-    backgroundColor: theme.colors.primaryDark,
+    marginTop: theme.spacing.s2,
+    borderRadius: 14,
+    backgroundColor: theme.colors.primary,
+    paddingVertical: theme.spacing.s3,
+    paddingHorizontal: theme.spacing.s4,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -458,14 +522,15 @@ const styles = StyleSheet.create({
     paddingRight: theme.spacing.s3,
   },
   weeklyCtaTitle: {
+    fontSize: 15,
+    fontWeight: '700',
     color: theme.colors.textOnPrimary,
-    fontSize: 18,
-    fontWeight: '800',
   },
   weeklyCtaSubtitle: {
-    color: theme.colors.iconMutedOnPrimary,
-    fontSize: 13,
-    fontWeight: '600',
-    marginTop: theme.spacing.s1,
+    marginTop: 4,
+    color: 'rgba(255,255,255,0.75)',
+  },
+  quickRows: {
+    gap: theme.spacing.s2,
   },
 });

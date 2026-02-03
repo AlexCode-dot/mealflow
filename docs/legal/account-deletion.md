@@ -2,7 +2,7 @@
 
 Effective date: January 30, 2026
 
-If you want to delete your MealFlow account and all associated data, you can do so in the app:
+If you want to delete your MealFlow account and all associated data (including recipe photos), you can do so in the app:
 
 1) Open **Settings**
 2) Tap **Delete account**

@@ -58,6 +58,15 @@ Defined in `services/app-api/src/main/resources/application.properties`.
 | `CORS_ALLOWED_ORIGINS` | No | Comma-separated allowed origins | `http://localhost:8083,http://localhost:19006` |
 | `RATE_LIMIT_ENABLED` | No | Enable rate limiting | `true` |
 | `RATE_LIMIT_API_PER_MINUTE` | No | API requests/minute | `120` |
+| `APP_IMAGES_MAX_UPLOAD_BYTES` | No | Max image upload size in bytes | `10485760` |
+| `APP_IMAGES_MAX_PER_USER` | No | Max recipe images per user | `200` |
+| `APP_IMAGES_MAX_PER_DAY` | No | Max image uploads per user per day | `20` |
+| `APP_IMAGES_ALLOWED_TYPES` | No | Comma-separated allowed MIME types | `image/jpeg,image/png,image/webp,image/heic` |
+| `APP_IMAGES_MAX_UPLOAD_SIZE` | No | Multipart limit (e.g. `10MB`) | `10MB` |
+| `IMAGEKIT_PRIVATE_KEY` | Yes (for uploads) | ImageKit private API key | none |
+| `IMAGEKIT_PUBLIC_KEY` | Yes (for uploads) | ImageKit public API key | none |
+| `IMAGEKIT_URL_ENDPOINT` | Yes (for uploads) | ImageKit URL endpoint (cdn) | none |
+| `IMAGEKIT_UPLOAD_FOLDER` | No | Base folder for uploads | `/mealflow/recipes` |
 
 ---
 

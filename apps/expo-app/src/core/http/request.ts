@@ -2,7 +2,7 @@ import { HttpError } from './HttpError';
 
 type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 
-async function parseResponseBody(res: Response): Promise<unknown> {
+export async function parseResponseBody(res: Response): Promise<unknown> {
   const contentType = res.headers.get('content-type') ?? '';
   const isJson = contentType.includes('json');
 

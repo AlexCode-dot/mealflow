@@ -25,12 +25,15 @@ public class RecipeMapper {
         String category = body.category() == null ? null : body.category().trim();
 
         String imageUrl = body.imageUrl() == null ? null : body.imageUrl().trim();
+        String imageFileId =
+                body.imageFileId() == null ? null : body.imageFileId().trim();
 
         return new CreateArgs(
                 userId,
                 body.title().trim(),
                 body.description(),
                 imageUrl,
+                imageFileId,
                 ingredients,
                 steps,
                 body.cookingTimeMinutes(),
@@ -47,6 +50,8 @@ public class RecipeMapper {
         String category = body.category() == null ? null : body.category().trim();
 
         String imageUrl = body.imageUrl() == null ? null : body.imageUrl().trim();
+        String imageFileId =
+                body.imageFileId() == null ? null : body.imageFileId().trim();
 
         return new PatchArgs(
                 userId,
@@ -54,6 +59,7 @@ public class RecipeMapper {
                 body.title(),
                 body.description(),
                 imageUrl,
+                imageFileId,
                 ingredients,
                 body.steps(),
                 body.cookingTimeMinutes(),
@@ -68,6 +74,7 @@ public class RecipeMapper {
                 r.getTitle(),
                 r.getDescription(),
                 r.getImageUrl(),
+                r.getImageFileId(),
                 r.getIngredients().stream().map(this::toDto).toList(),
                 r.getSteps(),
                 r.getCookingTimeMinutes(),
@@ -112,6 +119,7 @@ public class RecipeMapper {
             String title,
             String description,
             String imageUrl,
+            String imageFileId,
             List<Ingredient> ingredients,
             List<String> steps,
             Integer cookingTimeMinutes,
@@ -125,6 +133,7 @@ public class RecipeMapper {
             String title,
             String description,
             String imageUrl,
+            String imageFileId,
             List<Ingredient> ingredients,
             List<String> steps,
             Integer cookingTimeMinutes,

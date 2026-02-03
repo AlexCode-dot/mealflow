@@ -19,6 +19,7 @@ public class Recipe {
     private String title;
     private String description;
     private String imageUrl;
+    private String imageFileId;
 
     private List<Ingredient> ingredients = new ArrayList<>();
     private List<String> steps = new ArrayList<>();
@@ -39,6 +40,7 @@ public class Recipe {
             String title,
             String description,
             String imageUrl,
+            String imageFileId,
             List<Ingredient> ingredients,
             List<String> steps,
             Integer cookingTimeMinutes,
@@ -52,6 +54,7 @@ public class Recipe {
         this.title = title;
         this.description = description;
         this.imageUrl = imageUrl;
+        this.imageFileId = imageFileId;
         this.ingredients = ingredients != null ? ingredients : new ArrayList<>();
         this.steps = steps != null ? steps : new ArrayList<>();
         this.cookingTimeMinutes = cookingTimeMinutes;
@@ -66,6 +69,7 @@ public class Recipe {
             String title,
             String description,
             String imageUrl,
+            String imageFileId,
             List<Ingredient> ingredients,
             List<String> steps,
             Integer cookingTimeMinutes,
@@ -81,6 +85,9 @@ public class Recipe {
         }
         if (imageUrl != null) {
             this.imageUrl = imageUrl;
+        }
+        if (imageFileId != null) {
+            this.imageFileId = imageFileId;
         }
         if (ingredients != null) {
             this.ingredients = ingredients;
@@ -139,6 +146,14 @@ public class Recipe {
 
     public void setImageUrl(String imageUrl) {
         this.imageUrl = imageUrl;
+    }
+
+    public String getImageFileId() {
+        return imageFileId;
+    }
+
+    public void setImageFileId(String imageFileId) {
+        this.imageFileId = imageFileId;
     }
 
     public List<Ingredient> getIngredients() {

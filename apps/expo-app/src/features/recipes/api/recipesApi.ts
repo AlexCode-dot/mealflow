@@ -4,6 +4,7 @@ import type {
   RecipeListItem,
   CreateRecipeRequest,
   UpdateRecipeRequest,
+  RecipeImageUploadResponse,
 } from '@/src/features/recipes/types';
 
 export const recipesApi = {
@@ -25,5 +26,17 @@ export const recipesApi = {
 
   remove(id: string): Promise<void> {
     return httpClient.appApi.delete<void>(`/api/recipes/${id}`);
+  },
+
+  uploadImage(formData: FormData, recipeId?: string): Promise<RecipeImageUploadResponse> {
+    const query = recipeId ? `?recipeId=${encodeURIComponent(recipeId)}` : '';
+    return httpClient.appApi.upload<RecipeImageUploadResponse>(
+      `/api/recipes/images${query}`,
+      formData,
+    );
+  },
+
+  removeImage(id: string): Promise<void> {
+    return httpClient.appApi.delete<void>(`/api/recipes/${id}/image`);
   },
 };

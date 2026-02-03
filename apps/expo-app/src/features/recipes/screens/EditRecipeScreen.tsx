@@ -2,10 +2,17 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import DraggableFlatList from 'react-native-draggable-flatlist';
-import { Screen, ErrorText, SectionEmpty, useBottomBarActions } from '@/src/shared/ui';
+import {
+  Screen,
+  ErrorText,
+  SectionEmpty,
+  useBottomBarActions,
+  ConfirmSheet,
+} from '@/src/shared/ui';
 import { theme } from '@/src/shared/theme/theme';
 import {
   useEditRecipe,
+  useRecipeImagePicker,
   useRecipeEditorUiState,
   useRecipeIngredientEditor,
   useRecipeStepEditor,
@@ -32,6 +39,12 @@ export function EditRecipeScreen() {
   const id = typeof params.id === 'string' ? params.id : '';
   const view = useEditRecipe(id);
   const { state, form, data, actions } = view;
+  const { pickImage, isUploading } = useRecipeImagePicker({
+    setImageUrl: form.setImageUrl,
+    setImageFileId: form.setImageFileId,
+    recipeId: id,
+  });
+  const [showRemoveImage, setShowRemoveImage] = useState(false);
 
   const [refreshing, setRefreshing] = useState(false);
   const editorState = useRecipeEditorUiState();
@@ -69,6 +82,17 @@ export function EditRecipeScreen() {
     router.back();
   }, []);
 
+  const onRemoveImage = useCallback(() => {
+    setShowRemoveImage(true);
+  }, []);
+
+  const confirmRemoveImage = useCallback(async () => {
+    const ok = await actions.removeImage();
+    if (ok) {
+      setShowRemoveImage(false);
+    }
+  }, [actions]);
+
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     await actions.load();
@@ -96,7 +120,12 @@ export function EditRecipeScreen() {
       },
       {
         key: 'save',
-        label: state.isSaving ? 'Saving…' : 'Save recipe',
+        label:
+          isUploading || state.isRemovingImage
+            ? 'Updating…'
+            : state.isSaving
+              ? 'Saving…'
+              : 'Save recipe',
         icon: (
           <Download
             color={theme.colors.textOnPrimary}
@@ -105,10 +134,10 @@ export function EditRecipeScreen() {
           />
         ),
         onPress: onSave,
-        disabled: !state.canSave,
+        disabled: !state.canSave || isUploading || state.isRemovingImage,
       },
     ],
-    [state.canSave, state.isSaving, onCancel, onSave],
+    [state.canSave, state.isSaving, state.isRemovingImage, onCancel, onSave, isUploading],
   );
 
   useBottomBarActions(actionItems);
@@ -133,7 +162,14 @@ export function EditRecipeScreen() {
     <Screen title="Edit Recipe" showBack scroll={false} contentStyle={styles.screenContent}>
       <View style={styles.root}>
         <RecipeSheetLayout
-          hero={<RecipeHero imageUrl={form.imageUrl} />}
+          hero={
+            <RecipeHero
+              imageUrl={form.imageUrl}
+              onPress={pickImage}
+              onRemove={form.imageUrl ? onRemoveImage : undefined}
+              isUploading={isUploading || state.isRemovingImage}
+            />
+          }
           heroHeight={heroHeight}
           heroHasImage={Boolean(form.imageUrl)}
           refreshing={refreshing}
@@ -237,6 +273,17 @@ export function EditRecipeScreen() {
           </View>
         ) : null}
       </View>
+
+      <ConfirmSheet
+        visible={showRemoveImage}
+        title="Remove photo?"
+        description="This will remove the photo from your recipe."
+        confirmLabel="Remove"
+        confirmVariant="danger"
+        onCancel={() => setShowRemoveImage(false)}
+        onConfirm={confirmRemoveImage}
+        disabled={state.isRemovingImage}
+      />
 
       <IngredientEditorSheet
         visible={ingredientEditor.isOpen}

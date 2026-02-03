@@ -2,6 +2,7 @@ package com.mealflow.appapi.recipes.service;
 
 import com.mealflow.appapi.recipes.domain.Ingredient;
 import com.mealflow.appapi.recipes.domain.Recipe;
+import com.mealflow.appapi.recipes.image.RecipeImageService;
 import com.mealflow.appapi.recipes.repository.RecipeRepository;
 import java.time.Clock;
 import java.time.Instant;
@@ -12,10 +13,12 @@ import org.springframework.stereotype.Service;
 public class RecipeService {
 
     private final RecipeRepository recipeRepository;
+    private final RecipeImageService imageService;
     private final Clock clock;
 
-    public RecipeService(RecipeRepository recipeRepository, Clock clock) {
+    public RecipeService(RecipeRepository recipeRepository, RecipeImageService imageService, Clock clock) {
         this.recipeRepository = recipeRepository;
+        this.imageService = imageService;
         this.clock = clock;
     }
 
@@ -34,6 +37,7 @@ public class RecipeService {
             String title,
             String description,
             String imageUrl,
+            String imageFileId,
             List<Ingredient> ingredients,
             List<String> steps,
             Integer cookingTimeMinutes,
@@ -48,6 +52,7 @@ public class RecipeService {
                 title,
                 description,
                 imageUrl,
+                imageFileId,
                 ingredients,
                 steps,
                 cookingTimeMinutes,
@@ -66,6 +71,7 @@ public class RecipeService {
             String title,
             String description,
             String imageUrl,
+            String imageFileId,
             List<Ingredient> ingredients,
             List<String> steps,
             Integer cookingTimeMinutes,
@@ -80,10 +86,12 @@ public class RecipeService {
         }
 
         Recipe existing = getForUser(userId, recipeId);
+        String oldImageFileId = existing.getImageFileId();
         existing.applyPatch(
                 title,
                 description,
                 imageUrl,
+                imageFileId,
                 ingredients,
                 steps,
                 cookingTimeMinutes,
@@ -91,13 +99,34 @@ public class RecipeService {
                 category,
                 fromExternal,
                 clock.instant());
+        if (imageFileId != null
+                && oldImageFileId != null
+                && !oldImageFileId.isBlank()
+                && !oldImageFileId.equals(imageFileId)) {
+            imageService.deleteByFileId(oldImageFileId);
+        }
         return recipeRepository.save(existing);
     }
 
     public void delete(String userId, String recipeId) {
+        Recipe recipe = getForUser(userId, recipeId);
+        if (recipe.getImageFileId() != null) {
+            imageService.deleteByFileId(recipe.getImageFileId());
+        }
         long deleted = recipeRepository.deleteByIdAndUserId(recipeId, userId);
         if (deleted == 0) {
             throw new RecipeNotFoundException("Recipe not found");
         }
+    }
+
+    public Recipe clearImage(String userId, String recipeId) {
+        Recipe recipe = getForUser(userId, recipeId);
+        if (recipe.getImageFileId() != null) {
+            imageService.deleteByFileId(recipe.getImageFileId());
+        }
+        recipe.setImageUrl(null);
+        recipe.setImageFileId(null);
+        recipe.setUpdatedAt(clock.instant());
+        return recipeRepository.save(recipe);
     }
 }

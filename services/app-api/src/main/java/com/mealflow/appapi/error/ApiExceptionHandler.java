@@ -2,6 +2,7 @@ package com.mealflow.appapi.error;
 
 import com.mealflow.appapi.inspiration.service.InspirationNotFoundException;
 import com.mealflow.appapi.profile.service.ProfileValidationException;
+import com.mealflow.appapi.recipes.image.ImageUploadValidationException;
 import com.mealflow.appapi.recipes.service.RecipeNotFoundException;
 import com.mealflow.appapi.recipes.service.RecipeValidationException;
 import com.mealflow.appapi.shoppingLists.service.ShoppingListNotFoundException;
@@ -21,6 +22,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 @RestControllerAdvice
 public class ApiExceptionHandler {
@@ -81,6 +83,12 @@ public class ApiExceptionHandler {
         return problems.build(HttpStatus.BAD_REQUEST, ex.getMessage(), req);
     }
 
+    @ExceptionHandler(ImageUploadValidationException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ProblemDetail handleImageUploadValidation(ImageUploadValidationException ex, HttpServletRequest req) {
+        return problems.build(HttpStatus.BAD_REQUEST, ex.getMessage(), req);
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ProblemDetail handleValidation(MethodArgumentNotValidException ex, HttpServletRequest req) {
@@ -117,6 +125,12 @@ public class ApiExceptionHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ProblemDetail handleBadJson(HttpMessageNotReadableException ex, HttpServletRequest req) {
         return problems.build(HttpStatus.BAD_REQUEST, "Malformed JSON request body", req);
+    }
+
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    @ResponseStatus(HttpStatus.PAYLOAD_TOO_LARGE)
+    public ProblemDetail handleMaxUploadSize(MaxUploadSizeExceededException ex, HttpServletRequest req) {
+        return problems.build(HttpStatus.PAYLOAD_TOO_LARGE, "Image is too large. Max size is 10MB.", req);
     }
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
