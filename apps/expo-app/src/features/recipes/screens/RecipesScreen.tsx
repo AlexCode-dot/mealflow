@@ -1,6 +1,5 @@
 import { useCallback } from 'react';
-import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
-import { ArrowUp } from 'lucide-react-native';
+import { ActivityIndicator, FlatList, StyleSheet, Text, View } from 'react-native';
 import { router } from 'expo-router';
 import {
   Screen,
@@ -9,6 +8,7 @@ import {
   Button,
   ToastBanner,
   useGlobalToast,
+  ScrollToTopFab,
 } from '@/src/shared/ui';
 import { theme } from '@/src/shared/theme/theme';
 import { routes } from '@/src/core/navigation/routes';
@@ -24,9 +24,12 @@ import { useRecipesScreen, type RecipeListTabKey } from '@/src/features/recipes/
 
 export function RecipesScreen() {
   const view = useRecipesScreen();
-  const { state, filters, data, actions, toast, discoveryListRef } = view;
+  const { state, filters, data, actions, toast, savedListRef, discoveryListRef } = view;
   const { toast: globalToast } = useGlobalToast();
   const allowDiscoveryLoadMore = data.savedFilterMode !== 'saved';
+  const showSavedEndMessage = !data.saved.canLoadMore && data.visibleSavedItems.length >= 8;
+  const showDiscoveryEndMessage =
+    !data.discovery.canLoadMore && data.visibleDiscoveryItems.length >= 8;
 
   const active = state.tab === 'saved' ? data.saved : data.discovery;
   const toastBanner =
@@ -110,13 +113,29 @@ export function RecipesScreen() {
         {state.tab === 'saved' ? (
           <FlatList<RecipeListItem>
             key="saved"
+            ref={savedListRef}
             data={data.visibleSavedItems}
             keyExtractor={(r) => r.id}
             numColumns={2}
             showsVerticalScrollIndicator={false}
+            onEndReached={data.saved.canLoadMore ? data.saved.loadMore : undefined}
+            onEndReachedThreshold={0.4}
+            onScroll={(event) => {
+              const y = event.nativeEvent.contentOffset.y;
+              actions.handleSavedScroll(y);
+            }}
             refreshControl={active.refreshControl}
             contentContainerStyle={styles.listContent}
             columnWrapperStyle={data.visibleSavedItems.length ? styles.gridRow : undefined}
+            ListFooterComponent={
+              <View style={styles.listFooter}>
+                {data.saved.isLoadingMore ? (
+                  <ActivityIndicator color={theme.colors.primaryDark} />
+                ) : data.saved.canLoadMore || !showSavedEndMessage ? null : (
+                  <Text style={styles.footerText}>No more recipes</Text>
+                )}
+              </View>
+            }
             ListHeaderComponent={renderHeader('saved')}
             renderItem={({ item }) => (
               <RecipeSavedGridItem item={item} onPress={(id) => router.push(routes.recipe(id))} />
@@ -143,7 +162,7 @@ export function RecipesScreen() {
                 <View style={styles.listFooter}>
                   {data.discovery.isLoadingMore ? (
                     <ActivityIndicator color={theme.colors.primaryDark} />
-                  ) : data.discovery.canLoadMore ? null : (
+                  ) : data.discovery.canLoadMore || !showDiscoveryEndMessage ? null : (
                     <Text style={styles.footerText}>No more recipes</Text>
                   )}
                 </View>
@@ -162,14 +181,7 @@ export function RecipesScreen() {
           />
         )}
 
-        {state.tab === 'inspiration' && state.showScrollTop ? (
-          <Pressable
-            style={[styles.scrollTop, { top: 17, left: '50%' }]}
-            onPress={actions.handleScrollTop}
-          >
-            <ArrowUp color={theme.colors.textOnPrimary} size={20} strokeWidth={2.5} />
-          </Pressable>
-        ) : null}
+        <ScrollToTopFab visible={state.showScrollTop} onPress={actions.handleScrollTop} />
 
         <FilterSheet
           visible={filters.filtersOpen}
@@ -234,15 +246,5 @@ const styles = StyleSheet.create({
     left: theme.spacing.s3,
     right: theme.spacing.s3,
     zIndex: 5,
-  },
-  scrollTop: {
-    position: 'absolute',
-    marginLeft: -18,
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: theme.colors.primary,
   },
 });

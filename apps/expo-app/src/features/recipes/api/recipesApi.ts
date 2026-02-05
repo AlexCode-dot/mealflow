@@ -8,8 +8,12 @@ import type {
 } from '@/src/features/recipes/types';
 
 export const recipesApi = {
-  list(): Promise<RecipeListItem[]> {
-    return httpClient.appApi.get<RecipeListItem[]>('/api/recipes');
+  list(params?: { limit?: number; offset?: number }): Promise<RecipeListItem[]> {
+    const search = new URLSearchParams();
+    if (params?.limit != null) search.set('limit', String(params.limit));
+    if (params?.offset != null) search.set('offset', String(params.offset));
+    const query = search.toString();
+    return httpClient.appApi.get<RecipeListItem[]>(`/api/recipes${query ? `?${query}` : ''}`);
   },
 
   get(id: string): Promise<Recipe> {

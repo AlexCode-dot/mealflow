@@ -20,6 +20,7 @@ export { TextField } from './TextField';
 export { ErrorText } from './ErrorText';
 export { LoadingScreen } from './LoadingScreen';
 export { SearchField } from './SearchField';
+export { ScrollToTopFab } from './ScrollToTopFab';
 export { IconStat } from './IconStat';
 export { IconStatRow } from './IconStatRow';
 export { EmptyState } from './EmptyState';

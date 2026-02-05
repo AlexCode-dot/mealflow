@@ -33,9 +33,12 @@ public class RecipeController {
     }
 
     @GetMapping
-    public List<RecipeListItemResponse> list(Authentication auth) {
+    public List<RecipeListItemResponse> list(
+            Authentication auth,
+            @RequestParam(name = "limit", required = false) Integer limit,
+            @RequestParam(name = "offset", required = false) Integer offset) {
         String userId = currentUser.userId(auth);
-        return recipeService.listForUser(userId).stream()
+        return recipeService.listForUser(userId, limit, offset).stream()
                 .map(mapper::toListItem)
                 .toList();
     }

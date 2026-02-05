@@ -1,5 +1,13 @@
-import { useMemo } from 'react';
-import { Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
+import { useCallback, useMemo, useRef, useState } from 'react';
+import {
+  ActivityIndicator,
+  Pressable,
+  RefreshControl,
+  StyleSheet,
+  Text,
+  View,
+  ScrollView,
+} from 'react-native';
 import { CalendarDays, ChevronRight, ShoppingBasket } from 'lucide-react-native';
 import {
   UnderlineTabs,
@@ -10,6 +18,7 @@ import {
   LoadingScreen,
   ConfirmSheet,
   useGlobalToast,
+  ScrollToTopFab,
 } from '@/src/shared/ui';
 import type { UnderlineTab } from '@/src/shared/ui/UnderlineTabs';
 import { theme } from '@/src/shared/theme/theme';
@@ -20,6 +29,11 @@ export default function ShoppingListOverviewScreen() {
   const view = useShoppingListOverviewScreen();
   const { state, data, actions, confirms, toast } = view;
   const { toast: globalToast } = useGlobalToast();
+  const scrollRef = useRef<ScrollView>(null);
+  const [showScrollTop, setShowScrollTop] = useState(false);
+  const handleScroll = useCallback((event: { nativeEvent: { contentOffset: { y: number } } }) => {
+    setShowScrollTop(event.nativeEvent.contentOffset.y > 600);
+  }, []);
 
   const tabs = useMemo<UnderlineTab[]>(
     () => [
@@ -65,6 +79,8 @@ export default function ShoppingListOverviewScreen() {
           <RefreshControl refreshing={state.isRefreshing} onRefresh={actions.handleRefresh} />
         }
         contentStyle={styles.content}
+        scrollRef={scrollRef}
+        onScroll={handleScroll}
       >
         <Card style={styles.summaryCard} variant="premium">
           <View style={styles.summaryHeader}>
@@ -177,11 +193,34 @@ export default function ShoppingListOverviewScreen() {
                   onPress={() => actions.openArchivedList(list.id)}
                 />
               ))}
+              {state.canLoadMoreArchived ? (
+                <Pressable
+                  onPress={() => {
+                    void actions.loadMoreArchived();
+                  }}
+                  disabled={state.isLoadingMoreArchived}
+                  style={({ pressed }) => [
+                    styles.loadMoreButton,
+                    pressed ? styles.loadMorePressed : null,
+                    state.isLoadingMoreArchived ? styles.loadMoreDisabled : null,
+                  ]}
+                >
+                  {state.isLoadingMoreArchived ? (
+                    <ActivityIndicator color={theme.colors.primaryDark} />
+                  ) : (
+                    <Text style={styles.loadMoreText}>Load more archived lists</Text>
+                  )}
+                </Pressable>
+              ) : null}
             </View>
           )
         ) : null}
       </Screen>
       {toastBanner}
+      <ScrollToTopFab
+        visible={showScrollTop}
+        onPress={() => scrollRef.current?.scrollTo({ y: 0, animated: true })}
+      />
 
       <ConfirmSheet
         visible={confirms.generateOpen}
@@ -384,6 +423,27 @@ const styles = StyleSheet.create({
   },
   archivedList: {
     gap: theme.spacing.s2,
+  },
+  loadMoreButton: {
+    marginTop: theme.spacing.s2,
+    paddingVertical: theme.spacing.s3,
+    borderRadius: theme.radius.md,
+    borderWidth: 1,
+    borderColor: theme.colors.borderNeutral,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: theme.colors.surface,
+  },
+  loadMorePressed: {
+    opacity: 0.85,
+  },
+  loadMoreDisabled: {
+    opacity: 0.7,
+  },
+  loadMoreText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: theme.colors.primaryDark,
   },
   toastOverlay: {
     position: 'absolute',

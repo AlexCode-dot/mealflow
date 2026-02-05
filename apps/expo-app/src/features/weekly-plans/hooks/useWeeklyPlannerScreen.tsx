@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { router } from 'expo-router';
 import { weeklyPlansApi } from '@/src/features/weekly-plans/api/weeklyPlansApi';
-import type { WeeklyPlan } from '@/src/features/weekly-plans/types';
+import type { WeeklyPlan, WeeklyPlanListItem } from '@/src/features/weekly-plans/types';
 import { routes } from '@/src/core/navigation/routes';
 import { useWeeklyPlansList } from '@/src/features/weekly-plans/hooks/useWeeklyPlansList';
 import type { UiError } from '@/src/shared/errors/errorTypes';
@@ -33,11 +33,15 @@ export type WeeklyPlannerState = {
   refreshControl: ReturnType<typeof useWeeklyPlansList>['refreshControl'];
   tab: WeeklyPlannerTab;
   isCreating: boolean;
+  isLoadingCreated: boolean;
+  isLoadingMoreCreated: boolean;
+  canLoadMoreCreated: boolean;
 };
 
 export type WeeklyPlannerActions = {
   reload: () => Promise<void>;
   setTab: (tab: WeeklyPlannerTab) => void;
+  loadMoreCreated: () => Promise<void>;
 };
 
 export type WeeklyPlannerHeaderView = {
@@ -66,6 +70,13 @@ export function useWeeklyPlannerScreen(): WeeklyPlannerView {
   const { items, isLoading, error, load, refreshControl } = useWeeklyPlansList();
   const [tab, setTab] = useState<WeeklyPlannerTab>('recent');
   const [isCreating, setIsCreating] = useState(false);
+  const {
+    items: createdItems,
+    isLoading: isLoadingCreated,
+    isLoadingMore: isLoadingMoreCreated,
+    canLoadMore: canLoadMoreCreated,
+    loadMore: loadMoreCreated,
+  } = useWeeklyPlansList({ paginated: true, pageSize: 20, autoLoad: tab === 'created' });
 
   const baseWeekStart = useMemo(() => currentWeekStartIso(), []);
   const [weekOffset, setWeekOffset] = useState(0);
@@ -136,9 +147,9 @@ export function useWeeklyPlannerScreen(): WeeklyPlannerView {
     return new Map(items.map((item) => [item.weeklyStart, item]));
   }, [items]);
 
-  const uniqueItems = useMemo(() => {
-    const byWeek = new Map<string, (typeof items)[number]>();
-    for (const item of items) {
+  const dedupeByWeeklyStart = useCallback((source: WeeklyPlanListItem[]) => {
+    const byWeek = new Map<string, WeeklyPlanListItem>();
+    for (const item of source) {
       const existing = byWeek.get(item.weeklyStart);
       if (!existing) {
         byWeek.set(item.weeklyStart, item);
@@ -151,7 +162,13 @@ export function useWeeklyPlannerScreen(): WeeklyPlannerView {
       }
     }
     return Array.from(byWeek.values());
-  }, [items]);
+  }, []);
+
+  const uniqueItems = useMemo(() => dedupeByWeeklyStart(items), [dedupeByWeeklyStart, items]);
+  const uniqueCreatedItems = useMemo(
+    () => dedupeByWeeklyStart(createdItems),
+    [createdItems, dedupeByWeeklyStart],
+  );
 
   const recentItems = useMemo(() => {
     return [...uniqueItems]
@@ -160,10 +177,10 @@ export function useWeeklyPlannerScreen(): WeeklyPlannerView {
   }, [uniqueItems]);
 
   const allCreatedItems = useMemo(() => {
-    return [...uniqueItems].sort(
+    return [...uniqueCreatedItems].sort(
       (a, b) => parseIsoDate(b.weeklyStart).getTime() - parseIsoDate(a.weeklyStart).getTime(),
     );
-  }, [uniqueItems]);
+  }, [uniqueCreatedItems]);
 
   const weekWindowItems = useMemo(() => {
     return Array.from({ length: 8 }, (_, idx) => {
@@ -268,16 +285,29 @@ export function useWeeklyPlannerScreen(): WeeklyPlannerView {
       refreshControl,
       tab,
       isCreating,
+      isLoadingCreated,
+      isLoadingMoreCreated,
+      canLoadMoreCreated,
     }),
-    [isLoading, error, refreshControl, tab, isCreating],
+    [
+      isLoading,
+      error,
+      refreshControl,
+      tab,
+      isCreating,
+      isLoadingCreated,
+      isLoadingMoreCreated,
+      canLoadMoreCreated,
+    ],
   );
 
   const actions = useMemo<WeeklyPlannerActions>(
     () => ({
       reload: load,
       setTab,
+      loadMoreCreated,
     }),
-    [load, setTab],
+    [load, loadMoreCreated, setTab],
   );
 
   const header = useMemo<WeeklyPlannerHeaderView>(

@@ -3,11 +3,14 @@ package com.mealflow.appapi.weeklyPlans.repository;
 import com.mealflow.appapi.weeklyPlans.domain.WeeklyPlan;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
 public interface WeeklyPlanRepository extends MongoRepository<WeeklyPlan, String> {
 
     List<WeeklyPlan> findAllByUserIdOrderByWeeklyStartDesc(String userId);
+
+    List<WeeklyPlan> findAllByUserIdOrderByWeeklyStartDesc(String userId, Pageable pageable);
 
     List<WeeklyPlan> findAllByUserIdAndWeeklyStart(String userId, String weeklyStart);
 

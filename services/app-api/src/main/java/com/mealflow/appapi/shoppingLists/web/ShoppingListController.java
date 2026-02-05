@@ -48,10 +48,13 @@ public class ShoppingListController {
 
     @GetMapping
     public List<ShoppingListListItemResponse> list(
-            Authentication auth, @RequestParam(name = "status", required = false) String status) {
+            Authentication auth,
+            @RequestParam(name = "status", required = false) String status,
+            @RequestParam(name = "limit", required = false) Integer limit,
+            @RequestParam(name = "offset", required = false) Integer offset) {
         String userId = currentUser.userId(auth);
         ShoppingListStatus parsedStatus = parseStatus(status);
-        return shoppingListService.listForUser(userId, parsedStatus).stream()
+        return shoppingListService.listForUser(userId, parsedStatus, limit, offset).stream()
                 .map(mapper::toListItem)
                 .toList();
     }

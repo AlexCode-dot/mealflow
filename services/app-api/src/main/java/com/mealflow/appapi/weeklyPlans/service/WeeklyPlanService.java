@@ -17,6 +17,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -25,6 +27,8 @@ public class WeeklyPlanService {
     private final WeeklyPlanRepository weeklyPlanRepository;
     private final RecipeRepository recipeRepository;
     private final Clock clock;
+    private static final int DEFAULT_PAGE_LIMIT = 20;
+    private static final int MAX_PAGE_LIMIT = 100;
     private static final Set<String> WEEK_DAYS =
             new HashSet<>(Arrays.asList("MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"));
     private static final List<String> DEFAULT_SECTIONS = List.of("Breakfast", "Lunch", "Dinner");
@@ -42,6 +46,19 @@ public class WeeklyPlanService {
         }
         String normalizedWeeklyStart = normalizeWeeklyStart(weeklyStart);
         return weeklyPlanRepository.findAllByUserIdAndWeeklyStart(userId, normalizedWeeklyStart);
+    }
+
+    public List<WeeklyPlan> listForUser(String userId, String weeklyStart, Integer limit, Integer offset) {
+        if (weeklyStart != null) {
+            return listForUser(userId, weeklyStart);
+        }
+        if (limit == null && offset == null) {
+            return listForUser(userId, null);
+        }
+        int safeLimit = sanitizeLimit(limit);
+        int safeOffset = sanitizeOffset(offset);
+        Pageable pageable = PageRequest.of(safeOffset / safeLimit, safeLimit);
+        return weeklyPlanRepository.findAllByUserIdOrderByWeeklyStartDesc(userId, pageable);
     }
 
     public WeeklyPlan getForUser(String userId, String planId) {
@@ -237,5 +254,19 @@ public class WeeklyPlanService {
         if (differentPlan) {
             throw new WeeklyPlanValidationException("Weekly plan already exists for this week");
         }
+    }
+
+    private int sanitizeLimit(Integer limit) {
+        if (limit == null || limit <= 0) {
+            return DEFAULT_PAGE_LIMIT;
+        }
+        return Math.min(limit, MAX_PAGE_LIMIT);
+    }
+
+    private int sanitizeOffset(Integer offset) {
+        if (offset == null || offset < 0) {
+            return 0;
+        }
+        return offset;
     }
 }

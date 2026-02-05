@@ -44,9 +44,12 @@ public class WeeklyPlanController {
 
     @GetMapping
     public List<WeeklyPlanListItemResponse> list(
-            Authentication auth, @RequestParam(name = "weeklyStart", required = false) String weeklyStart) {
+            Authentication auth,
+            @RequestParam(name = "weeklyStart", required = false) String weeklyStart,
+            @RequestParam(name = "limit", required = false) Integer limit,
+            @RequestParam(name = "offset", required = false) Integer offset) {
         String userId = currentUser.userId(auth);
-        return weeklyPlanService.listForUser(userId, weeklyStart).stream()
+        return weeklyPlanService.listForUser(userId, weeklyStart, limit, offset).stream()
                 .map(mapper::toListItem)
                 .toList();
     }
