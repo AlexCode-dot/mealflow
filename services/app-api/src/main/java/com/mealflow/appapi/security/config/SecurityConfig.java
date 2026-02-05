@@ -1,7 +1,7 @@
 package com.mealflow.appapi.security.config;
 
-import com.mealflow.appapi.web.ratelimit.RateLimitFilter;
 import com.mealflow.appapi.web.logging.RequestIdFilter;
+import com.mealflow.appapi.web.ratelimit.RateLimitFilter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

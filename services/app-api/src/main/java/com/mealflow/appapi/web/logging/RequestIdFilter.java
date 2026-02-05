@@ -38,9 +38,7 @@ public class RequestIdFilter extends OncePerRequestFilter {
         }
 
         String trimmed = candidate.trim();
-        if (trimmed.isBlank()
-                || trimmed.length() > MAX_HEADER_LENGTH
-                || !trimmed.matches(REQUEST_ID_ALLOWED_PATTERN)) {
+        if (trimmed.isBlank() || trimmed.length() > MAX_HEADER_LENGTH || !trimmed.matches(REQUEST_ID_ALLOWED_PATTERN)) {
             return UUID.randomUUID().toString();
         }
         return trimmed;
