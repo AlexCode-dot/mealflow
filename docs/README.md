@@ -31,6 +31,12 @@ The documentation is structured to be readable both for:
 - **Environment Variables**  
   `dev/environment-variables.md`  
   All env vars used across services and deployment.
+- **Monitoring & Logging**  
+  `dev/monitoring.md`  
+  Uptime checks, frontend error tracking, and request-id based backend log tracing.
+- **Incident Playbook**  
+  `dev/incident-playbook.md`  
+  Step-by-step checklist for outages, error triage, mitigation, and recovery verification.
 
 ---
 

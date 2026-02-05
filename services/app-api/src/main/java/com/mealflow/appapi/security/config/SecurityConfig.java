@@ -1,6 +1,7 @@
 package com.mealflow.appapi.security.config;
 
 import com.mealflow.appapi.web.ratelimit.RateLimitFilter;
+import com.mealflow.appapi.web.logging.RequestIdFilter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -22,9 +23,14 @@ public class SecurityConfig {
 
     @Bean
     SecurityFilterChain securityFilterChain(
-            HttpSecurity http, SecurityProblemSupport problems, RateLimitFilter rateLimitFilter) throws Exception {
+            HttpSecurity http,
+            SecurityProblemSupport problems,
+            RateLimitFilter rateLimitFilter,
+            RequestIdFilter requestIdFilter)
+            throws Exception {
         return http.csrf(AbstractHttpConfigurer::disable)
                 .cors(Customizer.withDefaults())
+                .addFilterBefore(requestIdFilter, BearerTokenAuthenticationFilter.class)
                 .addFilterAfter(rateLimitFilter, BearerTokenAuthenticationFilter.class)
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .httpBasic(AbstractHttpConfigurer::disable)
