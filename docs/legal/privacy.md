@@ -11,7 +11,7 @@ If you do not agree with the terms of this Privacy Policy, please do not use the
 ### Information you provide
 - Account information (such as name, email address, and password)
 - Profile information you choose to add
-- Content you create in the App (such as meal plans, recipes, and shopping lists)
+- Content you create in the App (such as meal plans, recipes, shopping lists, and recipe photos)
 - Support communications you send to us
 
 ### Information collected automatically

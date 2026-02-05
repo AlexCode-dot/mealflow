@@ -19,6 +19,8 @@ export type CreateRecipeForm = {
   setDescription: (value: string) => void;
   imageUrl: string;
   setImageUrl: (value: string) => void;
+  imageFileId: string;
+  setImageFileId: (value: string) => void;
   time: string;
   setTime: (value: string) => void;
   portions: string;
@@ -63,6 +65,8 @@ export function useCreateRecipe(): CreateRecipeView {
     setDescription,
     imageUrl,
     setImageUrl,
+    imageFileId,
+    setImageFileId,
     time,
     setTime,
     portions,
@@ -128,6 +132,8 @@ export function useCreateRecipe(): CreateRecipeView {
       },
       imageUrl,
       setImageUrl,
+      imageFileId,
+      setImageFileId,
       time,
       setTime,
       portions,
@@ -145,6 +151,8 @@ export function useCreateRecipe(): CreateRecipeView {
       setDescription,
       imageUrl,
       setImageUrl,
+      imageFileId,
+      setImageFileId,
       time,
       setTime,
       portions,

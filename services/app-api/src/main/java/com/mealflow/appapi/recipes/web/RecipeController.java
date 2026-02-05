@@ -56,6 +56,7 @@ public class RecipeController {
                 args.title(),
                 args.description(),
                 args.imageUrl(),
+                args.imageFileId(),
                 args.ingredients(),
                 args.steps(),
                 args.cookingTimeMinutes(),
@@ -80,6 +81,7 @@ public class RecipeController {
                 args.title(),
                 args.description(),
                 args.imageUrl(),
+                args.imageFileId(),
                 args.ingredients(),
                 args.steps(),
                 args.cookingTimeMinutes(),
@@ -95,5 +97,12 @@ public class RecipeController {
     public void delete(@PathVariable String id, Authentication auth) {
         String userId = currentUser.userId(auth);
         recipeService.delete(userId, id);
+    }
+
+    @DeleteMapping("/{id}/image")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteImage(@PathVariable String id, Authentication auth) {
+        String userId = currentUser.userId(auth);
+        recipeService.clearImage(userId, id);
     }
 }

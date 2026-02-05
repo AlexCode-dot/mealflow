@@ -11,6 +11,7 @@ type Values = {
   title: string;
   description: string;
   imageUrl: string;
+  imageFileId: string;
   time: string;
   portions: string;
   category: string;
@@ -20,6 +21,7 @@ type ApiValues = {
   title: string;
   description: string | null;
   imageUrl: string | null;
+  imageFileId: string | null;
   cookingTimeMinutes: number | null;
   portions: number | null;
   category: string | null;
@@ -29,6 +31,7 @@ export function useRecipeFormState(initial?: Partial<Values>) {
   const [title, setTitleState] = useState(initial?.title ?? '');
   const [description, setDescriptionState] = useState(initial?.description ?? '');
   const [imageUrl, setImageUrl] = useState(initial?.imageUrl ?? '');
+  const [imageFileId, setImageFileId] = useState(initial?.imageFileId ?? '');
   const [time, setTime] = useState(initial?.time ?? '');
   const [portions, setPortions] = useState(initial?.portions ?? '');
   const [category, setCategory] = useState(initial?.category ?? '');
@@ -52,6 +55,7 @@ export function useRecipeFormState(initial?: Partial<Values>) {
     if (next.title !== undefined) setTitleState(next.title);
     if (next.description !== undefined) setDescriptionState(next.description);
     if (next.imageUrl !== undefined) setImageUrl(next.imageUrl);
+    if (next.imageFileId !== undefined) setImageFileId(next.imageFileId);
     if (next.time !== undefined) setTime(next.time);
     if (next.portions !== undefined) setPortions(next.portions);
     if (next.category !== undefined) setCategory(next.category);
@@ -65,6 +69,7 @@ export function useRecipeFormState(initial?: Partial<Values>) {
           title: recipe.title ?? '',
           description: recipe.description ?? '',
           imageUrl: recipe.imageUrl ?? '',
+          imageFileId: recipe.imageFileId ?? '',
           time:
             recipe.cookingTimeMinutes !== null && recipe.cookingTimeMinutes !== undefined
               ? String(recipe.cookingTimeMinutes)
@@ -85,6 +90,7 @@ export function useRecipeFormState(initial?: Partial<Values>) {
     const trimmedTitle = title.trim();
     const trimmedDescription = description.trim();
     const trimmedImageUrl = imageUrl.trim();
+    const trimmedImageFileId = imageFileId.trim();
     const cookingTimeMinutes = time ? Number(time) : null;
     const portionsValue = portions ? Number(portions) : null;
 
@@ -92,11 +98,12 @@ export function useRecipeFormState(initial?: Partial<Values>) {
       title: trimmedTitle,
       description: trimmedDescription ? trimmedDescription : null,
       imageUrl: trimmedImageUrl ? trimmedImageUrl : null,
+      imageFileId: trimmedImageFileId ? trimmedImageFileId : null,
       cookingTimeMinutes: Number.isNaN(cookingTimeMinutes) ? null : cookingTimeMinutes,
       portions: Number.isNaN(portionsValue) ? null : portionsValue,
       category: category ? category : null,
     };
-  }, [category, description, imageUrl, portions, time, title]);
+  }, [category, description, imageFileId, imageUrl, portions, time, title]);
 
   return {
     title,
@@ -105,6 +112,8 @@ export function useRecipeFormState(initial?: Partial<Values>) {
     setDescription,
     imageUrl,
     setImageUrl,
+    imageFileId,
+    setImageFileId,
     time,
     setTime,
     portions,

@@ -6,6 +6,7 @@ import { authEvents } from '@/src/core/auth/authEvents';
 import { routes } from '@/src/core/navigation/routes';
 import { GlobalToastHost, GlobalToastProvider } from '@/src/shared/ui';
 import { WebFrame } from '@/src/shared/ui/WebFrame';
+import '@/src/core/monitoring/sentry';
 
 export default function RootLayout() {
   useEffect(() => {

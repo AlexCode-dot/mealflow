@@ -1,5 +1,6 @@
 package com.mealflow.identity.security.config;
 
+import com.mealflow.identity.web.logging.RequestIdFilter;
 import com.mealflow.identity.web.ratelimit.RateLimitFilter;
 import java.security.interfaces.RSAPublicKey;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,9 +24,14 @@ public class SecurityConfig {
 
     @Bean
     SecurityFilterChain securityFilterChain(
-            HttpSecurity http, SecurityProblemSupport problems, RateLimitFilter rateLimitFilter) throws Exception {
+            HttpSecurity http,
+            SecurityProblemSupport problems,
+            RateLimitFilter rateLimitFilter,
+            RequestIdFilter requestIdFilter)
+            throws Exception {
         return http.csrf(AbstractHttpConfigurer::disable)
                 .cors(Customizer.withDefaults())
+                .addFilterBefore(requestIdFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(rateLimitFilter, UsernamePasswordAuthenticationFilter.class)
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .httpBasic(AbstractHttpConfigurer::disable)
@@ -36,6 +42,8 @@ public class SecurityConfig {
                                 .accessDeniedHandler(problems) // 403
                         )
                 .authorizeHttpRequests(auth -> auth.requestMatchers(HttpMethod.OPTIONS, "/**")
+                        .permitAll()
+                        .requestMatchers("/healthz")
                         .permitAll()
                         .requestMatchers("/auth/**", "/.well-known/jwks.json")
                         .permitAll()

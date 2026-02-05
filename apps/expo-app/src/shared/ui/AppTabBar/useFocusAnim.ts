@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { Animated, Easing } from 'react-native';
+import { Animated, Easing, Platform } from 'react-native';
 
 export function useFocusAnim(params: { isFocused: boolean; labelHeight: number }) {
   const { isFocused, labelHeight } = params;
@@ -10,7 +10,7 @@ export function useFocusAnim(params: { isFocused: boolean; labelHeight: number }
       toValue: isFocused ? 1 : 0,
       duration: 170,
       easing: Easing.out(Easing.cubic),
-      useNativeDriver: true,
+      useNativeDriver: Platform.OS !== 'web',
     }).start();
   }, [isFocused, t]);
 

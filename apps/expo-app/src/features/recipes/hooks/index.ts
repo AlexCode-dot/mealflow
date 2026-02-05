@@ -5,6 +5,7 @@ export { useRecipeDetails } from './useRecipeDetails';
 export { useAddRecipeToShoppingList } from './useAddRecipeToShoppingList';
 export { useRecipesScreen } from './useRecipesScreen';
 export { useRecipeDiscovery } from './useRecipeDiscovery';
+export { useRecipeImagePicker } from './useRecipeImagePicker';
 export { useRecipeEditorUiState } from './useRecipeEditorState';
 export type { RecipePickerKey } from './useRecipeEditorState';
 export { useRecipeIngredientEditor } from './useRecipeIngredientEditor';

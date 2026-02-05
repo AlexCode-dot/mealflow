@@ -1,6 +1,7 @@
 package com.mealflow.appapi.account.service;
 
 import com.mealflow.appapi.profile.repository.ProfileRepository;
+import com.mealflow.appapi.recipes.image.RecipeImageService;
 import com.mealflow.appapi.recipes.repository.RecipeRepository;
 import com.mealflow.appapi.shoppingLists.repository.ShoppingListRepository;
 import com.mealflow.appapi.weeklyPlans.repository.WeeklyPlanRepository;
@@ -11,21 +12,29 @@ public class AccountService {
 
     private final ProfileRepository profileRepository;
     private final RecipeRepository recipeRepository;
+    private final RecipeImageService imageService;
     private final WeeklyPlanRepository weeklyPlanRepository;
     private final ShoppingListRepository shoppingListRepository;
 
     public AccountService(
             ProfileRepository profileRepository,
             RecipeRepository recipeRepository,
+            RecipeImageService imageService,
             WeeklyPlanRepository weeklyPlanRepository,
             ShoppingListRepository shoppingListRepository) {
         this.profileRepository = profileRepository;
         this.recipeRepository = recipeRepository;
+        this.imageService = imageService;
         this.weeklyPlanRepository = weeklyPlanRepository;
         this.shoppingListRepository = shoppingListRepository;
     }
 
     public void deleteAccountData(String userId) {
+        recipeRepository.findAllByUserIdOrderByCreatedAtDesc(userId).forEach(recipe -> {
+            if (recipe.getImageFileId() != null) {
+                imageService.deleteByFileId(recipe.getImageFileId());
+            }
+        });
         shoppingListRepository.deleteByUserId(userId);
         weeklyPlanRepository.deleteByUserId(userId);
         recipeRepository.deleteByUserId(userId);

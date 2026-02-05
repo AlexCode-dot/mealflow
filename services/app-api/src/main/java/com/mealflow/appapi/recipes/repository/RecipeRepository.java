@@ -16,4 +16,6 @@ public interface RecipeRepository extends MongoRepository<Recipe, String> {
     long deleteByIdAndUserId(String id, String userId);
 
     long deleteByUserId(String userId);
+
+    long countByUserIdAndImageUrlNotNull(String userId);
 }

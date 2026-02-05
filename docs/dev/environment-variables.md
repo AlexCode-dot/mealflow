@@ -14,6 +14,9 @@ They are read from `apps/expo-app/.env.local`.
 |---|---|---|---|
 | `EXPO_PUBLIC_IDENTITY_BASE_URL` | Yes | Base URL for Identity Service (e.g. `https://identity.example.com`) | none |
 | `EXPO_PUBLIC_APP_API_BASE_URL` | Yes | Base URL for App API (e.g. `https://api.example.com`) | none |
+| `EXPO_PUBLIC_SENTRY_DSN` | No | Sentry DSN for client error tracking | none |
+| `EXPO_PUBLIC_SENTRY_ENVIRONMENT` | No | Sentry environment name | `development` |
+| `EXPO_PUBLIC_SENTRY_RELEASE` | No | Release identifier for client | none |
 
 ---
 
@@ -39,6 +42,10 @@ Defined in `services/identity-service/src/main/resources/application.properties`
 | `RATE_LIMIT_REFRESH_PER_MINUTE` | No | Refresh requests/minute | `30` |
 | `RATE_LIMIT_LOGOUT_PER_MINUTE` | No | Logout requests/minute | `60` |
 | `RATE_LIMIT_JWKS_PER_MINUTE` | No | JWKS requests/minute | `120` |
+| `SENTRY_DSN` | Optional (currently unused) | Reserved for backend Sentry integration | none |
+| `SENTRY_ENVIRONMENT` | Optional (currently unused) | Reserved for backend Sentry integration | `development` |
+| `SENTRY_RELEASE` | Optional (currently unused) | Reserved for backend Sentry integration | none |
+| `SENTRY_TRACES_SAMPLE_RATE` | Optional (currently unused) | Reserved for backend Sentry integration | `0.0` |
 
 ---
 
@@ -58,6 +65,19 @@ Defined in `services/app-api/src/main/resources/application.properties`.
 | `CORS_ALLOWED_ORIGINS` | No | Comma-separated allowed origins | `http://localhost:8083,http://localhost:19006` |
 | `RATE_LIMIT_ENABLED` | No | Enable rate limiting | `true` |
 | `RATE_LIMIT_API_PER_MINUTE` | No | API requests/minute | `120` |
+| `APP_IMAGES_MAX_UPLOAD_BYTES` | No | Max image upload size in bytes | `10485760` |
+| `APP_IMAGES_MAX_PER_USER` | No | Max recipe images per user | `200` |
+| `APP_IMAGES_MAX_PER_DAY` | No | Max image uploads per user per day | `20` |
+| `APP_IMAGES_ALLOWED_TYPES` | No | Comma-separated allowed MIME types | `image/jpeg,image/png,image/webp,image/heic` |
+| `APP_IMAGES_MAX_UPLOAD_SIZE` | No | Multipart limit (e.g. `10MB`) | `10MB` |
+| `IMAGEKIT_PRIVATE_KEY` | Yes (for uploads) | ImageKit private API key | none |
+| `IMAGEKIT_PUBLIC_KEY` | Yes (for uploads) | ImageKit public API key | none |
+| `IMAGEKIT_URL_ENDPOINT` | Yes (for uploads) | ImageKit URL endpoint (cdn) | none |
+| `IMAGEKIT_UPLOAD_FOLDER` | No | Base folder for uploads | `/mealflow/recipes` |
+| `SENTRY_DSN` | Optional (currently unused) | Reserved for backend Sentry integration | none |
+| `SENTRY_ENVIRONMENT` | Optional (currently unused) | Reserved for backend Sentry integration | `development` |
+| `SENTRY_RELEASE` | Optional (currently unused) | Reserved for backend Sentry integration | none |
+| `SENTRY_TRACES_SAMPLE_RATE` | Optional (currently unused) | Reserved for backend Sentry integration | `0.0` |
 
 ---
 

@@ -12,6 +12,7 @@ export type EditRecipeState = {
   isSaving: boolean;
   saveError: string | null;
   canSave: boolean;
+  isRemovingImage: boolean;
 };
 
 export type EditRecipeForm = {
@@ -21,6 +22,8 @@ export type EditRecipeForm = {
   setDescription: (value: string) => void;
   imageUrl: string;
   setImageUrl: (value: string) => void;
+  imageFileId: string;
+  setImageFileId: (value: string) => void;
   time: string;
   setTime: (value: string) => void;
   portions: string;
@@ -42,6 +45,7 @@ export type EditRecipeData = {
 export type EditRecipeActions = {
   load: () => Promise<void>;
   save: () => Promise<boolean>;
+  removeImage: () => Promise<boolean>;
 };
 
 export type EditRecipeView = {
@@ -57,6 +61,7 @@ export function useEditRecipe(id: string): EditRecipeView {
 
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [isRemovingImage, setIsRemovingImage] = useState(false);
 
   const form = useRecipeFormState();
   const {
@@ -66,6 +71,7 @@ export function useEditRecipe(id: string): EditRecipeView {
     title,
     description,
     imageUrl,
+    imageFileId,
     time,
     portions,
     category,
@@ -75,6 +81,7 @@ export function useEditRecipe(id: string): EditRecipeView {
     setTitle,
     setDescription,
     setImageUrl,
+    setImageFileId,
     setTime,
     setPortions,
     setCategory,
@@ -146,6 +153,24 @@ export function useEditRecipe(id: string): EditRecipeView {
     }
   }, [id, title, errors, ingredients, steps, markAllTouched, getApiValues]);
 
+  const removeImage = useCallback(async (): Promise<boolean> => {
+    if (!id) return false;
+    setSaveError(null);
+    setIsRemovingImage(true);
+    try {
+      await recipesApi.removeImage(id);
+      setImageUrl('');
+      setImageFileId('');
+      return true;
+    } catch (e) {
+      const uiErr = mapCommonError(toApiError(e));
+      setSaveError(uiErr.message);
+      return false;
+    } finally {
+      setIsRemovingImage(false);
+    }
+  }, [id, setImageFileId, setImageUrl]);
+
   const state = useMemo<EditRecipeState>(
     () => ({
       isLoading,
@@ -153,8 +178,9 @@ export function useEditRecipe(id: string): EditRecipeView {
       isSaving,
       saveError,
       canSave,
+      isRemovingImage,
     }),
-    [isLoading, loadError, isSaving, saveError, canSave],
+    [isLoading, loadError, isSaving, saveError, canSave, isRemovingImage],
   );
 
   const formView = useMemo<EditRecipeForm>(
@@ -165,6 +191,8 @@ export function useEditRecipe(id: string): EditRecipeView {
       setDescription,
       imageUrl,
       setImageUrl,
+      imageFileId,
+      setImageFileId,
       time,
       setTime,
       portions,
@@ -182,6 +210,8 @@ export function useEditRecipe(id: string): EditRecipeView {
       setDescription,
       imageUrl,
       setImageUrl,
+      imageFileId,
+      setImageFileId,
       time,
       setTime,
       portions,
@@ -208,8 +238,9 @@ export function useEditRecipe(id: string): EditRecipeView {
     () => ({
       load,
       save,
+      removeImage,
     }),
-    [load, save],
+    [load, save, removeImage],
   );
 
   return useMemo(
