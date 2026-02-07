@@ -3,7 +3,7 @@ import { Image, Pressable, StyleSheet, Text, View, type ColorValue } from 'react
 import { LinearGradient } from 'expo-linear-gradient';
 import { Clock3, ShoppingBasket, Utensils } from 'lucide-react-native';
 import { IconStat, Shimmer } from '@/src/shared/ui';
-import { theme } from '@/src/shared/theme/theme';
+import { type Theme, useTheme, useThemedStyles } from '@/src/shared/theme';
 import { formatDuration } from '@/src/features/recipes/utils/formatDuration';
 import { RECIPE_IMAGE_FADE_MODE } from '@/src/features/recipes/constants/recipeUiConfig';
 
@@ -35,6 +35,8 @@ export function RecipeGridCard({
   category,
   onPress,
 }: Props) {
+  const theme = useTheme();
+  const styles = useThemedStyles(createStyles);
   const hasImage = Boolean(imageUrl);
   const imageFadeColors: readonly [ColorValue, ColorValue, ColorValue, ColorValue] =
     hasImage && RECIPE_IMAGE_FADE_MODE === 'bright'
@@ -123,88 +125,89 @@ export function RecipeGridCard({
   );
 }
 
-const styles = StyleSheet.create({
-  cardShadow: {
-    flex: 1,
-    marginBottom: 10,
-    shadowColor: '#000',
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 8 },
-    elevation: 4,
-  },
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
+    cardShadow: {
+      flex: 1,
+      marginBottom: 10,
+      shadowColor: '#000',
+      shadowOpacity: 0.08,
+      shadowRadius: 12,
+      shadowOffset: { width: 0, height: 8 },
+      elevation: 4,
+    },
 
-  card: {
-    height: CARD_HEIGHT,
-    borderRadius: 18,
-    borderWidth: 1,
-    borderColor: theme.colors.borderNeutral,
-    backgroundColor: theme.colors.surface,
-    overflow: 'hidden',
-  },
+    card: {
+      height: CARD_HEIGHT,
+      borderRadius: 18,
+      borderWidth: 1,
+      borderColor: theme.colors.borderNeutral,
+      backgroundColor: theme.colors.surface,
+      overflow: 'hidden',
+    },
 
-  imageWrap: {
-    position: 'relative',
-    width: '100%',
-    height: IMAGE_HEIGHT,
-    backgroundColor: theme.colors.bg,
-  },
-  image: {
-    width: '100%',
-    height: '100%',
-  },
-  imageFade: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
-    height: 84,
-  },
+    imageWrap: {
+      position: 'relative',
+      width: '100%',
+      height: IMAGE_HEIGHT,
+      backgroundColor: theme.colors.bg,
+    },
+    image: {
+      width: '100%',
+      height: '100%',
+    },
+    imageFade: {
+      position: 'absolute',
+      left: 0,
+      right: 0,
+      bottom: 0,
+      height: 84,
+    },
 
-  sheet: {
-    marginTop: -SHEET_OVERLAP,
-    height: SHEET_HEIGHT,
-    paddingTop: theme.spacing.s2,
-    paddingHorizontal: theme.spacing.s3,
-    paddingBottom: theme.spacing.s2,
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    backgroundColor: theme.colors.surface,
-    borderTopWidth: 1,
-    borderLeftWidth: 0,
-    borderRightWidth: 0,
-    borderColor: 'rgba(198,192,168,0.6)',
-  },
+    sheet: {
+      marginTop: -SHEET_OVERLAP,
+      height: SHEET_HEIGHT,
+      paddingTop: theme.spacing.s2,
+      paddingHorizontal: theme.spacing.s3,
+      paddingBottom: theme.spacing.s2,
+      borderTopLeftRadius: 24,
+      borderTopRightRadius: 24,
+      backgroundColor: theme.colors.surface,
+      borderTopWidth: 1,
+      borderLeftWidth: 0,
+      borderRightWidth: 0,
+      borderColor: 'rgba(198,192,168,0.6)',
+    },
 
-  cardTitle: {
-    color: theme.colors.text,
-    fontSize: 16,
-    fontWeight: '700',
-    lineHeight: 22,
-    textAlign: 'center',
-  },
-  titleWrap: {
-    height: 42,
-    justifyContent: 'center',
-    marginTop: 4,
-  },
+    cardTitle: {
+      color: theme.colors.text,
+      fontSize: 16,
+      fontWeight: '700',
+      lineHeight: 22,
+      textAlign: 'center',
+    },
+    titleWrap: {
+      height: 42,
+      justifyContent: 'center',
+      marginTop: 4,
+    },
 
-  metaRow: {
-    marginTop: theme.spacing.s3,
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: theme.spacing.s2,
-    minHeight: 36,
-  },
-  metaRowEmpty: {
-    opacity: 0,
-  },
-  metaRowSparse: {
-    gap: theme.spacing.s4,
-  },
+    metaRow: {
+      marginTop: theme.spacing.s3,
+      flexDirection: 'row',
+      justifyContent: 'center',
+      gap: theme.spacing.s2,
+      minHeight: 36,
+    },
+    metaRowEmpty: {
+      opacity: 0,
+    },
+    metaRowSparse: {
+      gap: theme.spacing.s4,
+    },
 
-  pressed: {
-    opacity: 0.92,
-    transform: [{ scale: 0.99 }],
-  },
-});
+    pressed: {
+      opacity: 0.92,
+      transform: [{ scale: 0.99 }],
+    },
+  });

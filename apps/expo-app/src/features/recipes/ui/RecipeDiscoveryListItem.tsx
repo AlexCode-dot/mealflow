@@ -1,7 +1,7 @@
 import { ShoppingBasket } from 'lucide-react-native';
 import { RecipeListCard } from '@/src/features/recipes/ui/RecipeListCard';
 import type { InspirationListItem } from '@/src/features/recipes/types';
-import { theme } from '@/src/shared/theme/theme';
+import { useTheme } from '@/src/shared/theme';
 
 type Props = {
   item: InspirationListItem;
@@ -18,6 +18,7 @@ export function RecipeDiscoveryListItem({
   isSaved = false,
   saveDisabled,
 }: Props) {
+  const theme = useTheme();
   const subtitle = [item.category, item.area].filter(Boolean).join(' · ');
   const ingredientLabel =
     item.ingredientCount !== null && item.ingredientCount !== undefined && item.ingredientCount > 0

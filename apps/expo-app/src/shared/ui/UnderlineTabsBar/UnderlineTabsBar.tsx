@@ -1,5 +1,5 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { theme } from '@/src/shared/theme/theme';
+import { type Theme, useThemedStyles } from '@/src/shared/theme';
 
 export type UnderlineTabsBarTab<K extends string = string> = { key: K; label: string };
 
@@ -18,6 +18,8 @@ export function UnderlineTabsBar<K extends string>({
   onChange,
   variant = 'editor',
 }: Props<K>) {
+  const styles = useThemedStyles(createStyles);
+
   return (
     <View style={[styles.root, variant === 'details' ? styles.rootDetails : null]}>
       {tabs.map((tab) => {
@@ -47,49 +49,50 @@ export function UnderlineTabsBar<K extends string>({
   );
 }
 
-const styles = StyleSheet.create({
-  root: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    paddingTop: theme.spacing.s3,
-    paddingBottom: theme.spacing.s2,
-    borderBottomWidth: 1,
-    borderBottomColor: theme.colors.dividerSoft,
-  },
-  rootDetails: {
-    paddingTop: theme.spacing.s4,
-  },
-  tab: {
-    alignItems: 'center',
-    gap: theme.spacing.s1,
-    minWidth: 90,
-  },
-  label: {
-    fontSize: 17,
-    fontWeight: '600',
-  },
-  labelDetails: {
-    fontSize: 16,
-    fontWeight: '700',
-  },
-  labelActive: {
-    color: theme.colors.primaryDark,
-  },
-  labelInactive: {
-    color: theme.colors.textMuted,
-  },
-  underline: {
-    height: 2,
-    width: 70,
-    borderRadius: 999,
-  },
-  underlineDetails: {
-    width: 80,
-  },
-  underlineActive: {
-    backgroundColor: theme.colors.primaryDark,
-  },
-  underlineInactive: {
-    backgroundColor: 'transparent',
-  },
-});
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
+    root: {
+      flexDirection: 'row',
+      justifyContent: 'space-around',
+      paddingTop: theme.spacing.s3,
+      paddingBottom: theme.spacing.s2,
+      borderBottomWidth: 1,
+      borderBottomColor: theme.colors.dividerSoft,
+    },
+    rootDetails: {
+      paddingTop: theme.spacing.s4,
+    },
+    tab: {
+      alignItems: 'center',
+      gap: theme.spacing.s1,
+      minWidth: 90,
+    },
+    label: {
+      fontSize: 17,
+      fontWeight: '600',
+    },
+    labelDetails: {
+      fontSize: 16,
+      fontWeight: '700',
+    },
+    labelActive: {
+      color: theme.colors.primaryDark,
+    },
+    labelInactive: {
+      color: theme.colors.textMuted,
+    },
+    underline: {
+      height: 2,
+      width: 70,
+      borderRadius: 999,
+    },
+    underlineDetails: {
+      width: 80,
+    },
+    underlineActive: {
+      backgroundColor: theme.colors.primaryDark,
+    },
+    underlineInactive: {
+      backgroundColor: 'transparent',
+    },
+  });

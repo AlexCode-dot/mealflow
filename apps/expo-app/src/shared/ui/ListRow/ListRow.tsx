@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { theme } from '@/src/shared/theme/theme';
+import { type Theme, useThemedStyles } from '@/src/shared/theme';
 
 type Props = {
   title: string;
@@ -10,6 +10,7 @@ type Props = {
 };
 
 export function ListRow({ title, subtitle, onPress, right }: Props) {
+  const styles = useThemedStyles(createStyles);
   const isPressable = Boolean(onPress);
 
   if (!isPressable) {
@@ -40,38 +41,39 @@ export function ListRow({ title, subtitle, onPress, right }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
-  root: {
-    minHeight: 52,
-    paddingVertical: theme.spacing.s3,
-    paddingHorizontal: theme.spacing.s4,
-    borderRadius: theme.radius.md,
-    backgroundColor: theme.colors.bgLight,
-    borderWidth: 1,
-    borderColor: theme.colors.borderNeutral,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: theme.spacing.s4,
-  },
-  pressed: {
-    opacity: 0.85,
-  },
-  textBlock: {
-    flex: 1,
-    gap: 2,
-  },
-  title: {
-    color: theme.colors.text,
-    fontSize: 15,
-    fontWeight: '800',
-  },
-  subtitle: {
-    color: theme.colors.textMuted,
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  right: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
+    root: {
+      minHeight: 52,
+      paddingVertical: theme.spacing.s3,
+      paddingHorizontal: theme.spacing.s4,
+      borderRadius: theme.radius.md,
+      backgroundColor: theme.colors.bgLight,
+      borderWidth: 1,
+      borderColor: theme.colors.borderNeutral,
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: theme.spacing.s4,
+    },
+    pressed: {
+      opacity: 0.85,
+    },
+    textBlock: {
+      flex: 1,
+      gap: 2,
+    },
+    title: {
+      color: theme.colors.text,
+      fontSize: 15,
+      fontWeight: '800',
+    },
+    subtitle: {
+      color: theme.colors.textMuted,
+      fontSize: 12,
+      fontWeight: '600',
+    },
+    right: {
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+  });

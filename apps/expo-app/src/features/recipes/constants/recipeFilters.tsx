@@ -1,12 +1,12 @@
 import type { FilterSection } from '@/src/shared/ui/FilterSheet';
 import { Clock3, Users, Tag, MapPin } from 'lucide-react-native';
-import { theme } from '@/src/shared/theme/theme';
+import { type Theme } from '@/src/shared/theme';
 import {
   RECIPE_PORTIONS_OPTIONS,
   RECIPE_TIME_OPTIONS,
 } from '@/src/features/recipes/constants/recipePickerOptions';
 
-export const SAVED_FILTERS: FilterSection[] = [
+export const buildSavedFilters = (theme: Theme): FilterSection[] => [
   {
     key: 'category',
     title: 'Category',
@@ -49,7 +49,7 @@ export const SAVED_FILTERS: FilterSection[] = [
   },
 ];
 
-export const DISCOVERY_FILTERS: FilterSection[] = [
+export const buildDiscoveryFilters = (theme: Theme): FilterSection[] => [
   {
     key: 'hideSaved',
     title: 'Saved',

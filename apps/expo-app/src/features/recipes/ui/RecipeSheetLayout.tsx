@@ -2,7 +2,7 @@ import { useMemo, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { Animated, RefreshControl, StyleSheet, View, type LayoutChangeEvent } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { theme } from '@/src/shared/theme/theme';
+import { type Theme, useTheme, useThemedStyles } from '@/src/shared/theme';
 import { RECIPE_IMAGE_FADE_MODE } from '@/src/features/recipes/constants/recipeUiConfig';
 
 type Props = {
@@ -26,6 +26,8 @@ export function RecipeSheetLayout({
   refreshing = false,
   onRefresh,
 }: Props) {
+  const theme = useTheme();
+  const styles = useThemedStyles(createStyles);
   const scrollY = useRef(new Animated.Value(0)).current;
   const [containerHeight, setContainerHeight] = useState(0);
 
@@ -93,44 +95,45 @@ export function RecipeSheetLayout({
   );
 }
 
-const styles = StyleSheet.create({
-  scroll: {
-    backgroundColor: theme.colors.bgLight,
-  },
-  scrollContent: {
-    flexGrow: 1,
-    backgroundColor: theme.colors.bg,
-  },
-  heroWrap: {
-    position: 'relative',
-  },
-  heroFade: {
-    position: 'absolute',
-    left: -60,
-    right: -60,
-    bottom: -87,
-    height: 220,
-    pointerEvents: 'none',
-  },
-  panelShadow: {
-    backgroundColor: theme.colors.bg,
-    shadowColor: '#000',
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: -2 },
-    elevation: 6,
-    borderTopLeftRadius: 40,
-    borderTopRightRadius: 40,
-    flexGrow: 1,
-  },
-  panel: {
-    backgroundColor: theme.colors.bg,
-    borderTopLeftRadius: 40,
-    borderTopRightRadius: 40,
-    borderWidth: 1,
-    borderColor: 'rgba(198,192,168,0.6)',
-    borderBottomWidth: 0,
-    overflow: 'hidden',
-    flexGrow: 1,
-  },
-});
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
+    scroll: {
+      backgroundColor: theme.colors.bgLight,
+    },
+    scrollContent: {
+      flexGrow: 1,
+      backgroundColor: theme.colors.bg,
+    },
+    heroWrap: {
+      position: 'relative',
+    },
+    heroFade: {
+      position: 'absolute',
+      left: -60,
+      right: -60,
+      bottom: -87,
+      height: 220,
+      pointerEvents: 'none',
+    },
+    panelShadow: {
+      backgroundColor: theme.colors.bg,
+      shadowColor: '#000',
+      shadowOpacity: 0.08,
+      shadowRadius: 12,
+      shadowOffset: { width: 0, height: -2 },
+      elevation: 6,
+      borderTopLeftRadius: 40,
+      borderTopRightRadius: 40,
+      flexGrow: 1,
+    },
+    panel: {
+      backgroundColor: theme.colors.bg,
+      borderTopLeftRadius: 40,
+      borderTopRightRadius: 40,
+      borderWidth: 1,
+      borderColor: 'rgba(198,192,168,0.6)',
+      borderBottomWidth: 0,
+      overflow: 'hidden',
+      flexGrow: 1,
+    },
+  });

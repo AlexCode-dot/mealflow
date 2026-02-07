@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { StyleSheet, View, useWindowDimensions } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { theme } from '@/src/shared/theme/theme';
+import { type Theme, useTheme, useThemedStyles } from '@/src/shared/theme';
 import { WEB, isWeb } from '@/src/shared/ui/webStyles';
 
 type Props = {
@@ -10,6 +10,8 @@ type Props = {
 
 export function WebFrame({ children }: Props) {
   const { width } = useWindowDimensions();
+  const theme = useTheme();
+  const styles = useThemedStyles(createStyles);
   const useFramedShell = isWeb ? width >= WEB.frameMaxWidth + WEB.shellPadding * 2 : false;
 
   const Shell = isWeb ? LinearGradient : View;
@@ -97,73 +99,74 @@ function FadeEdges() {
   );
 }
 
-const styles = StyleSheet.create({
-  shell: { flex: 1 },
-  shellWeb: {
-    backgroundColor: theme.colors.primaryDark,
-    paddingHorizontal: WEB.shellPadding,
-    paddingVertical: WEB.shellPadding,
-    alignItems: 'center',
-  },
-  shellWebFullBleed: {
-    paddingHorizontal: 0,
-    paddingVertical: 0,
-  },
-  frame: { flex: 1 },
-  frameWeb: {
-    width: '100%',
-    maxWidth: WEB.frameMaxWidth,
-    flex: 1,
-    backgroundColor: theme.colors.bg,
-    borderRadius: 14,
-    overflow: 'hidden',
-    position: 'relative',
-  },
-  shellBackdrop: {
-    ...StyleSheet.absoluteFillObject,
-  },
-  shellGlow: {
-    ...StyleSheet.absoluteFillObject,
-  },
-  shellMist: {
-    ...StyleSheet.absoluteFillObject,
-  },
-  fadeLayer: {
-    ...StyleSheet.absoluteFillObject,
-    borderRadius: 14,
-  },
-  fadeEdge: {
-    position: 'absolute',
-  },
-  fadeTop: {
-    left: 0,
-    right: 0,
-    top: 0,
-    height: 36,
-  },
-  fadeBottom: {
-    left: 0,
-    right: 0,
-    bottom: 0,
-    height: 36,
-  },
-  fadeLeft: {
-    top: 0,
-    bottom: 0,
-    left: 0,
-    width: 36,
-  },
-  fadeRight: {
-    top: 0,
-    bottom: 0,
-    right: 0,
-    width: 36,
-  },
-  frameWebFullBleed: {
-    maxWidth: '100%',
-    borderRadius: 0,
-    shadowOpacity: 0,
-    shadowRadius: 0,
-    shadowOffset: { width: 0, height: 0 },
-  },
-});
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
+    shell: { flex: 1 },
+    shellWeb: {
+      backgroundColor: theme.colors.primaryDark,
+      paddingHorizontal: WEB.shellPadding,
+      paddingVertical: WEB.shellPadding,
+      alignItems: 'center',
+    },
+    shellWebFullBleed: {
+      paddingHorizontal: 0,
+      paddingVertical: 0,
+    },
+    frame: { flex: 1 },
+    frameWeb: {
+      width: '100%',
+      maxWidth: WEB.frameMaxWidth,
+      flex: 1,
+      backgroundColor: theme.colors.bg,
+      borderRadius: 14,
+      overflow: 'hidden',
+      position: 'relative',
+    },
+    shellBackdrop: {
+      ...StyleSheet.absoluteFillObject,
+    },
+    shellGlow: {
+      ...StyleSheet.absoluteFillObject,
+    },
+    shellMist: {
+      ...StyleSheet.absoluteFillObject,
+    },
+    fadeLayer: {
+      ...StyleSheet.absoluteFillObject,
+      borderRadius: 14,
+    },
+    fadeEdge: {
+      position: 'absolute',
+    },
+    fadeTop: {
+      left: 0,
+      right: 0,
+      top: 0,
+      height: 36,
+    },
+    fadeBottom: {
+      left: 0,
+      right: 0,
+      bottom: 0,
+      height: 36,
+    },
+    fadeLeft: {
+      top: 0,
+      bottom: 0,
+      left: 0,
+      width: 36,
+    },
+    fadeRight: {
+      top: 0,
+      bottom: 0,
+      right: 0,
+      width: 36,
+    },
+    frameWebFullBleed: {
+      maxWidth: '100%',
+      borderRadius: 0,
+      shadowOpacity: 0,
+      shadowRadius: 0,
+      shadowOffset: { width: 0, height: 0 },
+    },
+  });

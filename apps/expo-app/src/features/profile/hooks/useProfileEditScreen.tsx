@@ -11,6 +11,7 @@ import { normalizePath } from '@/src/core/navigation/normalizePath';
 import { useToastState } from '@/src/shared/hooks/useToastState';
 import { TAB_BAR } from '@/src/shared/ui/layout/tabBar';
 import { useGlobalToast } from '@/src/shared/ui';
+import { DEFAULT_THEME_NAME, isThemeName, useThemeController } from '@/src/shared/theme';
 
 type ThemeOption = {
   label: string;
@@ -51,8 +52,18 @@ type ProfileEditView = {
 
 const THEME_OPTIONS: ThemeOption[] = [
   { label: 'Default', value: 'default' },
-  { label: 'Olive', value: 'olive' },
+  { label: 'Forest', value: 'forest' },
   { label: 'Sage', value: 'sage' },
+  { label: 'Clay', value: 'clay' },
+  { label: 'Latte', value: 'latte' },
+  { label: 'Alpine', value: 'alpine' },
+  { label: 'Midnight', value: 'midnight' },
+  { label: 'Matcha', value: 'matcha' },
+  { label: 'Graphite', value: 'graphite' },
+  { label: 'Espresso', value: 'espresso' },
+  { label: 'Aero', value: 'aero' },
+  { label: 'Mars', value: 'mars' },
+  { label: 'Rose', value: 'rose' },
 ];
 
 export function useProfileEditScreen(): ProfileEditView {
@@ -64,8 +75,9 @@ export function useProfileEditScreen(): ProfileEditView {
   const insets = useSafeAreaInsets();
   const toast = useToastState();
   const { showError } = useGlobalToast();
+  const { setThemeName } = useThemeController();
   const [displayName, setDisplayName] = useState('');
-  const [theme, setTheme] = useState('default');
+  const [theme, setTheme] = useState(DEFAULT_THEME_NAME);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<UiError | null>(null);
@@ -75,13 +87,15 @@ export function useProfileEditScreen(): ProfileEditView {
     try {
       const res = await profileApi.get();
       setDisplayName(res.displayName ?? '');
-      setTheme(res.theme ?? 'default');
+      const themeName = isThemeName(res.theme ?? '') ? res.theme : DEFAULT_THEME_NAME;
+      setTheme(themeName);
+      setThemeName(themeName);
     } catch (err) {
       const uiErr = mapCommonError(toApiError(err));
       setError(uiErr);
       showError(uiErr, { onRetry: load });
     }
-  }, [showError]);
+  }, [setThemeName, showError]);
 
   useEffect(() => {
     setIsLoading(true);
@@ -97,6 +111,9 @@ export function useProfileEditScreen(): ProfileEditView {
         displayName: displayName.trim() || undefined,
         theme: theme || undefined,
       });
+      if (isThemeName(theme)) {
+        setThemeName(theme);
+      }
       if (returnTo) {
         if (returnTo === routes.profile && parentReturnTo) {
           router.replace(

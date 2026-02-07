@@ -1,6 +1,6 @@
 import { StyleSheet, TextInput, View } from 'react-native';
 import { Search } from 'lucide-react-native';
-import { theme } from '@/src/shared/theme/theme';
+import { type Theme, useTheme, useThemedStyles } from '@/src/shared/theme';
 
 type Props = {
   value: string;
@@ -16,6 +16,8 @@ export function SearchField({
   placeholder = 'Search…',
   variant = 'pill',
 }: Props) {
+  const theme = useTheme();
+  const styles = useThemedStyles(createStyles);
   return (
     <View style={[styles.root, variant === 'rounded' ? styles.rounded : styles.pill]}>
       <Search color={theme.colors.textMuted} size={20} strokeWidth={2.5} />
@@ -32,33 +34,34 @@ export function SearchField({
   );
 }
 
-const styles = StyleSheet.create({
-  root: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    borderWidth: 1,
-    borderColor: theme.colors.borderNeutral,
-    backgroundColor: theme.colors.bgLight,
-    paddingHorizontal: 16,
-    minHeight: 52,
-  },
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
+    root: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 12,
+      borderWidth: 1,
+      borderColor: theme.colors.borderNeutral,
+      backgroundColor: theme.colors.bgLight,
+      paddingHorizontal: 16,
+      minHeight: 52,
+    },
 
-  pill: {
-    borderRadius: theme.radius.pill,
-    paddingVertical: 10,
-  },
+    pill: {
+      borderRadius: theme.radius.pill,
+      paddingVertical: 10,
+    },
 
-  rounded: {
-    borderRadius: 16,
-    paddingVertical: 0,
-  },
+    rounded: {
+      borderRadius: 16,
+      paddingVertical: 0,
+    },
 
-  input: {
-    flex: 1,
-    fontSize: 16,
-    fontWeight: '700',
-    color: theme.colors.text,
-    paddingVertical: 0,
-  },
-});
+    input: {
+      flex: 1,
+      fontSize: 16,
+      fontWeight: '700',
+      color: theme.colors.text,
+      paddingVertical: 0,
+    },
+  });

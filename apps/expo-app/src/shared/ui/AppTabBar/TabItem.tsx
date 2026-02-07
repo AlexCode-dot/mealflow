@@ -1,9 +1,9 @@
 import { Pressable, View, Animated } from 'react-native';
 import { useMemo } from 'react';
-import { theme } from '@/src/shared/theme/theme';
+import { type Theme, useTheme, useThemedStyles } from '@/src/shared/theme';
 import { getTabIcon } from './tabIcons';
 import { useFocusAnim } from './useFocusAnim';
-import { styles } from './AppTabBar.styles';
+import { createStyles } from './AppTabBar.styles';
 import { TAB_BAR } from '@/src/shared/ui/layout/tabBar';
 
 type Props = {
@@ -25,6 +25,8 @@ export function TabItem({
   onLongPress,
   accessibilityLabel,
 }: Props) {
+  const theme = useTheme();
+  const styles = useThemedStyles(createStyles);
   const Icon = useMemo(() => getTabIcon(routeName), [routeName]);
   const { scale, iconTranslateY, labelOpacity, labelTranslateY } = useFocusAnim({
     isFocused,
@@ -47,7 +49,7 @@ export function TabItem({
           style={[styles.iconBox, { transform: [{ translateY: iconTranslateY }, { scale }] }]}
         >
           <Icon
-            color={theme.colors.textOnPrimary}
+            color={isFocused ? theme.colors.tabBarAccent : theme.colors.tabBarText}
             size={isFocused ? TAB_BAR.ICON_SIZE_ACTIVE : TAB_BAR.ICON_SIZE}
             strokeWidth={TAB_BAR.ICON_STROKE}
           />

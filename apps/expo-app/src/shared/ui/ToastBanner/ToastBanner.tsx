@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 import { Animated, Easing, Pressable, StyleSheet, Text, View } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
 import { Check, Minus } from 'lucide-react-native';
-import { theme } from '@/src/shared/theme/theme';
+import { type Theme, useTheme, useThemedStyles } from '@/src/shared/theme';
 
 type Variant = 'success' | 'error' | 'info';
 
@@ -20,27 +20,6 @@ type Props = {
   actionDisabled?: boolean;
 };
 
-const variantStyles = {
-  success: {
-    backgroundColor: theme.colors.successBanner,
-    borderColor: theme.colors.primaryDark,
-    textColor: theme.colors.primaryDark,
-    iconBg: theme.colors.successBanner,
-  },
-  error: {
-    backgroundColor: theme.colors.errorBg,
-    borderColor: theme.colors.error,
-    textColor: theme.colors.error,
-    iconBg: theme.colors.errorBg,
-  },
-  info: {
-    backgroundColor: theme.colors.bgLight,
-    borderColor: theme.colors.borderNeutral,
-    textColor: theme.colors.textMuted,
-    iconBg: theme.colors.bgLight,
-  },
-};
-
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 
 export function ToastBanner({
@@ -55,7 +34,9 @@ export function ToastBanner({
   onAction,
   actionDisabled = false,
 }: Props) {
-  const palette = variantStyles[variant];
+  const theme = useTheme();
+  const styles = useThemedStyles(createStyles);
+  const palette = useMemo(() => getVariantPalette(theme, variant), [theme, variant]);
   const progress = useRef(new Animated.Value(1)).current;
   const opacity = useRef(new Animated.Value(0)).current;
   const translateY = useRef(new Animated.Value(-120)).current;
@@ -208,60 +189,86 @@ export function ToastBanner({
   );
 }
 
-const styles = StyleSheet.create({
-  root: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: theme.spacing.s4,
-    borderWidth: 2,
-    borderRadius: theme.radius.lg,
-    paddingHorizontal: theme.spacing.s4,
-    paddingVertical: theme.spacing.s3,
-    shadowColor: theme.colors.text,
-    shadowOpacity: 0.45,
-    shadowRadius: 36,
-    shadowOffset: { width: 0, height: 14 },
-    elevation: 22,
-  },
-  icon: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 2,
-  },
-  text: {
-    flex: 1,
-    gap: 2,
-  },
-  title: {
-    fontSize: 14,
-    fontWeight: '700',
-  },
-  message: {
-    fontSize: 13,
-    fontWeight: '600',
-  },
-  meta: {
-    fontSize: 12,
-    fontWeight: '600',
-    opacity: 0.7,
-  },
-  action: {
-    borderWidth: 2,
-    borderRadius: 999,
-    paddingHorizontal: theme.spacing.s3,
-    paddingVertical: theme.spacing.s1,
-  },
-  actionText: {
-    fontSize: 12,
-    fontWeight: '700',
-  },
-  timer: {
-    width: 28,
-    height: 28,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
+function getVariantPalette(theme: Theme, variant: Variant) {
+  if (variant === 'success') {
+    return {
+      backgroundColor: theme.colors.successBanner,
+      borderColor: theme.colors.primaryDark,
+      textColor: theme.colors.primaryDark,
+      iconBg: theme.colors.successBanner,
+    };
+  }
+  if (variant === 'error') {
+    return {
+      backgroundColor: theme.colors.errorBg,
+      borderColor: theme.colors.error,
+      textColor: theme.colors.error,
+      iconBg: theme.colors.errorBg,
+    };
+  }
+  return {
+    backgroundColor: theme.colors.bgLight,
+    borderColor: theme.colors.borderNeutral,
+    textColor: theme.colors.textMuted,
+    iconBg: theme.colors.bgLight,
+  };
+}
+
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
+    root: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: theme.spacing.s4,
+      borderWidth: 2,
+      borderRadius: theme.radius.lg,
+      paddingHorizontal: theme.spacing.s4,
+      paddingVertical: theme.spacing.s3,
+      shadowColor: theme.colors.text,
+      shadowOpacity: 0.45,
+      shadowRadius: 36,
+      shadowOffset: { width: 0, height: 14 },
+      elevation: 22,
+    },
+    icon: {
+      width: 28,
+      height: 28,
+      borderRadius: 14,
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderWidth: 2,
+    },
+    text: {
+      flex: 1,
+      gap: 2,
+    },
+    title: {
+      fontSize: 14,
+      fontWeight: '700',
+    },
+    message: {
+      fontSize: 13,
+      fontWeight: '600',
+    },
+    meta: {
+      fontSize: 12,
+      fontWeight: '600',
+      opacity: 0.7,
+    },
+    action: {
+      borderWidth: 2,
+      borderRadius: 999,
+      paddingHorizontal: theme.spacing.s3,
+      paddingVertical: theme.spacing.s1,
+    },
+    actionText: {
+      fontSize: 12,
+      fontWeight: '700',
+    },
+    timer: {
+      width: 28,
+      height: 28,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+  });

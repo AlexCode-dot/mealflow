@@ -1,5 +1,5 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { theme } from '@/src/shared/theme/theme';
+import { type Theme, useThemedStyles } from '@/src/shared/theme';
 
 export type UnderlineTab = { key: string; label: string };
 
@@ -10,6 +10,7 @@ type Props = {
 };
 
 export function UnderlineTabs({ tabs, value, onChange }: Props) {
+  const styles = useThemedStyles(createStyles);
   return (
     <View style={styles.root}>
       <View style={styles.container}>
@@ -37,55 +38,56 @@ export function UnderlineTabs({ tabs, value, onChange }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
-  root: {
-    gap: 10,
-  },
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
+    root: {
+      gap: 10,
+    },
 
-  container: {
-    backgroundColor: theme.colors.primaryLight,
-    borderRadius: 16,
-    padding: 6,
-  },
+    container: {
+      backgroundColor: theme.colors.primaryLight,
+      borderRadius: 16,
+      padding: 6,
+    },
 
-  row: {
-    flexDirection: 'row',
-    gap: 0,
-    alignItems: 'center',
-  },
+    row: {
+      flexDirection: 'row',
+      gap: 0,
+      alignItems: 'center',
+    },
 
-  tab: {
-    flex: 1,
-    alignItems: 'center',
-    paddingVertical: 8,
-    borderRadius: 12,
-  },
+    tab: {
+      flex: 1,
+      alignItems: 'center',
+      paddingVertical: 8,
+      borderRadius: 12,
+    },
 
-  label: {
-    fontSize: 16,
-    fontWeight: '700',
-    letterSpacing: 0.2,
-  },
+    label: {
+      fontSize: 16,
+      fontWeight: '700',
+      letterSpacing: 0.2,
+    },
 
-  labelActive: {
-    color: theme.colors.textOnPrimary,
-    fontWeight: '800',
-  },
+    labelActive: {
+      color: theme.colors.textOnPrimary,
+      fontWeight: '800',
+    },
 
-  labelInactive: {
-    color: theme.colors.primaryDark,
-    fontWeight: '600',
-  },
+    labelInactive: {
+      color: theme.colors.primaryDark,
+      fontWeight: '600',
+    },
 
-  tabActive: {
-    backgroundColor: theme.colors.primary,
-  },
+    tabActive: {
+      backgroundColor: theme.colors.primary,
+    },
 
-  tabInactive: {
-    backgroundColor: 'transparent',
-  },
+    tabInactive: {
+      backgroundColor: 'transparent',
+    },
 
-  divider: {
-    height: 0,
-  },
-});
+    divider: {
+      height: 0,
+    },
+  });

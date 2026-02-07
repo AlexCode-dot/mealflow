@@ -3,13 +3,7 @@ import { ShoppingBasket, Users, Utensils } from 'lucide-react-native';
 import type { WeeklyPlanEntry } from '@/src/features/weekly-plans/types';
 import type { RecipeListItem } from '@/src/features/recipes/types';
 import { IconStat, Shimmer } from '@/src/shared/ui';
-import { theme } from '@/src/shared/theme/theme';
-
-const textMuted = {
-  color: theme.colors.textMuted,
-  fontSize: 12,
-  fontWeight: '600' as const,
-};
+import { type Theme, useTheme, useThemedStyles } from '@/src/shared/theme';
 
 type Props = {
   entry: WeeklyPlanEntry;
@@ -18,6 +12,8 @@ type Props = {
 };
 
 export function WeeklyPlanEntryCard({ entry, recipe, onPress }: Props) {
+  const theme = useTheme();
+  const styles = useThemedStyles(createStyles);
   const titleText = recipe?.title ?? entry.customTitle ?? 'Meal';
   const itemsToShow = entry.items?.length ? entry.items : (entry.extraItems ?? []);
   const ingredientLabel =
@@ -94,64 +90,67 @@ export function WeeklyPlanEntryCard({ entry, recipe, onPress }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
-  cardShadow: {
-    borderRadius: 18,
-    shadowColor: '#000',
-    shadowOpacity: 0.12,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 6 },
-    elevation: 6,
-  },
-  cardPressed: {
-    opacity: 0.92,
-  },
-  card: {
-    borderWidth: 2,
-    borderColor: theme.colors.primary,
-    borderRadius: 18,
-    padding: theme.spacing.s2,
-    gap: theme.spacing.s1,
-    backgroundColor: theme.colors.primaryLight,
-    minHeight: 92 + theme.spacing.s2 * 2,
-  },
-  row: {
-    flexDirection: 'row',
-    gap: theme.spacing.s3,
-    alignItems: 'center',
-  },
-  imageFrame: {
-    width: 92,
-    height: 92,
-    borderRadius: 14,
-    borderWidth: 2,
-    borderColor: theme.colors.primaryDark,
-    overflow: 'hidden',
-    backgroundColor: theme.colors.bg,
-  },
-  image: {
-    width: '100%',
-    height: '100%',
-  },
-  imageShimmer: {
-    width: '100%',
-  },
-  content: {
-    flex: 1,
-    gap: theme.spacing.s1,
-  },
-  title: {
-    fontSize: 16,
-    fontWeight: '800',
-    color: theme.colors.text,
-  },
-  subtitle: {
-    ...textMuted,
-  },
-  metaRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    gap: theme.spacing.s3,
-    marginTop: 2,
-  },
-});
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
+    cardShadow: {
+      borderRadius: 18,
+      shadowColor: '#000',
+      shadowOpacity: 0.12,
+      shadowRadius: 10,
+      shadowOffset: { width: 0, height: 6 },
+      elevation: 6,
+    },
+    cardPressed: {
+      opacity: 0.92,
+    },
+    card: {
+      borderWidth: 2,
+      borderColor: theme.colors.primary,
+      borderRadius: 18,
+      padding: theme.spacing.s2,
+      gap: theme.spacing.s1,
+      backgroundColor: theme.colors.primaryLight,
+      minHeight: 92 + theme.spacing.s2 * 2,
+    },
+    row: {
+      flexDirection: 'row',
+      gap: theme.spacing.s3,
+      alignItems: 'center',
+    },
+    imageFrame: {
+      width: 92,
+      height: 92,
+      borderRadius: 14,
+      borderWidth: 2,
+      borderColor: theme.colors.primaryDark,
+      overflow: 'hidden',
+      backgroundColor: theme.colors.bg,
+    },
+    image: {
+      width: '100%',
+      height: '100%',
+    },
+    imageShimmer: {
+      width: '100%',
+    },
+    content: {
+      flex: 1,
+      gap: theme.spacing.s1,
+    },
+    title: {
+      fontSize: 16,
+      fontWeight: '800',
+      color: theme.colors.text,
+    },
+    subtitle: {
+      color: theme.colors.textMuted,
+      fontSize: 12,
+      fontWeight: '600',
+    },
+    metaRow: {
+      flexDirection: 'row',
+      alignItems: 'flex-end',
+      gap: theme.spacing.s3,
+      marginTop: 2,
+    },
+  });

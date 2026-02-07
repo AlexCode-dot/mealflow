@@ -10,7 +10,7 @@ import {
   type NativeSyntheticEvent,
 } from 'react-native';
 import { AppHeader } from '@/src/shared/ui/AppHeader';
-import { theme } from '@/src/shared/theme/theme';
+import { type Theme, useThemedStyles } from '@/src/shared/theme';
 import { ProfileButton } from './ProfileButton';
 
 type Props = {
@@ -57,6 +57,7 @@ export function Screen({
   onScroll,
   scrollEventThrottle = 16,
 }: Props) {
+  const styles = useThemedStyles(createStyles);
   const headerRight = rightSlot ?? (showProfileIcon ? <ProfileButton /> : undefined);
 
   return (
@@ -86,19 +87,20 @@ export function Screen({
   );
 }
 
-const styles = StyleSheet.create({
-  root: {
-    flex: 1,
-    backgroundColor: theme.colors.bg,
-  },
-  fill: {
-    flex: 1,
-  },
-  scrollContainer: {
-    flexGrow: 1,
-  },
-  content: {
-    padding: theme.spacing.s4,
-    gap: theme.spacing.s4,
-  },
-});
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
+    root: {
+      flex: 1,
+      backgroundColor: theme.colors.bg,
+    },
+    fill: {
+      flex: 1,
+    },
+    scrollContainer: {
+      flexGrow: 1,
+    },
+    content: {
+      padding: theme.spacing.s4,
+      gap: theme.spacing.s4,
+    },
+  });

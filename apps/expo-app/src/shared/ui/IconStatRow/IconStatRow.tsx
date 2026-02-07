@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { StyleSheet, View, type StyleProp, type TextStyle, type ViewStyle } from 'react-native';
 import { IconStat } from '@/src/shared/ui/IconStat';
-import { theme } from '@/src/shared/theme/theme';
+import { type Theme, useThemedStyles } from '@/src/shared/theme';
 
 type IconStatItem = {
   icon: ReactNode;
@@ -16,6 +16,7 @@ type Props = {
 };
 
 export function IconStatRow({ items, labelStyle, iconWrapStyle, rowStyle }: Props) {
+  const styles = useThemedStyles(createStyles);
   return (
     <View style={[styles.row, rowStyle]}>
       {items.map((item, index) => (
@@ -31,10 +32,11 @@ export function IconStatRow({ items, labelStyle, iconWrapStyle, rowStyle }: Prop
   );
 }
 
-const styles = StyleSheet.create({
-  row: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    gap: theme.spacing.s3,
-  },
-});
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
+    row: {
+      flexDirection: 'row',
+      justifyContent: 'space-around',
+      gap: theme.spacing.s3,
+    },
+  });

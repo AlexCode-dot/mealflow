@@ -29,10 +29,12 @@ import {
   ToastBanner,
   useGlobalToast,
 } from '@/src/shared/ui';
-import { theme } from '@/src/shared/theme/theme';
+import { type Theme, useTheme, useThemedStyles } from '@/src/shared/theme';
 import { SECTION_DRAFT_ID } from '@/src/features/weekly-plans/constants/weeklyPlanDefaults';
 
 export default function WeeklyPlanDetailScreen() {
+  const theme = useTheme();
+  const styles = useThemedStyles(createStyles);
   const view = useWeeklyPlanDetailsScreen();
   const { state, actions, toast, dayPicker, data, addSheet, editSheet, sectionSheet, confirms } =
     view;
@@ -575,203 +577,204 @@ export default function WeeklyPlanDetailScreen() {
     </View>
   );
 }
-const styles = StyleSheet.create({
-  root: {
-    flex: 1,
-  },
-  screenContent: {
-    padding: 0,
-    gap: 0,
-  },
-  contentWrap: {
-    paddingHorizontal: theme.spacing.s3,
-    paddingTop: theme.spacing.s3,
-    paddingBottom: 140,
-    gap: theme.spacing.s4,
-  },
-  toastOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    alignItems: 'center',
-  },
-  toastWrap: {
-    alignSelf: 'stretch',
-    marginHorizontal: theme.spacing.s3,
-  },
-  sectionCard: {
-    gap: theme.spacing.s3,
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  sectionTitle: {
-    fontSize: 14,
-    fontWeight: '900',
-    color: theme.colors.primaryDark,
-    letterSpacing: 0.5,
-  },
-  addButton: {
-    height: 30,
-    width: 30,
-    borderRadius: 15,
-    backgroundColor: theme.colors.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  addPressed: {
-    opacity: 0.85,
-  },
-  entryList: {
-    gap: theme.spacing.s3,
-  },
-  sheetRow: {
-    flexDirection: 'row',
-    gap: theme.spacing.s3,
-  },
-  sheetRowItem: {
-    flex: 1,
-    gap: theme.spacing.s2,
-  },
-  sheetLabel: {
-    color: theme.colors.textMuted,
-    fontSize: 13,
-    fontWeight: '600',
-  },
-  pickerOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0,0,0,0.35)',
-    justifyContent: 'flex-end',
-  },
-  itemRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: theme.spacing.s2,
-  },
-  extrasList: {
-    gap: theme.spacing.s2,
-  },
-  extrasRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    borderWidth: 1,
-    borderColor: theme.colors.borderNeutral,
-    backgroundColor: theme.colors.bgLight,
-    borderRadius: theme.radius.sm,
-    paddingHorizontal: theme.spacing.s3,
-    paddingVertical: 10,
-  },
-  extrasLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: theme.spacing.s2,
-    flex: 1,
-  },
-  extrasCheck: {
-    height: 22,
-    width: 22,
-    borderRadius: 11,
-    backgroundColor: theme.colors.primaryLight,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: theme.colors.primaryDark,
-  },
-  extrasText: {
-    color: theme.colors.text,
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  extrasRemove: {
-    height: 22,
-    width: 22,
-    borderRadius: 11,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: theme.colors.primaryLight,
-  },
-  extrasRemovePressed: {
-    opacity: 0.85,
-  },
-  sheetSubtitle: {
-    color: theme.colors.textMuted,
-    fontSize: 13,
-    fontWeight: '700',
-    textAlign: 'center',
-    marginBottom: theme.spacing.s2,
-  },
-  sheetBlock: {
-    gap: theme.spacing.s3,
-  },
-  sheetHint: {
-    color: theme.colors.textMuted,
-    fontSize: 13,
-    fontWeight: '600',
-  },
-  recipeList: {
-    gap: theme.spacing.s2,
-  },
-  sheetFooter: {
-    gap: theme.spacing.s2,
-  },
-  sheetScroll: {
-    marginBottom: 0,
-  },
-  sheetScrollContent: {
-    gap: theme.spacing.s3,
-    paddingBottom: theme.spacing.s4,
-  },
-  formError: {
-    color: theme.colors.error,
-    fontSize: 12,
-    fontWeight: '700',
-    textAlign: 'center',
-  },
-  sectionListHeader: {
-    gap: theme.spacing.s2,
-  },
-  sectionListTitle: {
-    fontSize: 16,
-    fontWeight: '800',
-    color: theme.colors.textMuted,
-  },
-  sectionListDivider: {
-    height: 1,
-    backgroundColor: theme.colors.borderNeutral,
-  },
-  sectionList: {
-    gap: 0,
-  },
-  sectionListSeparator: {
-    height: theme.spacing.s2,
-  },
-  sectionListRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    borderWidth: 1,
-    borderColor: theme.colors.borderNeutral,
-    backgroundColor: theme.colors.surface,
-    borderRadius: theme.radius.md,
-    paddingHorizontal: theme.spacing.s3,
-    paddingVertical: 14,
-  },
-  sectionListRowActive: {
-    backgroundColor: theme.colors.primaryLight,
-    borderColor: theme.colors.primary,
-  },
-  sectionListRowPlaceholder: {
-    marginTop: theme.spacing.s2,
-  },
-  sectionDragHandle: {
-    paddingLeft: theme.spacing.s2,
-    paddingVertical: 2,
-  },
-  sectionListText: {
-    fontSize: 15,
-    fontWeight: '800',
-    color: theme.colors.textMuted,
-    letterSpacing: 0.6,
-  },
-});
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
+    root: {
+      flex: 1,
+    },
+    screenContent: {
+      padding: 0,
+      gap: 0,
+    },
+    contentWrap: {
+      paddingHorizontal: theme.spacing.s3,
+      paddingTop: theme.spacing.s3,
+      paddingBottom: 140,
+      gap: theme.spacing.s4,
+    },
+    toastOverlay: {
+      ...StyleSheet.absoluteFillObject,
+      alignItems: 'center',
+    },
+    toastWrap: {
+      alignSelf: 'stretch',
+      marginHorizontal: theme.spacing.s3,
+    },
+    sectionCard: {
+      gap: theme.spacing.s3,
+    },
+    sectionHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+    },
+    sectionTitle: {
+      fontSize: 14,
+      fontWeight: '900',
+      color: theme.colors.primaryDark,
+      letterSpacing: 0.5,
+    },
+    addButton: {
+      height: 30,
+      width: 30,
+      borderRadius: 15,
+      backgroundColor: theme.colors.primary,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    addPressed: {
+      opacity: 0.85,
+    },
+    entryList: {
+      gap: theme.spacing.s3,
+    },
+    sheetRow: {
+      flexDirection: 'row',
+      gap: theme.spacing.s3,
+    },
+    sheetRowItem: {
+      flex: 1,
+      gap: theme.spacing.s2,
+    },
+    sheetLabel: {
+      color: theme.colors.textMuted,
+      fontSize: 13,
+      fontWeight: '600',
+    },
+    pickerOverlay: {
+      ...StyleSheet.absoluteFillObject,
+      backgroundColor: 'rgba(0,0,0,0.35)',
+      justifyContent: 'flex-end',
+    },
+    itemRow: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: theme.spacing.s2,
+    },
+    extrasList: {
+      gap: theme.spacing.s2,
+    },
+    extrasRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      borderWidth: 1,
+      borderColor: theme.colors.borderNeutral,
+      backgroundColor: theme.colors.bgLight,
+      borderRadius: theme.radius.sm,
+      paddingHorizontal: theme.spacing.s3,
+      paddingVertical: 10,
+    },
+    extrasLeft: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: theme.spacing.s2,
+      flex: 1,
+    },
+    extrasCheck: {
+      height: 22,
+      width: 22,
+      borderRadius: 11,
+      backgroundColor: theme.colors.primaryLight,
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderWidth: 1,
+      borderColor: theme.colors.primaryDark,
+    },
+    extrasText: {
+      color: theme.colors.text,
+      fontSize: 14,
+      fontWeight: '600',
+    },
+    extrasRemove: {
+      height: 22,
+      width: 22,
+      borderRadius: 11,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: theme.colors.primaryLight,
+    },
+    extrasRemovePressed: {
+      opacity: 0.85,
+    },
+    sheetSubtitle: {
+      color: theme.colors.textMuted,
+      fontSize: 13,
+      fontWeight: '700',
+      textAlign: 'center',
+      marginBottom: theme.spacing.s2,
+    },
+    sheetBlock: {
+      gap: theme.spacing.s3,
+    },
+    sheetHint: {
+      color: theme.colors.textMuted,
+      fontSize: 13,
+      fontWeight: '600',
+    },
+    recipeList: {
+      gap: theme.spacing.s2,
+    },
+    sheetFooter: {
+      gap: theme.spacing.s2,
+    },
+    sheetScroll: {
+      marginBottom: 0,
+    },
+    sheetScrollContent: {
+      gap: theme.spacing.s3,
+      paddingBottom: theme.spacing.s4,
+    },
+    formError: {
+      color: theme.colors.error,
+      fontSize: 12,
+      fontWeight: '700',
+      textAlign: 'center',
+    },
+    sectionListHeader: {
+      gap: theme.spacing.s2,
+    },
+    sectionListTitle: {
+      fontSize: 16,
+      fontWeight: '800',
+      color: theme.colors.textMuted,
+    },
+    sectionListDivider: {
+      height: 1,
+      backgroundColor: theme.colors.borderNeutral,
+    },
+    sectionList: {
+      gap: 0,
+    },
+    sectionListSeparator: {
+      height: theme.spacing.s2,
+    },
+    sectionListRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      borderWidth: 1,
+      borderColor: theme.colors.borderNeutral,
+      backgroundColor: theme.colors.surface,
+      borderRadius: theme.radius.md,
+      paddingHorizontal: theme.spacing.s3,
+      paddingVertical: 14,
+    },
+    sectionListRowActive: {
+      backgroundColor: theme.colors.primaryLight,
+      borderColor: theme.colors.primary,
+    },
+    sectionListRowPlaceholder: {
+      marginTop: theme.spacing.s2,
+    },
+    sectionDragHandle: {
+      paddingLeft: theme.spacing.s2,
+      paddingVertical: 2,
+    },
+    sectionListText: {
+      fontSize: 15,
+      fontWeight: '800',
+      color: theme.colors.textMuted,
+      letterSpacing: 0.6,
+    },
+  });

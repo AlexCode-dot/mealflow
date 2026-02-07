@@ -6,8 +6,8 @@ import { Pressable, View, type LayoutChangeEvent, Text } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Path } from 'react-native-svg';
 import { routes } from '@/src/core/navigation/routes';
-import { theme } from '@/src/shared/theme/theme';
-import { styles } from './AppTabBar.styles';
+import { useTheme, useThemedStyles } from '@/src/shared/theme';
+import { createStyles } from './AppTabBar.styles';
 import { TAB_BAR } from '@/src/shared/ui/layout/tabBar';
 import { TabItem } from './TabItem';
 import { BottomActionBar } from '@/src/shared/ui/BottomActionBar';
@@ -26,9 +26,11 @@ type TabSlot = { type: 'tab'; item: TabRoute } | { type: 'center-action'; key: s
 type TabBarBackgroundProps = {
   width: number;
   height: number;
+  fill: string;
+  backgroundStyle: object;
 };
 
-function TabBarBackground({ width, height }: TabBarBackgroundProps) {
+function TabBarBackground({ width, height, fill, backgroundStyle }: TabBarBackgroundProps) {
   const path = useMemo(() => {
     if (!width) return '';
 
@@ -41,27 +43,26 @@ function TabBarBackground({ width, height }: TabBarBackgroundProps) {
     const curve = Math.min(notchCurve, notchWidth * 0.4);
 
     return [
-      `M 0 0`,
-      `H ${left}`,
+      `M ${left} 0`,
       `C ${left + curve} 0 ${centerX - curve} ${notchDepth} ${centerX} ${notchDepth}`,
       `C ${centerX + curve} ${notchDepth} ${right - curve} 0 ${right} 0`,
-      `H ${width}`,
-      `V ${height}`,
-      `H 0`,
+      `L ${left} 0`,
       `Z`,
     ].join(' ');
-  }, [height, width]);
+  }, [width]);
 
   if (!path) return null;
 
   return (
-    <Svg width={width} height={height} style={[styles.background, { pointerEvents: 'none' }]}>
-      <Path d={path} fill={theme.colors.primary} />
+    <Svg width={width} height={height} style={[backgroundStyle, { pointerEvents: 'none' }]}>
+      <Path d={path} fill={fill} />
     </Svg>
   );
 }
 
 export function AppTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
+  const theme = useTheme();
+  const styles = useThemedStyles(createStyles);
   const insets = useSafeAreaInsets();
   const paddingBottom = isWeb
     ? WEB.tabBarPaddingBottom
@@ -69,6 +70,7 @@ export function AppTabBar({ state, descriptors, navigation }: BottomTabBarProps)
       ? Math.max(8, insets.bottom - 6)
       : 10;
   const barHeight = TAB_BAR.BOX_HEIGHT + TAB_BAR.PADDING_TOP + paddingBottom;
+  const notchHeight = TAB_BAR.NOTCH_DEPTH + TAB_BAR.PADDING_TOP;
   const [layoutWidth, setLayoutWidth] = useState(0);
   const { actions, mode, centerAction } = useBottomBarState();
   const activeRouteName = state.routes[state.index]?.name;
@@ -93,8 +95,11 @@ export function AppTabBar({ state, descriptors, navigation }: BottomTabBarProps)
           centerAction={centerAction}
           barHeight={barHeight}
           layoutWidth={layoutWidth}
+          notchHeight={notchHeight}
           paddingBottom={paddingBottom}
           onLayout={handleLayout}
+          styles={styles}
+          theme={theme}
         />
       );
     }
@@ -137,7 +142,14 @@ export function AppTabBar({ state, descriptors, navigation }: BottomTabBarProps)
       style={[styles.bar, showAddRecipe ? styles.barNotched : styles.barFlat, { paddingBottom }]}
       onLayout={handleLayout}
     >
-      {showAddRecipe ? <TabBarBackground width={layoutWidth} height={barHeight} /> : null}
+      {showAddRecipe ? (
+        <TabBarBackground
+          width={layoutWidth}
+          height={notchHeight}
+          fill={theme.colors.tabBarNotchFill}
+          backgroundStyle={styles.background}
+        />
+      ) : null}
       {slots.map((slot) => {
         if (slot.type === 'center-action') {
           return <View key={slot.key} style={[styles.slot, styles.centerSlot]} />;
@@ -198,7 +210,7 @@ export function AppTabBar({ state, descriptors, navigation }: BottomTabBarProps)
               hitSlop={10}
               style={styles.addButton}
             >
-              <Plus color={theme.colors.textOnPrimary} size={38} strokeWidth={2.75} />
+              <Plus color={theme.colors.tabBarAddButtonIcon} size={38} strokeWidth={2.75} />
             </Pressable>
           </View>
           <Text style={styles.addLabel} numberOfLines={1}>
@@ -220,8 +232,11 @@ type NotchedActionBarProps = {
   };
   barHeight: number;
   layoutWidth: number;
+  notchHeight: number;
   paddingBottom: number;
   onLayout: (event: LayoutChangeEvent) => void;
+  styles: ReturnType<typeof createStyles>;
+  theme: ReturnType<typeof useTheme>;
 };
 
 function NotchedActionBar({
@@ -229,8 +244,11 @@ function NotchedActionBar({
   centerAction,
   barHeight,
   layoutWidth,
+  notchHeight,
   paddingBottom,
   onLayout,
+  styles,
+  theme,
 }: NotchedActionBarProps) {
   const midpoint = Math.ceil(items.length / 2);
   const left = items.slice(0, midpoint);
@@ -238,13 +256,18 @@ function NotchedActionBar({
 
   return (
     <View style={[styles.bar, styles.barNotched, { paddingBottom }]} onLayout={onLayout}>
-      <TabBarBackground width={layoutWidth} height={barHeight} />
+      <TabBarBackground
+        width={layoutWidth}
+        height={notchHeight}
+        fill={theme.colors.tabBarNotchFill}
+        backgroundStyle={styles.background}
+      />
       {left.map((item) => (
-        <ActionSlot key={item.key} item={item} />
+        <ActionSlot key={item.key} item={item} styles={styles} />
       ))}
       <View style={[styles.slot, styles.centerSlot]} />
       {right.map((item) => (
-        <ActionSlot key={item.key} item={item} />
+        <ActionSlot key={item.key} item={item} styles={styles} />
       ))}
 
       <View style={[styles.centerOverlay, { pointerEvents: 'box-none' }]}>
@@ -267,7 +290,13 @@ function NotchedActionBar({
   );
 }
 
-function ActionSlot({ item }: { item: BottomActionBarItem }) {
+function ActionSlot({
+  item,
+  styles,
+}: {
+  item: BottomActionBarItem;
+  styles: ReturnType<typeof createStyles>;
+}) {
   return (
     <Pressable onPress={item.onPress} style={styles.slot} disabled={item.disabled}>
       <View style={styles.box}>

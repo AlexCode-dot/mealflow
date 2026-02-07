@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { Download, XCircle } from 'lucide-react-native';
-import { theme } from '@/src/shared/theme/theme';
+import { useTheme } from '@/src/shared/theme';
 import { TAB_BAR } from '@/src/shared/ui/layout/tabBar';
 import { BottomActionBar } from '@/src/shared/ui/BottomActionBar';
 
@@ -25,6 +25,7 @@ type Props =
     };
 
 export function RecipeActionBar(props: Props) {
+  const theme = useTheme();
   const items =
     'items' in props && props.items
       ? props.items
@@ -34,7 +35,7 @@ export function RecipeActionBar(props: Props) {
             label: 'Cancel',
             icon: (
               <XCircle
-                color={theme.colors.textOnPrimary}
+                color={theme.colors.tabBarAccent}
                 size={TAB_BAR.ICON_SIZE}
                 strokeWidth={2.25}
               />
@@ -46,7 +47,7 @@ export function RecipeActionBar(props: Props) {
             label: props.saveLabel ?? 'Save recipe',
             icon: (
               <Download
-                color={theme.colors.textOnPrimary}
+                color={theme.colors.tabBarAccent}
                 size={TAB_BAR.ICON_SIZE}
                 strokeWidth={2.25}
               />

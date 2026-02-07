@@ -13,7 +13,7 @@ import {
   ModalSheet,
   useGlobalToast,
 } from '@/src/shared/ui';
-import { theme } from '@/src/shared/theme/theme';
+import { type Theme, useTheme, useThemedStyles } from '@/src/shared/theme';
 import { routes } from '@/src/core/navigation/routes';
 import { useAddRecipeToShoppingList, useRecipeDetails } from '@/src/features/recipes/hooks';
 import {
@@ -30,6 +30,8 @@ import { formatDuration } from '@/src/features/recipes/utils/formatDuration';
 import { RECIPE_PORTIONS_OPTIONS } from '@/src/features/recipes/constants/recipePickerOptions';
 
 export function RecipeDetailsScreen() {
+  const theme = useTheme();
+  const styles = useThemedStyles(createStyles);
   const params = useLocalSearchParams<{
     id?: string;
     toast?: string;
@@ -442,161 +444,162 @@ export function RecipeDetailsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  screenContent: {
-    padding: 0,
-    gap: 0,
-  },
-  root: {
-    flex: 1,
-    backgroundColor: theme.colors.bg,
-  },
-  toast: {
-    position: 'absolute',
-    top: -theme.spacing.s6 - theme.spacing.s4,
-    left: theme.spacing.s3,
-    right: theme.spacing.s3,
-    zIndex: 20,
-  },
-  leaving: {
-    flex: 1,
-    backgroundColor: theme.colors.bg,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  hero: {
-    backgroundColor: theme.colors.bgLight,
-  },
-  heroImage: {
-    width: '100%',
-    height: 320,
-  },
-  originBadge: {
-    position: 'absolute',
-    top: theme.spacing.s4,
-    right: theme.spacing.s4,
-    paddingHorizontal: theme.spacing.s3,
-    paddingVertical: theme.spacing.s2,
-    borderRadius: 999,
-    backgroundColor: 'rgba(227,243,230,0.8)',
-    borderWidth: 2,
-    borderColor: theme.colors.primaryDark,
-    shadowColor: '#000',
-    shadowOpacity: 0.18,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 3 },
-    elevation: 4,
-  },
-  originBadgeText: {
-    color: theme.colors.primaryDark,
-    fontSize: 12,
-    fontWeight: '700',
-  },
-  summary: {
-    padding: theme.spacing.s4,
-    paddingTop: theme.spacing.s6,
-    gap: theme.spacing.s5,
-  },
-  summaryText: {
-    color: theme.colors.text,
-    fontSize: 18,
-    fontWeight: '500',
-    textAlign: 'center',
-    lineHeight: 24,
-  },
-  summaryTextWide: {
-    marginHorizontal: -theme.spacing.s2,
-  },
-  summaryEmpty: {
-    color: theme.colors.textMuted,
-  },
-  statLabel: {
-    color: theme.colors.textMuted,
-    fontSize: 11,
-    fontWeight: '600',
-  },
-  statIcon: {
-    minHeight: 38,
-    justifyContent: 'center',
-  },
-  statRow: {
-    justifyContent: 'center',
-    gap: theme.spacing.s6 + 14,
-  },
-  panel: {
-    backgroundColor: theme.colors.bg,
-  },
-  panelTabs: {
-    paddingTop: 20,
-  },
-  panelContent: {
-    padding: theme.spacing.s4,
-    paddingTop: theme.spacing.s3,
-    paddingBottom: theme.spacing.s4,
-    gap: theme.spacing.s3,
-  },
-  list: {
-    gap: theme.spacing.s2,
-  },
-  emptyText: {
-    color: theme.colors.textMuted,
-    fontSize: 14,
-    fontWeight: '600',
-    textAlign: 'center',
-  },
-  stepSheet: {
-    gap: theme.spacing.s2,
-    paddingBottom: theme.spacing.s4,
-    minHeight: 260,
-    paddingHorizontal: theme.spacing.s4,
-  },
-  stepTitle: {
-    fontSize: 22,
-    fontWeight: '800',
-    color: theme.colors.text,
-    textAlign: 'center',
-    marginBottom: theme.spacing.s1,
-  },
-  stepBody: {
-    marginTop: theme.spacing.s2,
-  },
-  stepParagraphRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: theme.spacing.s2,
-    marginBottom: theme.spacing.s2,
-  },
-  stepParagraph: {
-    fontSize: 16,
-    lineHeight: 24,
-    color: theme.colors.text,
-  },
-  stepBullet: {
-    fontSize: 18,
-    lineHeight: 24,
-    color: theme.colors.text,
-    marginTop: 1,
-  },
-  titleSheet: {
-    paddingHorizontal: theme.spacing.s4,
-    paddingTop: theme.spacing.s4,
-    paddingBottom: theme.spacing.s6,
-    gap: theme.spacing.s2,
-  },
-  titleSheetHeading: {
-    color: theme.colors.textMuted,
-    fontSize: 12,
-    fontWeight: '700',
-    textTransform: 'uppercase',
-    letterSpacing: 1,
-  },
-  titleSheetText: {
-    color: theme.colors.text,
-    fontSize: 20,
-    fontWeight: '700',
-    lineHeight: 28,
-  },
-});
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
+    screenContent: {
+      padding: 0,
+      gap: 0,
+    },
+    root: {
+      flex: 1,
+      backgroundColor: theme.colors.bg,
+    },
+    toast: {
+      position: 'absolute',
+      top: -theme.spacing.s6 - theme.spacing.s4,
+      left: theme.spacing.s3,
+      right: theme.spacing.s3,
+      zIndex: 20,
+    },
+    leaving: {
+      flex: 1,
+      backgroundColor: theme.colors.bg,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    hero: {
+      backgroundColor: theme.colors.bgLight,
+    },
+    heroImage: {
+      width: '100%',
+      height: 320,
+    },
+    originBadge: {
+      position: 'absolute',
+      top: theme.spacing.s4,
+      right: theme.spacing.s4,
+      paddingHorizontal: theme.spacing.s3,
+      paddingVertical: theme.spacing.s2,
+      borderRadius: 999,
+      backgroundColor: 'rgba(227,243,230,0.8)',
+      borderWidth: 2,
+      borderColor: theme.colors.primaryDark,
+      shadowColor: '#000',
+      shadowOpacity: 0.18,
+      shadowRadius: 8,
+      shadowOffset: { width: 0, height: 3 },
+      elevation: 4,
+    },
+    originBadgeText: {
+      color: theme.colors.primaryDark,
+      fontSize: 12,
+      fontWeight: '700',
+    },
+    summary: {
+      padding: theme.spacing.s4,
+      paddingTop: theme.spacing.s6,
+      gap: theme.spacing.s5,
+    },
+    summaryText: {
+      color: theme.colors.text,
+      fontSize: 18,
+      fontWeight: '500',
+      textAlign: 'center',
+      lineHeight: 24,
+    },
+    summaryTextWide: {
+      marginHorizontal: -theme.spacing.s2,
+    },
+    summaryEmpty: {
+      color: theme.colors.textMuted,
+    },
+    statLabel: {
+      color: theme.colors.textMuted,
+      fontSize: 11,
+      fontWeight: '600',
+    },
+    statIcon: {
+      minHeight: 38,
+      justifyContent: 'center',
+    },
+    statRow: {
+      justifyContent: 'center',
+      gap: theme.spacing.s6 + 14,
+    },
+    panel: {
+      backgroundColor: theme.colors.bg,
+    },
+    panelTabs: {
+      paddingTop: 20,
+    },
+    panelContent: {
+      padding: theme.spacing.s4,
+      paddingTop: theme.spacing.s3,
+      paddingBottom: theme.spacing.s4,
+      gap: theme.spacing.s3,
+    },
+    list: {
+      gap: theme.spacing.s2,
+    },
+    emptyText: {
+      color: theme.colors.textMuted,
+      fontSize: 14,
+      fontWeight: '600',
+      textAlign: 'center',
+    },
+    stepSheet: {
+      gap: theme.spacing.s2,
+      paddingBottom: theme.spacing.s4,
+      minHeight: 260,
+      paddingHorizontal: theme.spacing.s4,
+    },
+    stepTitle: {
+      fontSize: 22,
+      fontWeight: '800',
+      color: theme.colors.text,
+      textAlign: 'center',
+      marginBottom: theme.spacing.s1,
+    },
+    stepBody: {
+      marginTop: theme.spacing.s2,
+    },
+    stepParagraphRow: {
+      flexDirection: 'row',
+      alignItems: 'flex-start',
+      gap: theme.spacing.s2,
+      marginBottom: theme.spacing.s2,
+    },
+    stepParagraph: {
+      fontSize: 16,
+      lineHeight: 24,
+      color: theme.colors.text,
+    },
+    stepBullet: {
+      fontSize: 18,
+      lineHeight: 24,
+      color: theme.colors.text,
+      marginTop: 1,
+    },
+    titleSheet: {
+      paddingHorizontal: theme.spacing.s4,
+      paddingTop: theme.spacing.s4,
+      paddingBottom: theme.spacing.s6,
+      gap: theme.spacing.s2,
+    },
+    titleSheetHeading: {
+      color: theme.colors.textMuted,
+      fontSize: 12,
+      fontWeight: '700',
+      textTransform: 'uppercase',
+      letterSpacing: 1,
+    },
+    titleSheetText: {
+      color: theme.colors.text,
+      fontSize: 20,
+      fontWeight: '700',
+      lineHeight: 28,
+    },
+  });
 
 function splitStepParagraphs(text: string): string[] {
   const trimmed = text.trim();

@@ -5,7 +5,7 @@ import { TextField, Button, ErrorText } from '@/src/shared/ui';
 import type { UiError } from '@/src/shared/errors/errorTypes';
 import { validateRegister } from '@/src/features/auth/validation/authValidation';
 import { useAuthForm } from '@/src/features/auth/hooks/useAuthForm';
-import { theme } from '@/src/shared/theme/theme';
+import { type Theme, useThemedStyles } from '@/src/shared/theme';
 
 type Props = {
   onSubmit: (email: string, password: string) => void;
@@ -15,6 +15,7 @@ type Props = {
 };
 
 export function RegisterForm({ onSubmit, isLoading, error, clearError }: Props) {
+  const styles = useThemedStyles(createStyles);
   const form = useAuthForm({
     validate: validateRegister,
     error,
@@ -124,51 +125,52 @@ export function RegisterForm({ onSubmit, isLoading, error, clearError }: Props) 
   );
 }
 
-const styles = StyleSheet.create({
-  legalBlock: {
-    gap: theme.spacing.s2,
-    padding: theme.spacing.s3,
-    borderRadius: theme.radius.sm,
-    borderWidth: 1,
-    borderColor: theme.colors.borderNeutral,
-    backgroundColor: theme.colors.bgLight,
-  },
-  legalRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: theme.spacing.s2,
-  },
-  checkbox: {
-    width: 20,
-    height: 20,
-    borderRadius: 6,
-    borderWidth: 1.5,
-    borderColor: theme.colors.borderNeutral,
-    backgroundColor: theme.colors.bgLight,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 2,
-  },
-  checkboxChecked: {
-    borderColor: theme.colors.primaryDark,
-    backgroundColor: theme.colors.primaryLight,
-  },
-  checkboxDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 3,
-    backgroundColor: theme.colors.primaryDark,
-  },
-  legalText: {
-    flex: 1,
-    fontSize: 12,
-    lineHeight: 16,
-    color: theme.colors.textMuted,
-    fontWeight: '700',
-  },
-  legalLink: {
-    color: theme.colors.primaryDark,
-    fontWeight: '800',
-    textDecorationLine: 'underline',
-  },
-});
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
+    legalBlock: {
+      gap: theme.spacing.s2,
+      padding: theme.spacing.s3,
+      borderRadius: theme.radius.sm,
+      borderWidth: 1,
+      borderColor: theme.colors.borderNeutral,
+      backgroundColor: theme.colors.bgLight,
+    },
+    legalRow: {
+      flexDirection: 'row',
+      alignItems: 'flex-start',
+      gap: theme.spacing.s2,
+    },
+    checkbox: {
+      width: 20,
+      height: 20,
+      borderRadius: 6,
+      borderWidth: 1.5,
+      borderColor: theme.colors.borderNeutral,
+      backgroundColor: theme.colors.bgLight,
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginTop: 2,
+    },
+    checkboxChecked: {
+      borderColor: theme.colors.primaryDark,
+      backgroundColor: theme.colors.primaryLight,
+    },
+    checkboxDot: {
+      width: 10,
+      height: 10,
+      borderRadius: 3,
+      backgroundColor: theme.colors.primaryDark,
+    },
+    legalText: {
+      flex: 1,
+      fontSize: 12,
+      lineHeight: 16,
+      color: theme.colors.textMuted,
+      fontWeight: '700',
+    },
+    legalLink: {
+      color: theme.colors.primaryDark,
+      fontWeight: '800',
+      textDecorationLine: 'underline',
+    },
+  });

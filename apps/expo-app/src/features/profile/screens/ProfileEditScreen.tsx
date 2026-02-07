@@ -14,11 +14,13 @@ import {
   useBottomBarActions,
   useGlobalToast,
 } from '@/src/shared/ui';
-import { theme } from '@/src/shared/theme/theme';
+import { type Theme, useTheme, useThemedStyles } from '@/src/shared/theme';
 import { TAB_BAR } from '@/src/shared/ui/layout/tabBar';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export function ProfileEditScreen() {
+  const theme = useTheme();
+  const styles = useThemedStyles(createStyles);
   const view = useProfileEditScreen();
   const { state, form, data, actions, toast } = view;
   const [themeOpen, setThemeOpen] = useState(false);
@@ -130,70 +132,71 @@ export function ProfileEditScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  root: {
-    flex: 1,
-  },
-  toastOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: theme.spacing.s3,
-    right: theme.spacing.s3,
-    zIndex: 10,
-  },
-  toastWrap: {
-    width: '100%',
-  },
-  avatarCard: {
-    alignItems: 'center',
-    paddingVertical: theme.spacing.s6,
-    gap: theme.spacing.s2,
-  },
-  avatarCircle: {
-    width: 92,
-    height: 92,
-    borderRadius: 26,
-    backgroundColor: theme.colors.primaryLight,
-    borderWidth: 2,
-    borderColor: theme.colors.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 6 },
-    elevation: 3,
-  },
-  avatarLabel: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: theme.colors.text,
-  },
-  formCard: {
-    gap: theme.spacing.s4,
-  },
-  themeBlock: {
-    gap: theme.spacing.s2,
-  },
-  label: {
-    fontSize: 13,
-    fontWeight: '800',
-    color: theme.colors.text,
-  },
-  readOnlyBlock: {
-    gap: theme.spacing.s2,
-  },
-  readOnlyField: {
-    borderWidth: 1,
-    borderColor: theme.colors.borderNeutral,
-    backgroundColor: theme.colors.bgLight,
-    borderRadius: theme.radius.sm,
-    paddingHorizontal: theme.spacing.s3,
-    paddingVertical: 12,
-  },
-  readOnlyText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: theme.colors.textMuted,
-  },
-});
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
+    root: {
+      flex: 1,
+    },
+    toastOverlay: {
+      position: 'absolute',
+      top: 0,
+      left: theme.spacing.s3,
+      right: theme.spacing.s3,
+      zIndex: 10,
+    },
+    toastWrap: {
+      width: '100%',
+    },
+    avatarCard: {
+      alignItems: 'center',
+      paddingVertical: theme.spacing.s6,
+      gap: theme.spacing.s2,
+    },
+    avatarCircle: {
+      width: 92,
+      height: 92,
+      borderRadius: 26,
+      backgroundColor: theme.colors.primaryLight,
+      borderWidth: 2,
+      borderColor: theme.colors.primary,
+      alignItems: 'center',
+      justifyContent: 'center',
+      shadowColor: '#000',
+      shadowOpacity: 0.08,
+      shadowRadius: 8,
+      shadowOffset: { width: 0, height: 6 },
+      elevation: 3,
+    },
+    avatarLabel: {
+      fontSize: 14,
+      fontWeight: '700',
+      color: theme.colors.text,
+    },
+    formCard: {
+      gap: theme.spacing.s4,
+    },
+    themeBlock: {
+      gap: theme.spacing.s2,
+    },
+    label: {
+      fontSize: 13,
+      fontWeight: '800',
+      color: theme.colors.text,
+    },
+    readOnlyBlock: {
+      gap: theme.spacing.s2,
+    },
+    readOnlyField: {
+      borderWidth: 1,
+      borderColor: theme.colors.borderNeutral,
+      backgroundColor: theme.colors.bgLight,
+      borderRadius: theme.radius.sm,
+      paddingHorizontal: theme.spacing.s3,
+      paddingVertical: 12,
+    },
+    readOnlyText: {
+      fontSize: 16,
+      fontWeight: '600',
+      color: theme.colors.textMuted,
+    },
+  });

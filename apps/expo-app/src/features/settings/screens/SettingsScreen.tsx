@@ -16,9 +16,11 @@ import {
 import { useSettingsScreen } from '@/src/features/settings/hooks/useSettingsScreen';
 import { ThemePickerSheet } from '@/src/features/settings/ui/ThemePickerSheet';
 import { ConfirmSheet, ToastBanner, LoadingScreen, Screen, useGlobalToast } from '@/src/shared/ui';
-import { theme } from '@/src/shared/theme/theme';
+import { type Theme, useTheme, useThemedStyles } from '@/src/shared/theme';
 
 export function SettingsScreen() {
+  const theme = useTheme();
+  const styles = useThemedStyles(createStyles);
   const view = useSettingsScreen();
   const { state, data, actions, modal, toast } = view;
   const { toast: globalToast, showValidationError, show } = useGlobalToast();
@@ -89,9 +91,9 @@ export function SettingsScreen() {
         }
       >
         <View style={styles.list}>
-          <ProfileBanner onPress={actions.openProfileEdit} />
+          <ProfileBanner onPress={actions.openProfileEdit} styles={styles} theme={theme} />
 
-          <SectionHeader title="Preferences" />
+          <SectionHeader title="Preferences" styles={styles} />
           <View style={styles.sectionGroup}>
             <SettingsRow
               title="Theme"
@@ -100,6 +102,7 @@ export function SettingsScreen() {
               icon={<Palette size={22} color={theme.colors.textMuted} strokeWidth={2.3} />}
               iconBg={theme.colors.bgLight}
               right={<ChevronRight size={22} color={theme.colors.textMuted} strokeWidth={2.4} />}
+              styles={styles}
             />
             <SettingsRow
               title="About & Legal"
@@ -108,10 +111,11 @@ export function SettingsScreen() {
               icon={<FileText size={22} color={theme.colors.textMuted} strokeWidth={2.3} />}
               iconBg={theme.colors.bgLight}
               right={<ChevronRight size={22} color={theme.colors.textMuted} strokeWidth={2.4} />}
+              styles={styles}
             />
           </View>
 
-          <SectionHeader title="Legal" />
+          <SectionHeader title="Legal" styles={styles} />
           <View style={styles.sectionGroup}>
             <SettingsRow
               title="Privacy Policy"
@@ -119,6 +123,7 @@ export function SettingsScreen() {
               onPress={() => openLegalUrl(legal?.privacyUrl)}
               icon={<ShieldCheck size={22} color={theme.colors.textMuted} strokeWidth={2.3} />}
               iconBg={theme.colors.bgLight}
+              styles={styles}
             />
             <SettingsRow
               title="Terms of Service"
@@ -126,10 +131,11 @@ export function SettingsScreen() {
               onPress={() => openLegalUrl(legal?.termsUrl)}
               icon={<FileText size={22} color={theme.colors.textMuted} strokeWidth={2.3} />}
               iconBg={theme.colors.bgLight}
+              styles={styles}
             />
           </View>
 
-          <SectionHeader title="Support" />
+          <SectionHeader title="Support" styles={styles} />
           <View style={styles.sectionGroup}>
             <SettingsRow
               title="Contact support"
@@ -137,10 +143,11 @@ export function SettingsScreen() {
               onPress={() => openEmail(support?.email)}
               icon={<Mail size={22} color={theme.colors.textMuted} strokeWidth={2.3} />}
               iconBg={theme.colors.bgLight}
+              styles={styles}
             />
           </View>
 
-          <SectionHeader title="Account" />
+          <SectionHeader title="Account" styles={styles} />
           <View style={styles.sectionGroup}>
             <SettingsRow
               title="Logout"
@@ -148,6 +155,7 @@ export function SettingsScreen() {
               onPress={actions.logout}
               icon={<LogOut size={22} color={theme.colors.textMuted} strokeWidth={2.3} />}
               iconBg={theme.colors.bgLight}
+              styles={styles}
             />
             <SettingsRow
               title="Delete account"
@@ -156,6 +164,7 @@ export function SettingsScreen() {
               icon={<Trash2 size={22} color={theme.colors.error} strokeWidth={2.3} />}
               iconBg={theme.colors.errorBg}
               danger
+              styles={styles}
             />
           </View>
         </View>
@@ -185,122 +194,123 @@ export function SettingsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  root: { flex: 1 },
-  list: {
-    gap: theme.spacing.s4,
-  },
-  toastOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    zIndex: 20,
-  },
-  toastWrap: {
-    paddingHorizontal: theme.spacing.s4,
-  },
-  rowCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: theme.spacing.s4,
-    paddingVertical: theme.spacing.s4,
-    paddingHorizontal: theme.spacing.s4,
-    borderRadius: theme.radius.md,
-    backgroundColor: theme.colors.surface,
-    borderWidth: 1,
-    borderColor: theme.colors.borderNeutral,
-    shadowColor: '#000',
-    shadowOpacity: 0.06,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 6 },
-    elevation: 4,
-  },
-  rowPressed: {
-    opacity: 0.9,
-  },
-  iconBadge: {
-    width: 54,
-    height: 54,
-    borderRadius: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: theme.colors.surface,
-    borderWidth: 1,
-    borderColor: theme.colors.dividerSoft,
-  },
-  rowText: {
-    flex: 1,
-    gap: theme.spacing.s1,
-  },
-  rowTitle: {
-    fontSize: 18,
-    fontWeight: '800',
-    color: theme.colors.text,
-  },
-  rowSubtitle: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: theme.colors.textMuted,
-  },
-  rowDanger: {
-    backgroundColor: theme.colors.errorBg,
-    borderColor: theme.colors.error,
-  },
-  rowTitleDanger: {
-    color: theme.colors.error,
-  },
-  iconBadgeDanger: {
-    borderColor: theme.colors.error,
-  },
-  sectionHeader: {
-    fontSize: 14,
-    fontWeight: '800',
-    letterSpacing: 1.8,
-    color: theme.colors.textMuted,
-    textTransform: 'uppercase',
-    marginTop: theme.spacing.s2,
-  },
-  sectionGroup: {
-    gap: theme.spacing.s2,
-  },
-  profileCard: {
-    backgroundColor: theme.colors.primary,
-    borderRadius: theme.radius.lg,
-    padding: theme.spacing.s5,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: theme.spacing.s4,
-    shadowColor: '#000',
-    shadowOpacity: 0.16,
-    shadowRadius: 16,
-    shadowOffset: { width: 0, height: 10 },
-    elevation: 8,
-  },
-  profileIconWrap: {
-    width: 64,
-    height: 64,
-    borderRadius: 18,
-    backgroundColor: 'rgba(255,255,255,0.2)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.35)',
-  },
-  profileTitle: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: theme.colors.textOnPrimary,
-  },
-  profileSubtitle: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: theme.colors.iconMutedOnPrimary,
-  },
-  profileChevron: {
-    marginLeft: 'auto',
-  },
-});
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
+    root: { flex: 1 },
+    list: {
+      gap: theme.spacing.s4,
+    },
+    toastOverlay: {
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      zIndex: 20,
+    },
+    toastWrap: {
+      paddingHorizontal: theme.spacing.s4,
+    },
+    rowCard: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: theme.spacing.s4,
+      paddingVertical: theme.spacing.s4,
+      paddingHorizontal: theme.spacing.s4,
+      borderRadius: theme.radius.md,
+      backgroundColor: theme.colors.surface,
+      borderWidth: 1,
+      borderColor: theme.colors.borderNeutral,
+      shadowColor: '#000',
+      shadowOpacity: 0.06,
+      shadowRadius: 12,
+      shadowOffset: { width: 0, height: 6 },
+      elevation: 4,
+    },
+    rowPressed: {
+      opacity: 0.9,
+    },
+    iconBadge: {
+      width: 54,
+      height: 54,
+      borderRadius: 16,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: theme.colors.surface,
+      borderWidth: 1,
+      borderColor: theme.colors.dividerSoft,
+    },
+    rowText: {
+      flex: 1,
+      gap: theme.spacing.s1,
+    },
+    rowTitle: {
+      fontSize: 18,
+      fontWeight: '800',
+      color: theme.colors.text,
+    },
+    rowSubtitle: {
+      fontSize: 13,
+      fontWeight: '600',
+      color: theme.colors.textMuted,
+    },
+    rowDanger: {
+      backgroundColor: theme.colors.errorBg,
+      borderColor: theme.colors.error,
+    },
+    rowTitleDanger: {
+      color: theme.colors.error,
+    },
+    iconBadgeDanger: {
+      borderColor: theme.colors.error,
+    },
+    sectionHeader: {
+      fontSize: 14,
+      fontWeight: '800',
+      letterSpacing: 1.8,
+      color: theme.colors.textMuted,
+      textTransform: 'uppercase',
+      marginTop: theme.spacing.s2,
+    },
+    sectionGroup: {
+      gap: theme.spacing.s2,
+    },
+    profileCard: {
+      backgroundColor: theme.colors.primary,
+      borderRadius: theme.radius.lg,
+      padding: theme.spacing.s5,
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: theme.spacing.s4,
+      shadowColor: '#000',
+      shadowOpacity: 0.16,
+      shadowRadius: 16,
+      shadowOffset: { width: 0, height: 10 },
+      elevation: 8,
+    },
+    profileIconWrap: {
+      width: 64,
+      height: 64,
+      borderRadius: 18,
+      backgroundColor: 'rgba(255,255,255,0.2)',
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderWidth: 1,
+      borderColor: 'rgba(255,255,255,0.35)',
+    },
+    profileTitle: {
+      fontSize: 20,
+      fontWeight: '700',
+      color: theme.colors.textOnPrimary,
+    },
+    profileSubtitle: {
+      fontSize: 13,
+      fontWeight: '600',
+      color: theme.colors.iconMutedOnPrimary,
+    },
+    profileChevron: {
+      marginLeft: 'auto',
+    },
+  });
 
 type SettingsRowProps = {
   title: string;
@@ -310,6 +320,7 @@ type SettingsRowProps = {
   onPress: () => void;
   right?: ReactNode;
   danger?: boolean;
+  styles: ReturnType<typeof createStyles>;
 };
 
 function SettingsRow({
@@ -320,6 +331,7 @@ function SettingsRow({
   onPress,
   right,
   danger = false,
+  styles,
 }: SettingsRowProps) {
   return (
     <Pressable onPress={onPress} style={({ pressed }) => (pressed ? styles.rowPressed : null)}>
@@ -343,11 +355,25 @@ function SettingsRow({
   );
 }
 
-function SectionHeader({ title }: { title: string }) {
+function SectionHeader({
+  title,
+  styles,
+}: {
+  title: string;
+  styles: ReturnType<typeof createStyles>;
+}) {
   return <Text style={styles.sectionHeader}>{title}</Text>;
 }
 
-function ProfileBanner({ onPress }: { onPress: () => void }) {
+function ProfileBanner({
+  onPress,
+  styles,
+  theme,
+}: {
+  onPress: () => void;
+  styles: ReturnType<typeof createStyles>;
+  theme: Theme;
+}) {
   return (
     <Pressable onPress={onPress} style={({ pressed }) => (pressed ? styles.rowPressed : null)}>
       <View style={styles.profileCard}>

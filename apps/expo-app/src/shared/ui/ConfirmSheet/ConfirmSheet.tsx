@@ -1,7 +1,7 @@
 import { StyleSheet, Text, View } from 'react-native';
 import { ModalSheet } from '@/src/shared/ui/ModalSheet';
 import { Button } from '@/src/shared/ui/Button';
-import { theme } from '@/src/shared/theme/theme';
+import { type Theme, useThemedStyles } from '@/src/shared/theme';
 
 type Props = {
   visible: boolean;
@@ -26,6 +26,7 @@ export function ConfirmSheet({
   confirmVariant = 'danger',
   disabled,
 }: Props) {
+  const styles = useThemedStyles(createStyles);
   return (
     <ModalSheet visible={visible} onClose={onCancel}>
       <View style={styles.root}>
@@ -53,40 +54,41 @@ export function ConfirmSheet({
   );
 }
 
-const styles = StyleSheet.create({
-  root: {
-    gap: theme.spacing.s4,
-    paddingTop: theme.spacing.s4,
-    paddingBottom: theme.spacing.s4,
-    minHeight: 230,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: '700',
-    lineHeight: 34,
-    textAlign: 'center',
-    color: theme.colors.text,
-  },
-  description: {
-    fontSize: 16,
-    fontWeight: '500',
-    lineHeight: 22,
-    textAlign: 'center',
-    color: theme.colors.textMuted,
-  },
-  actions: {
-    flexDirection: 'row',
-    gap: theme.spacing.s3,
-    justifyContent: 'center',
-    marginTop: 'auto',
-  },
-  actionButton: {
-    flex: 1,
-    borderRadius: theme.radius.md,
-    paddingVertical: theme.spacing.s3 + 2,
-  },
-  actionText: {
-    fontSize: 16,
-    fontWeight: '700',
-  },
-});
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
+    root: {
+      gap: theme.spacing.s4,
+      paddingTop: theme.spacing.s4,
+      paddingBottom: theme.spacing.s4,
+      minHeight: 230,
+    },
+    title: {
+      fontSize: 28,
+      fontWeight: '700',
+      lineHeight: 34,
+      textAlign: 'center',
+      color: theme.colors.text,
+    },
+    description: {
+      fontSize: 16,
+      fontWeight: '500',
+      lineHeight: 22,
+      textAlign: 'center',
+      color: theme.colors.textMuted,
+    },
+    actions: {
+      flexDirection: 'row',
+      gap: theme.spacing.s3,
+      justifyContent: 'center',
+      marginTop: 'auto',
+    },
+    actionButton: {
+      flex: 1,
+      borderRadius: theme.radius.md,
+      paddingVertical: theme.spacing.s3 + 2,
+    },
+    actionText: {
+      fontSize: 16,
+      fontWeight: '700',
+    },
+  });

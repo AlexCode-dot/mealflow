@@ -1,7 +1,7 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { CalendarDays, ChevronLeft, ChevronRight } from 'lucide-react-native';
 import { Card } from '@/src/shared/ui';
-import { theme } from '@/src/shared/theme/theme';
+import { type Theme, useTheme, useThemedStyles } from '@/src/shared/theme';
 import { WeekStrip } from './WeekStrip';
 
 export type WeekDayChip = {
@@ -39,6 +39,8 @@ export function WeeklyPlannerHeaderCard({
   isCreating,
   hasPlan,
 }: Props) {
+  const theme = useTheme();
+  const styles = useThemedStyles(createStyles);
   return (
     <Card style={styles.card} variant="premium">
       <View style={styles.header}>
@@ -111,103 +113,104 @@ export function WeeklyPlannerHeaderCard({
   );
 }
 
-const styles = StyleSheet.create({
-  card: {
-    padding: theme.spacing.s5,
-    backgroundColor: theme.colors.primaryDark,
-    borderColor: theme.colors.primaryDark,
-    marginBottom: theme.spacing.s4,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  headerCenter: {
-    alignItems: 'center',
-    gap: theme.spacing.s1,
-    flex: 1,
-  },
-  title: {
-    color: theme.colors.textOnPrimary,
-    fontSize: 19,
-    fontWeight: '800',
-  },
-  range: {
-    color: theme.colors.iconMutedOnPrimary,
-    fontSize: 14,
-    fontWeight: '700',
-  },
-  subtitle: {
-    color: theme.colors.iconMutedOnPrimary,
-    fontSize: 12,
-    fontWeight: '700',
-  },
-  navButton: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: theme.colors.primary,
-    borderWidth: 0,
-    borderColor: 'transparent',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  navPressed: {
-    opacity: 0.85,
-  },
-  navDisabled: {
-    opacity: 0.5,
-  },
-  weekDots: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: theme.spacing.s1,
-    marginTop: theme.spacing.s2,
-  },
-  weekDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: 'rgba(255,255,255,0.45)',
-  },
-  weekDotActive: {
-    width: 32,
-    backgroundColor: theme.colors.surface,
-  },
-  action: {
-    marginTop: theme.spacing.s2,
-  },
-  openButton: {
-    borderRadius: theme.radius.md,
-    paddingVertical: theme.spacing.s4,
-    paddingHorizontal: theme.spacing.s4,
-    borderWidth: 1,
-    borderColor: theme.colors.borderNeutral,
-    backgroundColor: theme.colors.surface,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  openButtonRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: theme.spacing.s2,
-  },
-  openText: {
-    fontWeight: '700',
-    fontSize: 16,
-    color: theme.colors.primary,
-  },
-  openPressed: {
-    opacity: 0.9,
-  },
-  openDisabled: {
-    opacity: 0.6,
-  },
-  swipeHint: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: theme.colors.iconMutedOnPrimary,
-    textAlign: 'center',
-  },
-});
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
+    card: {
+      padding: theme.spacing.s5,
+      backgroundColor: theme.colors.primaryDark,
+      borderColor: theme.colors.primaryDark,
+      marginBottom: theme.spacing.s4,
+    },
+    header: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+    },
+    headerCenter: {
+      alignItems: 'center',
+      gap: theme.spacing.s1,
+      flex: 1,
+    },
+    title: {
+      color: theme.colors.textOnPrimary,
+      fontSize: 19,
+      fontWeight: '800',
+    },
+    range: {
+      color: theme.colors.iconMutedOnPrimary,
+      fontSize: 14,
+      fontWeight: '700',
+    },
+    subtitle: {
+      color: theme.colors.iconMutedOnPrimary,
+      fontSize: 12,
+      fontWeight: '700',
+    },
+    navButton: {
+      width: 48,
+      height: 48,
+      borderRadius: 24,
+      backgroundColor: theme.colors.primary,
+      borderWidth: 0,
+      borderColor: 'transparent',
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    navPressed: {
+      opacity: 0.85,
+    },
+    navDisabled: {
+      opacity: 0.5,
+    },
+    weekDots: {
+      flexDirection: 'row',
+      justifyContent: 'center',
+      gap: theme.spacing.s1,
+      marginTop: theme.spacing.s2,
+    },
+    weekDot: {
+      width: 8,
+      height: 8,
+      borderRadius: 4,
+      backgroundColor: 'rgba(255,255,255,0.45)',
+    },
+    weekDotActive: {
+      width: 32,
+      backgroundColor: theme.colors.surface,
+    },
+    action: {
+      marginTop: theme.spacing.s2,
+    },
+    openButton: {
+      borderRadius: theme.radius.md,
+      paddingVertical: theme.spacing.s4,
+      paddingHorizontal: theme.spacing.s4,
+      borderWidth: 1,
+      borderColor: theme.colors.borderNeutral,
+      backgroundColor: theme.colors.surface,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    openButtonRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: theme.spacing.s2,
+    },
+    openText: {
+      fontWeight: '700',
+      fontSize: 16,
+      color: theme.colors.primary,
+    },
+    openPressed: {
+      opacity: 0.9,
+    },
+    openDisabled: {
+      opacity: 0.6,
+    },
+    swipeHint: {
+      fontSize: 11,
+      fontWeight: '600',
+      color: theme.colors.iconMutedOnPrimary,
+      textAlign: 'center',
+    },
+  });

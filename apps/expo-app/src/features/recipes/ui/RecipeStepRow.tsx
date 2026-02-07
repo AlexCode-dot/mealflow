@@ -1,6 +1,6 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { ChevronRight, GripVertical } from 'lucide-react-native';
-import { theme } from '@/src/shared/theme/theme';
+import { type Theme, useTheme, useThemedStyles } from '@/src/shared/theme';
 
 type Props = {
   index: number;
@@ -21,6 +21,8 @@ export function RecipeStepRow({
   showDisclosure = false,
   maxLines = 2,
 }: Props) {
+  const theme = useTheme();
+  const styles = useThemedStyles(createStyles);
   const label = Number.isFinite(index) ? String(index) : '';
   const hasHandle = Boolean(onDrag) || showHandle;
   const showChevron = !hasHandle && showDisclosure;
@@ -62,56 +64,57 @@ export function RecipeStepRow({
   );
 }
 
-const styles = StyleSheet.create({
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: theme.spacing.s3,
-    paddingVertical: 12,
-    borderRadius: theme.radius.md,
-    borderWidth: 1.5,
-    borderColor: theme.colors.borderNeutral,
-    backgroundColor: theme.colors.bgLight,
-    gap: theme.spacing.s2,
-  },
-  rowPressed: {
-    opacity: 0.92,
-  },
-  badge: {
-    width: 28,
-    height: 28,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: theme.colors.borderGreen,
-    backgroundColor: theme.colors.primaryLight,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  badgeText: {
-    color: theme.colors.primaryDark,
-    fontSize: 14,
-    fontWeight: '800',
-  },
-  text: {
-    flex: 1,
-    color: theme.colors.text,
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  dragHandle: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: theme.colors.borderGreen,
-    backgroundColor: theme.colors.primaryLight,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  chevron: {
-    width: 28,
-    height: 28,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
+    row: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: theme.spacing.s3,
+      paddingVertical: 12,
+      borderRadius: theme.radius.md,
+      borderWidth: 1.5,
+      borderColor: theme.colors.borderNeutral,
+      backgroundColor: theme.colors.bgLight,
+      gap: theme.spacing.s2,
+    },
+    rowPressed: {
+      opacity: 0.92,
+    },
+    badge: {
+      width: 28,
+      height: 28,
+      borderRadius: 8,
+      borderWidth: 1,
+      borderColor: theme.colors.borderGreen,
+      backgroundColor: theme.colors.primaryLight,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    badgeText: {
+      color: theme.colors.primaryDark,
+      fontSize: 14,
+      fontWeight: '800',
+    },
+    text: {
+      flex: 1,
+      color: theme.colors.text,
+      fontSize: 14,
+      fontWeight: '600',
+    },
+    dragHandle: {
+      width: 32,
+      height: 32,
+      borderRadius: 16,
+      borderWidth: 1,
+      borderColor: theme.colors.borderGreen,
+      backgroundColor: theme.colors.primaryLight,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    chevron: {
+      width: 28,
+      height: 28,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+  });

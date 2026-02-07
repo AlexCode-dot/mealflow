@@ -1,7 +1,7 @@
 import { StyleSheet, Text, View } from 'react-native';
 import { Clock, Users } from 'lucide-react-native';
 import { ErrorText, TextField } from '@/src/shared/ui';
-import { theme } from '@/src/shared/theme/theme';
+import { type Theme, useTheme, useThemedStyles } from '@/src/shared/theme';
 import { RecipeSelectField } from '@/src/features/recipes/ui/RecipeSelectField';
 import type { RecipePickerKey } from '@/src/features/recipes/hooks/useRecipeEditorState';
 
@@ -34,6 +34,8 @@ export function RecipeEditorBasics({
   category,
   onOpenPicker,
 }: Props) {
+  const theme = useTheme();
+  const styles = useThemedStyles(createStyles);
   return (
     <View style={styles.section}>
       <Text style={styles.label}>Recipe Name</Text>
@@ -93,24 +95,25 @@ export function RecipeEditorBasics({
   );
 }
 
-const styles = StyleSheet.create({
-  section: {
-    gap: theme.spacing.s2,
-  },
-  label: {
-    color: theme.colors.textMuted,
-    fontSize: 13,
-    fontWeight: '600',
-  },
-  multiline: {
-    minHeight: 110,
-  },
-  row: {
-    flexDirection: 'row',
-    gap: theme.spacing.s3,
-  },
-  rowItem: {
-    flex: 1,
-    gap: theme.spacing.s2,
-  },
-});
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
+    section: {
+      gap: theme.spacing.s2,
+    },
+    label: {
+      color: theme.colors.textMuted,
+      fontSize: 13,
+      fontWeight: '600',
+    },
+    multiline: {
+      minHeight: 110,
+    },
+    row: {
+      flexDirection: 'row',
+      gap: theme.spacing.s3,
+    },
+    rowItem: {
+      flex: 1,
+      gap: theme.spacing.s2,
+    },
+  });

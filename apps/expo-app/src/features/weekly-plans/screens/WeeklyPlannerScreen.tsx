@@ -8,7 +8,7 @@ import {
 } from '@/src/features/weekly-plans/hooks/useWeeklyPlannerScreen';
 import { WeeklyPlannerHeaderCard } from '@/src/features/weekly-plans/ui/WeeklyPlannerHeaderCard';
 import { WeeklyPlanListCard } from '@/src/features/weekly-plans/ui/WeeklyPlanListCard';
-import { theme } from '@/src/shared/theme/theme';
+import { type Theme, useTheme, useThemedStyles } from '@/src/shared/theme';
 
 const TABS: UnderlineTab[] = [
   { key: 'recent', label: 'Recent' },
@@ -17,6 +17,8 @@ const TABS: UnderlineTab[] = [
 ];
 
 export default function WeeklyPlannerScreen() {
+  const theme = useTheme();
+  const styles = useThemedStyles(createStyles);
   const view = useWeeklyPlannerScreen();
   const { state, actions, header, listItems } = view;
   const scrollRef = useRef<ScrollView>(null);
@@ -106,41 +108,42 @@ export default function WeeklyPlannerScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  root: {
-    flex: 1,
-  },
-  screenContent: {
-    gap: theme.spacing.s1,
-  },
-  tabsWrap: {
-    marginTop: theme.spacing.s2,
-    marginBottom: 0,
-  },
-  list: {
-    gap: theme.spacing.s2,
-  },
-  loadingWrap: {
-    paddingVertical: theme.spacing.s4,
-    alignItems: 'center',
-  },
-  loadMoreButton: {
-    alignSelf: 'center',
-    paddingVertical: theme.spacing.s2,
-    paddingHorizontal: theme.spacing.s4,
-    borderRadius: theme.radius.pill,
-    borderWidth: 1,
-    borderColor: theme.colors.primaryDark,
-    backgroundColor: theme.colors.surface,
-  },
-  loadMorePressed: {
-    opacity: 0.85,
-  },
-  loadMoreDisabled: {
-    opacity: 0.6,
-  },
-  loadMoreText: {
-    color: theme.colors.primaryDark,
-    fontWeight: '700',
-  },
-});
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
+    root: {
+      flex: 1,
+    },
+    screenContent: {
+      gap: theme.spacing.s1,
+    },
+    tabsWrap: {
+      marginTop: theme.spacing.s2,
+      marginBottom: 0,
+    },
+    list: {
+      gap: theme.spacing.s2,
+    },
+    loadingWrap: {
+      paddingVertical: theme.spacing.s4,
+      alignItems: 'center',
+    },
+    loadMoreButton: {
+      alignSelf: 'center',
+      paddingVertical: theme.spacing.s2,
+      paddingHorizontal: theme.spacing.s4,
+      borderRadius: theme.radius.pill,
+      borderWidth: 1,
+      borderColor: theme.colors.primaryDark,
+      backgroundColor: theme.colors.surface,
+    },
+    loadMorePressed: {
+      opacity: 0.85,
+    },
+    loadMoreDisabled: {
+      opacity: 0.6,
+    },
+    loadMoreText: {
+      color: theme.colors.primaryDark,
+      fontWeight: '700',
+    },
+  });

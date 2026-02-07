@@ -9,7 +9,7 @@ import {
   useBottomBarActions,
   ConfirmSheet,
 } from '@/src/shared/ui';
-import { theme } from '@/src/shared/theme/theme';
+import { type Theme, useTheme, useThemedStyles } from '@/src/shared/theme';
 import {
   useEditRecipe,
   useRecipeImagePicker,
@@ -35,6 +35,8 @@ import { TAB_BAR } from '@/src/shared/ui/layout/tabBar';
 import { routes } from '@/src/core/navigation/routes';
 
 export function EditRecipeScreen() {
+  const theme = useTheme();
+  const styles = useThemedStyles(createStyles);
   const params = useLocalSearchParams<{ id?: string }>();
   const id = typeof params.id === 'string' ? params.id : '';
   const view = useEditRecipe(id);
@@ -327,22 +329,23 @@ export function EditRecipeScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  screenContent: {
-    padding: 0,
-    gap: 0,
-  },
-  root: {
-    flex: 1,
-  },
-  listSeparator: {
-    height: theme.spacing.s2,
-  },
-  stickyAdd: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: TAB_BAR.BOX_HEIGHT + TAB_BAR.PADDING_TOP - 42,
-    alignItems: 'center',
-  },
-});
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
+    screenContent: {
+      padding: 0,
+      gap: 0,
+    },
+    root: {
+      flex: 1,
+    },
+    listSeparator: {
+      height: theme.spacing.s2,
+    },
+    stickyAdd: {
+      position: 'absolute',
+      left: 0,
+      right: 0,
+      bottom: TAB_BAR.BOX_HEIGHT + TAB_BAR.PADDING_TOP - 42,
+      alignItems: 'center',
+    },
+  });

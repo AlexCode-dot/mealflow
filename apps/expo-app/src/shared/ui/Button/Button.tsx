@@ -6,7 +6,7 @@ import {
   type TextStyle,
   type ViewStyle,
 } from 'react-native';
-import { theme } from '@/src/shared/theme/theme';
+import { type Theme, useThemedStyles } from '@/src/shared/theme';
 
 type Variant = 'primary' | 'secondary' | 'danger';
 
@@ -27,70 +27,75 @@ export function Button({
   containerStyle,
   textStyle,
 }: Props) {
+  const styles = useThemedStyles(createStyles);
   return (
     <Pressable
       onPress={onPress}
       disabled={disabled}
       style={({ pressed }) => [
         styles.base,
-        variantStyles[variant].container,
+        styles.variants[variant].container,
         containerStyle,
         disabled ? styles.disabled : null,
         pressed && !disabled ? styles.pressed : null,
       ]}
     >
-      <Text style={[styles.text, variantStyles[variant].text, textStyle]}>{title}</Text>
+      <Text style={[styles.text, styles.variants[variant].text, textStyle]}>{title}</Text>
     </Pressable>
   );
 }
 
-const styles = StyleSheet.create({
-  base: {
-    paddingVertical: theme.spacing.s3,
-    paddingHorizontal: theme.spacing.s4,
-    borderRadius: theme.radius.sm,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-  },
-  text: {
-    fontSize: 15,
-    fontWeight: '800',
-  },
-  pressed: {
-    opacity: 0.85,
-  },
-  disabled: {
-    opacity: 0.5,
-  },
-});
+const createStyles = (theme: Theme) => {
+  const base = StyleSheet.create({
+    base: {
+      paddingVertical: theme.spacing.s3,
+      paddingHorizontal: theme.spacing.s4,
+      borderRadius: theme.radius.sm,
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderWidth: 1,
+    },
+    text: {
+      fontSize: 15,
+      fontWeight: '800',
+    },
+    pressed: {
+      opacity: 0.85,
+    },
+    disabled: {
+      opacity: 0.5,
+    },
+  });
 
-const variantStyles = {
-  primary: StyleSheet.create({
-    container: {
-      backgroundColor: theme.colors.primaryDark,
-      borderColor: theme.colors.primaryDark,
+  const variants: Record<Variant, { container: ViewStyle; text: TextStyle }> = {
+    primary: {
+      container: {
+        backgroundColor: theme.colors.primaryDark,
+        borderColor: theme.colors.primaryDark,
+      },
+      text: {
+        color: theme.colors.textOnPrimary,
+      },
     },
-    text: {
-      color: theme.colors.textOnPrimary,
+    secondary: {
+      container: {
+        backgroundColor: theme.colors.bgLight,
+        borderColor: theme.colors.borderNeutral,
+      },
+      text: {
+        color: theme.colors.text,
+      },
     },
-  }),
-  secondary: StyleSheet.create({
-    container: {
-      backgroundColor: theme.colors.bgLight,
-      borderColor: theme.colors.borderNeutral,
+    danger: {
+      container: {
+        backgroundColor: theme.colors.errorBg,
+        borderColor: theme.colors.error,
+      },
+      text: {
+        color: theme.colors.error,
+      },
     },
-    text: {
-      color: theme.colors.text,
-    },
-  }),
-  danger: StyleSheet.create({
-    container: {
-      backgroundColor: theme.colors.errorBg,
-      borderColor: theme.colors.error,
-    },
-    text: {
-      color: theme.colors.error,
-    },
-  }),
-} satisfies Record<Variant, { container: ViewStyle; text: TextStyle }>;
+  };
+
+  return { ...base, variants };
+};

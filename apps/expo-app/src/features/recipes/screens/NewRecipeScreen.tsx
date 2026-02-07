@@ -9,7 +9,7 @@ import {
   useBottomBarActions,
   ConfirmSheet,
 } from '@/src/shared/ui';
-import { theme } from '@/src/shared/theme/theme';
+import { type Theme, useTheme, useThemedStyles } from '@/src/shared/theme';
 import {
   useCreateRecipe,
   useRecipeImagePicker,
@@ -37,6 +37,8 @@ import { normalizePath } from '@/src/core/navigation/normalizePath';
 import { buildHref } from '@/src/core/navigation/buildHref';
 
 export function NewRecipeScreen() {
+  const theme = useTheme();
+  const styles = useThemedStyles(createStyles);
   const params = useLocalSearchParams<{ returnTo?: string }>();
   const returnTo = normalizePath(typeof params.returnTo === 'string' ? params.returnTo : null);
   const view = useCreateRecipe();
@@ -317,22 +319,23 @@ export function NewRecipeScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  screenContent: {
-    padding: 0,
-    gap: 0,
-  },
-  root: {
-    flex: 1,
-  },
-  listSeparator: {
-    height: theme.spacing.s2,
-  },
-  stickyAdd: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: TAB_BAR.BOX_HEIGHT + TAB_BAR.PADDING_TOP - 42,
-    alignItems: 'center',
-  },
-});
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
+    screenContent: {
+      padding: 0,
+      gap: 0,
+    },
+    root: {
+      flex: 1,
+    },
+    listSeparator: {
+      height: theme.spacing.s2,
+    },
+    stickyAdd: {
+      position: 'absolute',
+      left: 0,
+      right: 0,
+      bottom: TAB_BAR.BOX_HEIGHT + TAB_BAR.PADDING_TOP - 42,
+      alignItems: 'center',
+    },
+  });

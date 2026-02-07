@@ -28,7 +28,7 @@ import { useToastState } from '@/src/shared/hooks/useToastState';
 import { useBottomBarActions, useGlobalToast, type BottomActionBarItem } from '@/src/shared/ui';
 import { mapCommonError } from '@/src/shared/errors/mapCommonError';
 import type { UiError } from '@/src/shared/errors/errorTypes';
-import { theme } from '@/src/shared/theme/theme';
+import { useTheme } from '@/src/shared/theme';
 import { TAB_BAR } from '@/src/shared/ui/layout/tabBar';
 import {
   DEFAULT_WEEKLY_SECTIONS,
@@ -197,6 +197,7 @@ const toEntryInput = (entry: WeeklyPlanEntry): WeeklyPlanEntryInput => ({
 });
 
 export function useWeeklyPlanDetailsScreen(): WeeklyPlanDetailsView {
+  const theme = useTheme();
   const params = useLocalSearchParams<{
     id?: string;
     editEntryId?: string;
@@ -305,7 +306,7 @@ export function useWeeklyPlanDetailsScreen(): WeeklyPlanDetailsView {
         icon: (
           <ShoppingBasket
             size={TAB_BAR.ICON_SIZE}
-            color={theme.colors.textOnPrimary}
+            color={theme.colors.tabBarAccent}
             strokeWidth={2.25}
           />
         ),
@@ -316,7 +317,7 @@ export function useWeeklyPlanDetailsScreen(): WeeklyPlanDetailsView {
         key: 'clear',
         label: 'Clear Week',
         icon: (
-          <XCircle size={TAB_BAR.ICON_SIZE} color={theme.colors.textOnPrimary} strokeWidth={2.25} />
+          <XCircle size={TAB_BAR.ICON_SIZE} color={theme.colors.tabBarAccent} strokeWidth={2.25} />
         ),
         onPress: () => setConfirmClearWeekOpen(true),
       },
@@ -327,7 +328,7 @@ export function useWeeklyPlanDetailsScreen(): WeeklyPlanDetailsView {
   const centerAction = useMemo(
     () => ({
       label: 'Add Section',
-      icon: <Plus color={theme.colors.textOnPrimary} size={38} strokeWidth={2.75} />,
+      icon: <Plus color={theme.colors.tabBarAddButtonIcon} size={38} strokeWidth={2.75} />,
       onPress: () => setAddSectionOpen(true),
       accessibilityLabel: 'Add Section',
     }),
@@ -824,7 +825,7 @@ export function useWeeklyPlanDetailsScreen(): WeeklyPlanDetailsView {
         key: 'cancel',
         label: 'Cancel',
         icon: (
-          <XCircle color={theme.colors.textOnPrimary} size={TAB_BAR.ICON_SIZE} strokeWidth={2.25} />
+          <XCircle color={theme.colors.tabBarAccent} size={TAB_BAR.ICON_SIZE} strokeWidth={2.25} />
         ),
         onPress: () => setEditOpen(false),
       },
@@ -832,7 +833,7 @@ export function useWeeklyPlanDetailsScreen(): WeeklyPlanDetailsView {
         key: 'delete',
         label: 'Delete',
         icon: (
-          <Trash2 color={theme.colors.textOnPrimary} size={TAB_BAR.ICON_SIZE} strokeWidth={2.25} />
+          <Trash2 color={theme.colors.tabBarAccent} size={TAB_BAR.ICON_SIZE} strokeWidth={2.25} />
         ),
         onPress: () => {
           setConfirmEntryDeleteOpen(true);
@@ -849,7 +850,7 @@ export function useWeeklyPlanDetailsScreen(): WeeklyPlanDetailsView {
         label: 'View Recipe',
         icon: (
           <ArrowUpRight
-            color={theme.colors.textOnPrimary}
+            color={theme.colors.tabBarAccent}
             size={TAB_BAR.ICON_SIZE}
             strokeWidth={2.25}
           />
@@ -877,7 +878,7 @@ export function useWeeklyPlanDetailsScreen(): WeeklyPlanDetailsView {
       key: 'save',
       label: 'Save',
       icon: (
-        <Download color={theme.colors.textOnPrimary} size={TAB_BAR.ICON_SIZE} strokeWidth={2.25} />
+        <Download color={theme.colors.tabBarAccent} size={TAB_BAR.ICON_SIZE} strokeWidth={2.25} />
       ),
       onPress: handleEditSave,
       disabled: isSaving,
@@ -893,7 +894,7 @@ export function useWeeklyPlanDetailsScreen(): WeeklyPlanDetailsView {
         key: 'delete',
         label: 'Delete',
         icon: (
-          <Trash2 color={theme.colors.textOnPrimary} size={TAB_BAR.ICON_SIZE} strokeWidth={2.25} />
+          <Trash2 color={theme.colors.tabBarAccent} size={TAB_BAR.ICON_SIZE} strokeWidth={2.25} />
         ),
         onPress: () => {
           if (!selectedSection) {
@@ -908,11 +909,7 @@ export function useWeeklyPlanDetailsScreen(): WeeklyPlanDetailsView {
         key: 'save',
         label: 'Save',
         icon: (
-          <Download
-            color={theme.colors.textOnPrimary}
-            size={TAB_BAR.ICON_SIZE}
-            strokeWidth={2.25}
-          />
+          <Download color={theme.colors.tabBarAccent} size={TAB_BAR.ICON_SIZE} strokeWidth={2.25} />
         ),
         onPress: handleSectionSave,
         disabled: isSectionSaving || nextSections.length === 0,

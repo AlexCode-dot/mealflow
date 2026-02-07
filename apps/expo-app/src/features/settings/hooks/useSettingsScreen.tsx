@@ -15,6 +15,7 @@ import { tokenStore } from '@/src/core/auth/tokenStore';
 import { identityAuthApi } from '@/src/core/auth/identityAuthApi';
 import { useGlobalToast } from '@/src/shared/ui';
 import { accountApi } from '@/src/features/settings/api/accountApi';
+import { DEFAULT_THEME_NAME, isThemeName, useThemeController } from '@/src/shared/theme';
 
 type ThemeOption = {
   label: string;
@@ -65,8 +66,21 @@ type SettingsView = {
 
 const THEME_OPTIONS: ThemeOption[] = [
   { label: 'Default', value: 'default' },
-  { label: 'Olive', value: 'olive' },
+  { label: 'Forest', value: 'forest' },
   { label: 'Sage', value: 'sage' },
+  { label: 'Clay', value: 'clay' },
+  { label: 'Latte', value: 'latte' },
+  { label: 'Alpine', value: 'alpine' },
+  { label: 'Midnight', value: 'midnight' },
+  { label: 'Matcha', value: 'matcha' },
+  { label: 'Graphite', value: 'graphite' },
+  { label: 'Espresso', value: 'espresso' },
+  { label: 'Aero', value: 'aero' },
+  { label: 'Mars', value: 'mars' },
+  { label: 'Rose', value: 'rose' },
+  { label: 'Lavender', value: 'lavender' },
+  { label: 'Expedition', value: 'expedition' },
+  { label: 'Pink', value: 'pink' },
 ];
 
 export function useSettingsScreen(): SettingsView {
@@ -76,8 +90,9 @@ export function useSettingsScreen(): SettingsView {
   const insets = useSafeAreaInsets();
   const toastState = useToastState();
   const { showError } = useGlobalToast();
+  const { setThemeName } = useThemeController();
   const [showToast, setShowToast] = useState(false);
-  const [theme, setThemeValue] = useState('default');
+  const [theme, setThemeValue] = useState(DEFAULT_THEME_NAME);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -90,13 +105,15 @@ export function useSettingsScreen(): SettingsView {
     setError(null);
     try {
       const res = await profileApi.get();
-      setThemeValue(res.theme ?? 'default');
+      const themeName = isThemeName(res.theme ?? '') ? res.theme : DEFAULT_THEME_NAME;
+      setThemeValue(themeName);
+      setThemeName(themeName);
     } catch (err) {
       const uiErr = mapCommonError(toApiError(err));
       setError(uiErr);
       showError(uiErr, { onRetry: load });
     }
-  }, [showError]);
+  }, [setThemeName, showError]);
 
   useFocusEffect(
     useCallback(() => {
@@ -155,8 +172,10 @@ export function useSettingsScreen(): SettingsView {
   const setTheme = useCallback(
     async (value: string) => {
       if (value === theme || isSaving) return;
+      if (!isThemeName(value)) return;
       setIsSaving(true);
       setThemeValue(value);
+      setThemeName(value);
       try {
         await profileApi.patch({ theme: value });
         toastState.show({ variant: 'success', message: 'Theme updated.' });
@@ -169,7 +188,7 @@ export function useSettingsScreen(): SettingsView {
         setThemeOpen(false);
       }
     },
-    [isSaving, showError, theme, toastState],
+    [isSaving, setThemeName, showError, theme, toastState],
   );
 
   const doDelete = useCallback(async () => {

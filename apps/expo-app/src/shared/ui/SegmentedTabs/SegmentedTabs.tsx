@@ -1,5 +1,5 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { theme } from '@/src/shared/theme/theme';
+import { type Theme, useThemedStyles } from '@/src/shared/theme';
 
 export type SegmentedTab = { key: string; label: string };
 
@@ -10,6 +10,7 @@ type Props = {
 };
 
 export function SegmentedTabs({ tabs, value, onChange }: Props) {
+  const styles = useThemedStyles(createStyles);
   return (
     <View style={styles.wrap}>
       {tabs.map((t) => {
@@ -34,42 +35,43 @@ export function SegmentedTabs({ tabs, value, onChange }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
-  wrap: {
-    flexDirection: 'row',
-    gap: 6,
-    padding: 4,
-    borderRadius: theme.radius.pill,
-    backgroundColor: theme.colors.primaryLight,
-    marginBottom: 10,
-  },
-  tab: {
-    flex: 1,
-    borderRadius: theme.radius.pill,
-    paddingVertical: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  tabInactive: {
-    backgroundColor: 'transparent',
-  },
-  tabActive: {
-    backgroundColor: theme.colors.primary,
-  },
-  text: {
-    fontSize: 14,
-    fontWeight: '800',
-    letterSpacing: 0.2,
-  },
-  textInactive: {
-    color: theme.colors.primaryDark,
-    opacity: 0.8,
-  },
-  textActive: {
-    color: theme.colors.textOnPrimary,
-    fontSize: 15,
-  },
-  pressed: {
-    opacity: 0.9,
-  },
-});
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
+    wrap: {
+      flexDirection: 'row',
+      gap: 6,
+      padding: 4,
+      borderRadius: theme.radius.pill,
+      backgroundColor: theme.colors.primaryLight,
+      marginBottom: 10,
+    },
+    tab: {
+      flex: 1,
+      borderRadius: theme.radius.pill,
+      paddingVertical: 10,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    tabInactive: {
+      backgroundColor: 'transparent',
+    },
+    tabActive: {
+      backgroundColor: theme.colors.primary,
+    },
+    text: {
+      fontSize: 14,
+      fontWeight: '800',
+      letterSpacing: 0.2,
+    },
+    textInactive: {
+      color: theme.colors.primaryDark,
+      opacity: 0.8,
+    },
+    textActive: {
+      color: theme.colors.textOnPrimary,
+      fontSize: 15,
+    },
+    pressed: {
+      opacity: 0.9,
+    },
+  });

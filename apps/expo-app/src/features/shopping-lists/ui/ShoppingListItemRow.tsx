@@ -1,7 +1,7 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Check, Trash2 } from 'lucide-react-native';
 import type { ShoppingListItem } from '@/src/features/shopping-lists/types';
-import { theme } from '@/src/shared/theme/theme';
+import { type Theme, useTheme, useThemedStyles } from '@/src/shared/theme';
 
 type Props = {
   item: ShoppingListItem;
@@ -17,6 +17,8 @@ const buildQuantityLabel = (item: ShoppingListItem) => {
 };
 
 export function ShoppingListItemRow({ item, onToggle, onEdit, onDelete }: Props) {
+  const theme = useTheme();
+  const styles = useThemedStyles(createStyles);
   const quantityLabel = buildQuantityLabel(item);
 
   return (
@@ -58,70 +60,71 @@ export function ShoppingListItemRow({ item, onToggle, onEdit, onDelete }: Props)
   );
 }
 
-const styles = StyleSheet.create({
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: theme.spacing.s3,
-    paddingHorizontal: theme.spacing.s3,
-    paddingVertical: theme.spacing.s3 + 2,
-    borderRadius: theme.radius.md,
-    backgroundColor: theme.colors.surface,
-    borderWidth: 1,
-    borderColor: theme.colors.borderNeutral,
-  },
-  rowPressed: {
-    opacity: 0.9,
-  },
-  check: {
-    width: 32,
-    height: 32,
-    borderRadius: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 2,
-  },
-  checkIdle: {
-    borderColor: theme.colors.borderStrong,
-    backgroundColor: theme.colors.bgLight,
-  },
-  checkActive: {
-    borderColor: theme.colors.primary,
-    backgroundColor: theme.colors.primary,
-  },
-  textBlock: {
-    flex: 1,
-    gap: 2,
-  },
-  name: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: theme.colors.text,
-  },
-  nameChecked: {
-    color: theme.colors.textMuted,
-    textDecorationLine: 'line-through',
-  },
-  quantity: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: theme.colors.textMuted,
-  },
-  quantityChecked: {
-    color: theme.colors.textMuted,
-    textDecorationLine: 'line-through',
-  },
-  delete: {
-    width: 32,
-    height: 32,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 10,
-    backgroundColor: theme.colors.errorBg,
-    borderWidth: 1,
-    borderColor: theme.colors.error,
-  },
-  deletePressed: {
-    opacity: 0.8,
-  },
-});
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
+    row: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: theme.spacing.s3,
+      paddingHorizontal: theme.spacing.s3,
+      paddingVertical: theme.spacing.s3 + 2,
+      borderRadius: theme.radius.md,
+      backgroundColor: theme.colors.surface,
+      borderWidth: 1,
+      borderColor: theme.colors.borderNeutral,
+    },
+    rowPressed: {
+      opacity: 0.9,
+    },
+    check: {
+      width: 32,
+      height: 32,
+      borderRadius: 10,
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderWidth: 2,
+    },
+    checkIdle: {
+      borderColor: theme.colors.borderStrong,
+      backgroundColor: theme.colors.bgLight,
+    },
+    checkActive: {
+      borderColor: theme.colors.primary,
+      backgroundColor: theme.colors.primary,
+    },
+    textBlock: {
+      flex: 1,
+      gap: 2,
+    },
+    name: {
+      fontSize: 16,
+      fontWeight: '700',
+      color: theme.colors.text,
+    },
+    nameChecked: {
+      color: theme.colors.textMuted,
+      textDecorationLine: 'line-through',
+    },
+    quantity: {
+      fontSize: 13,
+      fontWeight: '700',
+      color: theme.colors.textMuted,
+    },
+    quantityChecked: {
+      color: theme.colors.textMuted,
+      textDecorationLine: 'line-through',
+    },
+    delete: {
+      width: 32,
+      height: 32,
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderRadius: 10,
+      backgroundColor: theme.colors.errorBg,
+      borderWidth: 1,
+      borderColor: theme.colors.error,
+    },
+    deletePressed: {
+      opacity: 0.8,
+    },
+  });
