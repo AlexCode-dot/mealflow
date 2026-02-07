@@ -523,7 +523,7 @@ export function useShoppingListDetailsScreen(): ShoppingListDetailsView {
         disabled: !hasChecked,
       },
     ];
-  }, [checkedItems.length, openOptions]);
+  }, [checkedItems.length, openOptions, theme.colors.tabBarAccent]);
 
   const centerAction = useMemo(
     () => ({
@@ -532,7 +532,7 @@ export function useShoppingListDetailsScreen(): ShoppingListDetailsView {
       onPress: openAddSheet,
       accessibilityLabel: 'Add item',
     }),
-    [openAddSheet],
+    [openAddSheet, theme.colors.tabBarAddButtonIcon],
   );
 
   useBottomBarActions(

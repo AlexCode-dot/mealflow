@@ -1,6 +1,6 @@
 import { Pressable, View, Animated } from 'react-native';
 import { useMemo } from 'react';
-import { type Theme, useTheme, useThemedStyles } from '@/src/shared/theme';
+import { useTheme, useThemedStyles } from '@/src/shared/theme';
 import { getTabIcon } from './tabIcons';
 import { useFocusAnim } from './useFocusAnim';
 import { createStyles } from './AppTabBar.styles';

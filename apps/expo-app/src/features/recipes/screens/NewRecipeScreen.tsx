@@ -124,7 +124,7 @@ export function NewRecipeScreen() {
         disabled: !state.canSubmit || isUploading,
       },
     ],
-    [isUploading, state.canSubmit, state.isSaving, onCancel, submit],
+    [isUploading, state.canSubmit, state.isSaving, onCancel, submit, theme.colors.textOnPrimary],
   );
 
   useBottomBarActions(actionItems);

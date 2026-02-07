@@ -95,7 +95,7 @@ export function RecipeDetailsScreen() {
         label: portionsLabel,
       },
     ];
-  }, [state.recipe]);
+  }, [state.recipe, theme.colors.primaryDark]);
 
   const portionsOptions = useMemo(() => {
     const base = RECIPE_PORTIONS_OPTIONS.filter((option) => option.value !== '0');
@@ -206,7 +206,7 @@ export function RecipeDetailsScreen() {
         onPress: onDelete,
       },
     ],
-    [isAddingToList, onAddToShoppingList, onDelete, onEdit],
+    [isAddingToList, onAddToShoppingList, onDelete, onEdit, theme.colors.textOnPrimary],
   );
 
   useBottomBarActions(isLeaving ? null : actionItems);

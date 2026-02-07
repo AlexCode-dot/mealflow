@@ -116,6 +116,7 @@ export default function WeeklyPlanDetailScreen() {
     setEditPickerOpen,
     setEditPortions,
     setEditSection,
+    styles.pickerOverlay,
   ]);
   const toastBanner =
     toast.state.toast && toast.showToast && !globalToast ? (

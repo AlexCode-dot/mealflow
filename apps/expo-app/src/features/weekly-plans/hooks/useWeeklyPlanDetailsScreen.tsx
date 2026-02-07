@@ -322,7 +322,7 @@ export function useWeeklyPlanDetailsScreen(): WeeklyPlanDetailsView {
         onPress: () => setConfirmClearWeekOpen(true),
       },
     ],
-    [isGenerating, requestGenerateList],
+    [isGenerating, requestGenerateList, theme.colors.tabBarAccent],
   );
 
   const centerAction = useMemo(
@@ -332,7 +332,7 @@ export function useWeeklyPlanDetailsScreen(): WeeklyPlanDetailsView {
       onPress: () => setAddSectionOpen(true),
       accessibilityLabel: 'Add Section',
     }),
-    [],
+    [setAddSectionOpen, theme.colors.tabBarAddButtonIcon],
   );
 
   useBottomBarActions(
@@ -885,7 +885,16 @@ export function useWeeklyPlanDetailsScreen(): WeeklyPlanDetailsView {
     });
 
     return items;
-  }, [editEntry?.day, editEntry?.id, editEntry?.recipeId, editTab, handleEditSave, isSaving, plan]);
+  }, [
+    editEntry?.day,
+    editEntry?.id,
+    editEntry?.recipeId,
+    editTab,
+    handleEditSave,
+    isSaving,
+    plan,
+    theme.colors.tabBarAccent,
+  ]);
 
   const sectionActionItems = useMemo(() => {
     const nextSections = buildNextSections();
@@ -922,6 +931,7 @@ export function useWeeklyPlanDetailsScreen(): WeeklyPlanDetailsView {
     isSectionSaving,
     sectionDraft.length,
     selectedSection,
+    theme.colors.tabBarAccent,
     toastState,
   ]);
 

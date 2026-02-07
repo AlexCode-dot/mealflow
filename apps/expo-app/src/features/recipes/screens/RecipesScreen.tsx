@@ -108,7 +108,15 @@ export function RecipesScreen() {
         </View>
       );
     },
-    [actions, data, filters, state.hasDiscoveryFilters, state.tab],
+    [
+      actions,
+      data,
+      filters,
+      state.hasDiscoveryFilters,
+      state.tab,
+      styles.headerBlock,
+      styles.muted,
+    ],
   );
 
   useEffect(() => {
