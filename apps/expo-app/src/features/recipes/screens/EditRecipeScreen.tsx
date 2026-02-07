@@ -139,7 +139,15 @@ export function EditRecipeScreen() {
         disabled: !state.canSave || isUploading || state.isRemovingImage,
       },
     ],
-    [state.canSave, state.isSaving, state.isRemovingImage, onCancel, onSave, isUploading],
+    [
+      state.canSave,
+      state.isSaving,
+      state.isRemovingImage,
+      onCancel,
+      onSave,
+      isUploading,
+      theme.colors.textOnPrimary,
+    ],
   );
 
   useBottomBarActions(actionItems);

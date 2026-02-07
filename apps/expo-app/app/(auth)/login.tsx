@@ -3,10 +3,11 @@ import { View, StyleSheet } from 'react-native';
 import { AuthScreen, AuthBottomCta } from '@/src/shared/ui';
 import { LoginForm } from '@/src/features/auth/ui/LoginForm';
 import { useLogin } from '@/src/features/auth/hooks/useLogin';
-import { theme } from '@/src/shared/theme/theme';
+import { type Theme, useThemedStyles } from '@/src/shared/theme';
 import { routes } from '@/src/core/navigation/routes';
 
 export default function LoginScreen() {
+  const styles = useThemedStyles(createStyles);
   const router = useRouter();
   const view = useLogin();
   const { state, actions } = view;
@@ -39,8 +40,9 @@ export default function LoginScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  formWrap: {
-    gap: theme.spacing.s4,
-  },
-});
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
+    formWrap: {
+      gap: theme.spacing.s4,
+    },
+  });

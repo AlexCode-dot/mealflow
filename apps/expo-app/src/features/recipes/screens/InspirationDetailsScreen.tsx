@@ -90,7 +90,7 @@ export function InspirationDetailsScreen() {
         disabled: state.isSaving || !state.recipe,
       },
     ],
-    [state.isSaving, onSave, state.recipe],
+    [state.isSaving, onSave, state.recipe, theme.colors.textOnPrimary],
   );
 
   useBottomBarActions(actionItems);
@@ -114,7 +114,7 @@ export function InspirationDetailsScreen() {
         label: areaLabel,
       },
     ];
-  }, [state.recipe]);
+  }, [state.recipe, theme.colors.primaryDark]);
 
   const isSaved = useMemo(() => {
     const normalize = (value?: string | null) => (value ?? '').trim().toLowerCase();

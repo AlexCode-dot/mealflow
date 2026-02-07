@@ -49,7 +49,7 @@ export function ProfileEditScreen() {
         disabled: state.isSaving,
       },
     ],
-    [actions.cancel, actions.save, state.isSaving],
+    [actions.cancel, actions.save, state.isSaving, theme.colors.textOnPrimary],
   );
 
   useBottomBarActions(isFocused ? actionItems : null);
