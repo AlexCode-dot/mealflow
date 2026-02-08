@@ -57,6 +57,7 @@ export type RecipesScreenActions = {
   handleSaveConfirm: () => Promise<void>;
   handleSavedScroll: (offsetY: number) => void;
   handleDiscoveryScroll: (offsetY: number) => void;
+  handleDiscoveryReset: () => void;
 };
 
 export type RecipesScreenToast = {
@@ -221,6 +222,11 @@ export function useRecipesScreen(): RecipesScreenView {
     setShowScrollTop(offsetY > 500);
   }, []);
 
+  const handleDiscoveryReset = useCallback(() => {
+    discovery.resetRandom();
+    discoveryListRef.current?.scrollToOffset({ offset: 0, animated: true });
+  }, [discovery]);
+
   const state = useMemo<RecipesScreenState>(
     () => ({
       tab: view.tab,
@@ -300,6 +306,7 @@ export function useRecipesScreen(): RecipesScreenView {
       handleSaveConfirm,
       handleSavedScroll,
       handleDiscoveryScroll,
+      handleDiscoveryReset,
     }),
     [
       setTab,
@@ -308,6 +315,7 @@ export function useRecipesScreen(): RecipesScreenView {
       handleSaveConfirm,
       handleSavedScroll,
       handleDiscoveryScroll,
+      handleDiscoveryReset,
     ],
   );
 
