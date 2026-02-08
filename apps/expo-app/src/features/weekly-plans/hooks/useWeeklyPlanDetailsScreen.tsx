@@ -335,10 +335,7 @@ export function useWeeklyPlanDetailsScreen(): WeeklyPlanDetailsView {
     [setAddSectionOpen, theme.colors.tabBarAddButtonIcon],
   );
 
-  useBottomBarActions(
-    isFocused ? actionItems : null,
-    isFocused ? { mode: 'notched-actions', centerAction } : undefined,
-  );
+  useBottomBarActions(actionItems, { mode: 'notched-actions', centerAction });
 
   const dayTabs = useMemo(() => (plan ? buildWeekDays(plan.weeklyStart) : []), [plan]);
 

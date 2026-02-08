@@ -10,7 +10,11 @@ import { useTheme, useThemedStyles } from '@/src/shared/theme';
 import { createStyles } from './AppTabBar.styles';
 import { TAB_BAR } from '@/src/shared/ui/layout/tabBar';
 import { TabItem } from './TabItem';
-import { BottomActionBar } from '@/src/shared/ui/BottomActionBar';
+import {
+  BottomActionBar,
+  resolveBottomActionBarColor,
+  resolveTabBarItemColor,
+} from '@/src/shared/ui/BottomActionBar';
 import type { BottomActionBarItem } from '@/src/shared/ui/BottomActionBar';
 import { useBottomBarState } from '@/src/shared/ui/BottomBar';
 import { WEB, isWeb } from '@/src/shared/ui/webStyles';
@@ -213,7 +217,10 @@ export function AppTabBar({ state, descriptors, navigation }: BottomTabBarProps)
               <Plus color={theme.colors.tabBarAddButtonIcon} size={38} strokeWidth={2.75} />
             </Pressable>
           </View>
-          <Text style={styles.addLabel} numberOfLines={1}>
+          <Text
+            style={[styles.addLabel, { color: resolveTabBarItemColor(theme, false) }]}
+            numberOfLines={1}
+          >
             Add Recipe
           </Text>
         </View>
@@ -253,6 +260,8 @@ function NotchedActionBar({
   const midpoint = Math.ceil(items.length / 2);
   const left = items.slice(0, midpoint);
   const right = items.slice(midpoint);
+  const labelColor = resolveBottomActionBarColor(theme);
+  const addLabelColor = resolveTabBarItemColor(theme, false);
 
   return (
     <View style={[styles.bar, styles.barNotched, { paddingBottom }]} onLayout={onLayout}>
@@ -263,11 +272,11 @@ function NotchedActionBar({
         backgroundStyle={styles.background}
       />
       {left.map((item) => (
-        <ActionSlot key={item.key} item={item} styles={styles} />
+        <ActionSlot key={item.key} item={item} styles={styles} labelColor={labelColor} />
       ))}
       <View style={[styles.slot, styles.centerSlot]} />
       {right.map((item) => (
-        <ActionSlot key={item.key} item={item} styles={styles} />
+        <ActionSlot key={item.key} item={item} styles={styles} labelColor={labelColor} />
       ))}
 
       <View style={[styles.centerOverlay, { pointerEvents: 'box-none' }]}>
@@ -282,7 +291,7 @@ function NotchedActionBar({
             {centerAction.icon}
           </Pressable>
         </View>
-        <Text style={styles.addLabel} numberOfLines={1}>
+        <Text style={[styles.addLabel, { color: addLabelColor }]} numberOfLines={1}>
           {centerAction.label}
         </Text>
       </View>
@@ -293,16 +302,18 @@ function NotchedActionBar({
 function ActionSlot({
   item,
   styles,
+  labelColor,
 }: {
   item: BottomActionBarItem;
   styles: ReturnType<typeof createStyles>;
+  labelColor: string;
 }) {
   return (
     <Pressable onPress={item.onPress} style={styles.slot} disabled={item.disabled}>
       <View style={styles.box}>
         <View style={[styles.iconBox, { marginBottom: 8 }]}>{item.icon}</View>
         <View style={[styles.labelWrap, { pointerEvents: 'none' }]}>
-          <Text style={styles.label} numberOfLines={1}>
+          <Text style={[styles.label, { color: labelColor }]} numberOfLines={1}>
             {item.label}
           </Text>
         </View>

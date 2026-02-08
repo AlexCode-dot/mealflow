@@ -70,7 +70,15 @@ export function useBottomBarActions(
   const isFocused = useIsFocused();
 
   useLayoutEffect(() => {
-    if (!isFocused || !actions || actions.length === 0) {
+    const hasActions = !!actions && actions.length > 0;
+
+    if (!isFocused) {
+      if (!hasActions) return;
+      setConfig({ mode: 'default', actions: null, centerAction: null });
+      return () => setConfig({ mode: 'default', actions: null, centerAction: null });
+    }
+
+    if (!hasActions) {
       setConfig({ mode: 'default', actions: null, centerAction: null });
       return () => setConfig({ mode: 'default', actions: null, centerAction: null });
     }

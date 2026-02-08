@@ -100,9 +100,16 @@ type PickerSelectProps = {
 };
 
 export function PickerSelect({ value, onChange, options, placeholder }: PickerSelectProps) {
+  const styles = useThemedStyles(createStyles);
   if (!isWeb) {
     return (
-      <Picker selectedValue={value} onValueChange={(next) => onChange(String(next))}>
+      <Picker
+        selectedValue={value}
+        onValueChange={(next) => onChange(String(next))}
+        style={styles.picker}
+        itemStyle={styles.pickerItem}
+        dropdownIconColor={styles.picker.color as string}
+      >
         {placeholder ? <Picker.Item label={placeholder} value="" /> : null}
         {options.map((option) => (
           <Picker.Item key={option.value} label={option.label} value={option.value} />
@@ -225,6 +232,13 @@ const createStyles = (theme: Theme) =>
     webItemTextActive: {
       color: theme.colors.primaryDark,
       fontWeight: '800',
+    },
+    picker: {
+      color: theme.colors.text,
+    },
+    pickerItem: {
+      color: theme.colors.text,
+      fontSize: 20,
     },
     webListWrap: {
       gap: theme.spacing.s2,

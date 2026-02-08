@@ -13,6 +13,7 @@ import {
   ListRow,
   useBottomBarActions,
   useGlobalToast,
+  resolveBottomActionBarColor,
 } from '@/src/shared/ui';
 import { type Theme, useTheme, useThemedStyles } from '@/src/shared/theme';
 import { TAB_BAR } from '@/src/shared/ui/layout/tabBar';
@@ -27,29 +28,26 @@ export function ProfileEditScreen() {
   const isFocused = useIsFocused();
   const insets = useSafeAreaInsets();
   const { toast: globalToast } = useGlobalToast();
+  const actionColor = resolveBottomActionBarColor(theme);
 
   const actionItems = useMemo(
     () => [
       {
         key: 'cancel',
         label: 'Cancel',
-        icon: (
-          <XCircle color={theme.colors.textOnPrimary} size={TAB_BAR.ICON_SIZE} strokeWidth={2.4} />
-        ),
+        icon: <XCircle color={actionColor} size={TAB_BAR.ICON_SIZE} strokeWidth={2.4} />,
         onPress: actions.cancel,
         disabled: state.isSaving,
       },
       {
         key: 'save',
         label: state.isSaving ? 'Saving' : 'Save',
-        icon: (
-          <Check color={theme.colors.textOnPrimary} size={TAB_BAR.ICON_SIZE} strokeWidth={2.6} />
-        ),
+        icon: <Check color={actionColor} size={TAB_BAR.ICON_SIZE} strokeWidth={2.6} />,
         onPress: actions.save,
         disabled: state.isSaving,
       },
     ],
-    [actions.cancel, actions.save, state.isSaving, theme.colors.textOnPrimary],
+    [actionColor, actions.cancel, actions.save, state.isSaving],
   );
 
   useBottomBarActions(isFocused ? actionItems : null);

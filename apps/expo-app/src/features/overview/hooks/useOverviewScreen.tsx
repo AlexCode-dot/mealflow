@@ -145,10 +145,15 @@ export function useOverviewScreen(): OverviewView {
 
   const openWeeklyPlan = useCallback(() => {
     if (weekPlan) {
-      router.push(buildHref(routes.weeklyPlan(weekPlan.id), { returnTo: routes.overview }));
+      router.navigate(
+        buildHref(routes.weeklyPlanner, {
+          openPlanId: weekPlan.id,
+          returnTo: routes.overview,
+        }),
+      );
       return;
     }
-    router.push(routes.weeklyPlanner);
+    router.navigate(routes.weeklyPlanner);
   }, [weekPlan]);
 
   const openRecipes = useCallback(() => {

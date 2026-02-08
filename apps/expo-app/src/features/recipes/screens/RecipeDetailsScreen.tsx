@@ -12,6 +12,7 @@ import {
   useBottomBarActions,
   ModalSheet,
   useGlobalToast,
+  resolveBottomActionBarColor,
 } from '@/src/shared/ui';
 import { type Theme, useTheme, useThemedStyles } from '@/src/shared/theme';
 import { routes } from '@/src/core/navigation/routes';
@@ -63,6 +64,7 @@ export function RecipeDetailsScreen() {
   const { isAdding: isAddingToList, addRecipeToShoppingList } = useAddRecipeToShoppingList();
   const didInitialFocusLoad = useRef(false);
   const isFocused = useIsFocused();
+  const actionColor = resolveBottomActionBarColor(theme);
 
   const stats = useMemo(() => {
     const cookingMinutes = state.recipe?.cookingTimeMinutes;
@@ -179,34 +181,24 @@ export function RecipeDetailsScreen() {
       {
         key: 'edit',
         label: 'Edit',
-        icon: (
-          <Pencil color={theme.colors.textOnPrimary} size={TAB_BAR.ICON_SIZE} strokeWidth={2.25} />
-        ),
+        icon: <Pencil color={actionColor} size={TAB_BAR.ICON_SIZE} strokeWidth={2.25} />,
         onPress: onEdit,
       },
       {
         key: 'shopping-list',
         label: 'Add to Shopping List',
-        icon: (
-          <ShoppingBasket
-            color={theme.colors.textOnPrimary}
-            size={TAB_BAR.ICON_SIZE}
-            strokeWidth={2.25}
-          />
-        ),
+        icon: <ShoppingBasket color={actionColor} size={TAB_BAR.ICON_SIZE} strokeWidth={2.25} />,
         onPress: onAddToShoppingList,
         disabled: isAddingToList,
       },
       {
         key: 'delete',
         label: 'Delete',
-        icon: (
-          <Trash2 color={theme.colors.textOnPrimary} size={TAB_BAR.ICON_SIZE} strokeWidth={2.25} />
-        ),
+        icon: <Trash2 color={actionColor} size={TAB_BAR.ICON_SIZE} strokeWidth={2.25} />,
         onPress: onDelete,
       },
     ],
-    [isAddingToList, onAddToShoppingList, onDelete, onEdit, theme.colors.textOnPrimary],
+    [actionColor, isAddingToList, onAddToShoppingList, onDelete, onEdit],
   );
 
   useBottomBarActions(isLeaving ? null : actionItems);

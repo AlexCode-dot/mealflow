@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { weeklyPlansApi } from '@/src/features/weekly-plans/api/weeklyPlansApi';
 import type { WeeklyPlan, WeeklyPlanListItem } from '@/src/features/weekly-plans/types';
 import { routes } from '@/src/core/navigation/routes';
+import { buildHref } from '@/src/core/navigation/buildHref';
 import { useWeeklyPlansList } from '@/src/features/weekly-plans/hooks/useWeeklyPlansList';
 import type { UiError } from '@/src/shared/errors/errorTypes';
 import {
@@ -67,6 +68,7 @@ export type WeeklyPlannerView = {
 };
 
 export function useWeeklyPlannerScreen(): WeeklyPlannerView {
+  const params = useLocalSearchParams<{ openPlanId?: string; returnTo?: string }>();
   const { items, isLoading, error, load, refreshControl } = useWeeklyPlansList();
   const [tab, setTab] = useState<WeeklyPlannerTab>('recent');
   const [isCreating, setIsCreating] = useState(false);
@@ -116,6 +118,12 @@ export function useWeeklyPlannerScreen(): WeeklyPlannerView {
     const labels = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
     return labels[day] ?? null;
   }, [isCurrentWeek]);
+
+  useEffect(() => {
+    if (typeof params.openPlanId !== 'string') return;
+    const returnTo = typeof params.returnTo === 'string' ? params.returnTo : undefined;
+    router.replace(buildHref(routes.weeklyPlan(params.openPlanId), { returnTo }));
+  }, [params.openPlanId, params.returnTo]);
 
   const loadSelectedPlan = useCallback(async () => {
     if (!selectedPlan?.id) {

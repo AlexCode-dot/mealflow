@@ -10,6 +10,7 @@ import {
   ToastBanner,
   useBottomBarActions,
   useGlobalToast,
+  resolveBottomActionBarColor,
 } from '@/src/shared/ui';
 import { type Theme, useTheme, useThemedStyles } from '@/src/shared/theme';
 import { useInspirationDetails, useRecipesList } from '@/src/features/recipes/hooks';
@@ -78,19 +79,18 @@ export function InspirationDetailsScreen() {
     }
   }, [mealType, actions, returnTo, showValidationError]);
 
+  const actionColor = resolveBottomActionBarColor(theme);
   const actionItems = useMemo(
     () => [
       {
         key: 'save',
         label: state.isSaving ? 'Saving…' : 'Save recipe',
-        icon: (
-          <Bookmark color={theme.colors.textOnPrimary} size={TAB_BAR.ICON_SIZE} strokeWidth={2.3} />
-        ),
+        icon: <Bookmark color={actionColor} size={TAB_BAR.ICON_SIZE} strokeWidth={2.3} />,
         onPress: onSave,
         disabled: state.isSaving || !state.recipe,
       },
     ],
-    [state.isSaving, onSave, state.recipe, theme.colors.textOnPrimary],
+    [actionColor, state.isSaving, onSave, state.recipe],
   );
 
   useBottomBarActions(actionItems);

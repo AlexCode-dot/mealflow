@@ -7,6 +7,7 @@ import {
   ErrorText,
   SectionEmpty,
   useBottomBarActions,
+  resolveBottomActionBarColor,
   ConfirmSheet,
 } from '@/src/shared/ui';
 import { type Theme, useTheme, useThemedStyles } from '@/src/shared/theme';
@@ -109,15 +110,14 @@ export function EditRecipeScreen() {
     onEditIngredient: ingredientEditor.openEdit,
     onEditStep: stepEditor.openEdit,
   });
+  const actionColor = resolveBottomActionBarColor(theme);
 
   const actionItems = useMemo(
     () => [
       {
         key: 'cancel',
         label: 'Cancel',
-        icon: (
-          <XCircle color={theme.colors.textOnPrimary} size={TAB_BAR.ICON_SIZE} strokeWidth={2.25} />
-        ),
+        icon: <XCircle color={actionColor} size={TAB_BAR.ICON_SIZE} strokeWidth={2.25} />,
         onPress: onCancel,
       },
       {
@@ -128,25 +128,19 @@ export function EditRecipeScreen() {
             : state.isSaving
               ? 'Saving…'
               : 'Save recipe',
-        icon: (
-          <Download
-            color={theme.colors.textOnPrimary}
-            size={TAB_BAR.ICON_SIZE}
-            strokeWidth={2.25}
-          />
-        ),
+        icon: <Download color={actionColor} size={TAB_BAR.ICON_SIZE} strokeWidth={2.25} />,
         onPress: onSave,
         disabled: !state.canSave || isUploading || state.isRemovingImage,
       },
     ],
     [
+      actionColor,
       state.canSave,
       state.isSaving,
       state.isRemovingImage,
       onCancel,
       onSave,
       isUploading,
-      theme.colors.textOnPrimary,
     ],
   );
 

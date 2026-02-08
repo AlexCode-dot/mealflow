@@ -3,6 +3,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { type Theme, useThemedStyles } from '@/src/shared/theme';
 import { TAB_BAR } from '@/src/shared/ui/layout/tabBar';
+import { contrastRatio, isHexColor } from '@/src/shared/theme/color';
 
 export type BottomActionBarItem = {
   key: string;
@@ -41,6 +42,33 @@ export function BottomActionBar({ items }: Props) {
       ))}
     </View>
   );
+}
+
+export function resolveBottomActionBarColor(theme: Theme): string {
+  const accent = theme.colors.tabBarAccent;
+  const bg = theme.colors.tabBarBg;
+  if (!isHexColor(accent) || !isHexColor(bg)) {
+    return theme.colors.tabBarText;
+  }
+  const contrast = contrastRatio(accent, bg);
+  return contrast < 2.5 ? theme.colors.tabBarText : accent;
+}
+
+export function resolveTabBarItemColor(theme: Theme, focused: boolean): string {
+  const primary = focused ? theme.colors.tabBarAccent : theme.colors.tabBarText;
+  const bg = theme.colors.tabBarBg;
+  if (!isHexColor(primary) || !isHexColor(bg)) {
+    return primary;
+  }
+  const contrast = contrastRatio(primary, bg);
+  if (contrast >= 2.5) {
+    return primary;
+  }
+  const fallback = theme.colors.text;
+  if (isHexColor(fallback) && contrastRatio(fallback, bg) >= 2.5) {
+    return fallback;
+  }
+  return theme.colors.headerText;
 }
 
 const createStyles = (theme: Theme) =>
@@ -82,7 +110,7 @@ const createStyles = (theme: Theme) =>
       right: -TAB_BAR.LABEL_OVERHANG,
     },
     label: {
-      color: theme.colors.tabBarAccent,
+      color: resolveBottomActionBarColor(theme),
       fontSize: 10,
       lineHeight: 11,
       fontWeight: '700',

@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { profileApi } from '@/src/features/profile/api/profileApi';
 import { tokenStore } from '@/src/core/auth/tokenStore';
 import { authEvents } from '@/src/core/auth/authEvents';
+import { initSession } from '@/src/core/auth/authSession';
 import { DEFAULT_THEME_NAME, isThemeName, useThemeController } from '@/src/shared/theme';
 
 export function ThemeBootstrap() {
@@ -11,7 +12,13 @@ export function ThemeBootstrap() {
     let isMounted = true;
 
     const loadTheme = async () => {
-      if (!tokenStore.hasAccessToken()) return;
+      if (!tokenStore.hasAccessToken()) {
+        const ok = await initSession();
+        if (!ok) {
+          if (isMounted) setThemeName(DEFAULT_THEME_NAME);
+          return;
+        }
+      }
       try {
         const res = await profileApi.get();
         const themeName = isThemeName(res.theme ?? '') ? res.theme : DEFAULT_THEME_NAME;

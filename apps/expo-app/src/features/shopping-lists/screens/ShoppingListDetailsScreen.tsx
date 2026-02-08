@@ -310,6 +310,7 @@ function SectionBlock({
   onEdit: (item: ShoppingListItem) => void;
   onDelete: (item: ShoppingListItem) => void;
 }) {
+  const styles = useThemedStyles(createStyles);
   if (items.length === 0) {
     return (
       <View style={styles.sectionBlock}>

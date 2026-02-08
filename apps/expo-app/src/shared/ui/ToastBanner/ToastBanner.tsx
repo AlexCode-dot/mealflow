@@ -28,7 +28,7 @@ export function ToastBanner({
   meta,
   icon,
   variant = 'info',
-  durationMs = 2200,
+  durationMs = 1400,
   onTimeout,
   actionLabel,
   onAction,
@@ -89,14 +89,14 @@ export function ToastBanner({
       toValue: 0,
       duration: durationMs,
       easing: Easing.linear,
-      delay: appearDelayMs + appearDurationMs,
+      delay: 0,
       useNativeDriver: false,
     });
 
     const fadeAnim = Animated.timing(opacity, {
       toValue: 0,
       duration: fadeDurationMs,
-      delay: appearDelayMs + appearDurationMs + fadeDelayMs,
+      delay: fadeDelayMs,
       useNativeDriver: true,
     });
 

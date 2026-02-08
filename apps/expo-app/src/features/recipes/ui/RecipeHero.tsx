@@ -47,7 +47,7 @@ export function RecipeHero({ imageUrl, onPress, onRemove, isUploading }: Props) 
 
   return (
     <LinearGradient
-      colors={['#F7F5EB', '#F7F5EB']}
+      colors={[theme.colors.bgLight, theme.colors.bg]}
       start={{ x: 0.5, y: 0 }}
       end={{ x: 0.5, y: 1 }}
       style={styles.hero}

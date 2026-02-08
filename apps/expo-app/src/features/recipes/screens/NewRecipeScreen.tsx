@@ -7,6 +7,7 @@ import {
   ErrorText,
   SectionEmpty,
   useBottomBarActions,
+  resolveBottomActionBarColor,
   ConfirmSheet,
 } from '@/src/shared/ui';
 import { type Theme, useTheme, useThemedStyles } from '@/src/shared/theme';
@@ -64,6 +65,7 @@ export function NewRecipeScreen() {
     steps: stepRows,
     setSteps: data.setSteps,
   });
+  const actionColor = resolveBottomActionBarColor(theme);
 
   const submitRef = useRef(actions.submit);
   useEffect(() => {
@@ -105,26 +107,18 @@ export function NewRecipeScreen() {
       {
         key: 'cancel',
         label: 'Cancel',
-        icon: (
-          <XCircle color={theme.colors.textOnPrimary} size={TAB_BAR.ICON_SIZE} strokeWidth={2.25} />
-        ),
+        icon: <XCircle color={actionColor} size={TAB_BAR.ICON_SIZE} strokeWidth={2.25} />,
         onPress: onCancel,
       },
       {
         key: 'save',
         label: isUploading ? 'Uploading…' : state.isSaving ? 'Saving…' : 'Save recipe',
-        icon: (
-          <Download
-            color={theme.colors.textOnPrimary}
-            size={TAB_BAR.ICON_SIZE}
-            strokeWidth={2.25}
-          />
-        ),
+        icon: <Download color={actionColor} size={TAB_BAR.ICON_SIZE} strokeWidth={2.25} />,
         onPress: submit,
         disabled: !state.canSubmit || isUploading,
       },
     ],
-    [isUploading, state.canSubmit, state.isSaving, onCancel, submit, theme.colors.textOnPrimary],
+    [actionColor, isUploading, state.canSubmit, state.isSaving, onCancel, submit],
   );
 
   useBottomBarActions(actionItems);

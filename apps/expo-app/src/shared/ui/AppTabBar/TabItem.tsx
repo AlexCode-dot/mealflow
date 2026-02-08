@@ -5,6 +5,7 @@ import { getTabIcon } from './tabIcons';
 import { useFocusAnim } from './useFocusAnim';
 import { createStyles } from './AppTabBar.styles';
 import { TAB_BAR } from '@/src/shared/ui/layout/tabBar';
+import { resolveTabBarItemColor } from '@/src/shared/ui';
 
 type Props = {
   routeKey: string;
@@ -28,6 +29,8 @@ export function TabItem({
   const theme = useTheme();
   const styles = useThemedStyles(createStyles);
   const Icon = useMemo(() => getTabIcon(routeName), [routeName]);
+  const iconColor = resolveTabBarItemColor(theme, isFocused);
+  const labelColor = resolveTabBarItemColor(theme, true);
   const { scale, iconTranslateY, labelOpacity, labelTranslateY } = useFocusAnim({
     isFocused,
     labelHeight: TAB_BAR.LABEL_HEIGHT,
@@ -49,7 +52,7 @@ export function TabItem({
           style={[styles.iconBox, { transform: [{ translateY: iconTranslateY }, { scale }] }]}
         >
           <Icon
-            color={isFocused ? theme.colors.tabBarAccent : theme.colors.tabBarText}
+            color={iconColor}
             size={isFocused ? TAB_BAR.ICON_SIZE_ACTIVE : TAB_BAR.ICON_SIZE}
             strokeWidth={TAB_BAR.ICON_STROKE}
           />
@@ -63,6 +66,7 @@ export function TabItem({
               allowFontScaling={false}
               style={[
                 styles.label,
+                { color: labelColor },
                 { opacity: labelOpacity, transform: [{ translateY: labelTranslateY }] },
               ]}
             >
