@@ -1,12 +1,15 @@
 package com.mealflow.appapi.inspiration.provider;
 
+import com.mealflow.appapi.monitoring.ExternalApiReporter;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClientException;
 
 @Component
 public class MealDbClient {
@@ -24,71 +27,93 @@ public class MealDbClient {
     }
 
     public List<MealDbMeal> searchByName(String query) {
-        MealDbResponse response = restClient
-                .get()
-                .uri(uriBuilder ->
-                        uriBuilder.path("/search.php").queryParam("s", query).build())
-                .retrieve()
-                .body(MealDbResponse.class);
-        return toMeals(response);
+        return execute("searchByName", () -> {
+            MealDbResponse response = restClient
+                    .get()
+                    .uri(uriBuilder -> uriBuilder
+                            .path("/search.php")
+                            .queryParam("s", query)
+                            .build())
+                    .retrieve()
+                    .body(MealDbResponse.class);
+            return toMeals(response);
+        });
     }
 
     public List<MealDbMeal> filterByIngredient(String ingredient) {
-        MealDbResponse response = restClient
-                .get()
-                .uri(uriBuilder -> uriBuilder
-                        .path("/filter.php")
-                        .queryParam("i", ingredient)
-                        .build())
-                .retrieve()
-                .body(MealDbResponse.class);
-        return toMeals(response);
+        return execute("filterByIngredient", () -> {
+            MealDbResponse response = restClient
+                    .get()
+                    .uri(uriBuilder -> uriBuilder
+                            .path("/filter.php")
+                            .queryParam("i", ingredient)
+                            .build())
+                    .retrieve()
+                    .body(MealDbResponse.class);
+            return toMeals(response);
+        });
     }
 
     public List<MealDbMeal> filterByCategory(String category) {
-        MealDbResponse response = restClient
-                .get()
-                .uri(uriBuilder ->
-                        uriBuilder.path("/filter.php").queryParam("c", category).build())
-                .retrieve()
-                .body(MealDbResponse.class);
-        return toMeals(response);
+        return execute("filterByCategory", () -> {
+            MealDbResponse response = restClient
+                    .get()
+                    .uri(uriBuilder -> uriBuilder
+                            .path("/filter.php")
+                            .queryParam("c", category)
+                            .build())
+                    .retrieve()
+                    .body(MealDbResponse.class);
+            return toMeals(response);
+        });
     }
 
     public List<MealDbMeal> filterByArea(String area) {
-        MealDbResponse response = restClient
-                .get()
-                .uri(uriBuilder ->
-                        uriBuilder.path("/filter.php").queryParam("a", area).build())
-                .retrieve()
-                .body(MealDbResponse.class);
-        return toMeals(response);
+        return execute("filterByArea", () -> {
+            MealDbResponse response = restClient
+                    .get()
+                    .uri(uriBuilder ->
+                            uriBuilder.path("/filter.php").queryParam("a", area).build())
+                    .retrieve()
+                    .body(MealDbResponse.class);
+            return toMeals(response);
+        });
     }
 
     public MealDbMeal lookupById(String id) {
-        MealDbResponse response = restClient
-                .get()
-                .uri(uriBuilder ->
-                        uriBuilder.path("/lookup.php").queryParam("i", id).build())
-                .retrieve()
-                .body(MealDbResponse.class);
-        return toMeals(response).stream().findFirst().orElse(null);
+        return execute("lookupById", () -> {
+            MealDbResponse response = restClient
+                    .get()
+                    .uri(uriBuilder ->
+                            uriBuilder.path("/lookup.php").queryParam("i", id).build())
+                    .retrieve()
+                    .body(MealDbResponse.class);
+            return toMeals(response).stream().findFirst().orElse(null);
+        });
     }
 
     public MealDbMeal random() {
-        MealDbResponse response = restClient.get().uri("/random.php").retrieve().body(MealDbResponse.class);
-        return toMeals(response).stream().findFirst().orElse(null);
+        return execute("random", () -> {
+            MealDbResponse response =
+                    restClient.get().uri("/random.php").retrieve().body(MealDbResponse.class);
+            return toMeals(response).stream().findFirst().orElse(null);
+        });
     }
 
     public List<MealDbMeal> randomSelection() {
-        MealDbResponse response =
-                restClient.get().uri("/randomselection.php").retrieve().body(MealDbResponse.class);
-        return toMeals(response);
+        return execute("randomSelection", () -> {
+            MealDbResponse response =
+                    restClient.get().uri("/randomselection.php").retrieve().body(MealDbResponse.class);
+            return toMeals(response);
+        });
     }
 
     public List<MealDbMeal> latest() {
-        MealDbResponse response = restClient.get().uri("/latest.php").retrieve().body(MealDbResponse.class);
-        return toMeals(response);
+        return execute("latest", () -> {
+            MealDbResponse response =
+                    restClient.get().uri("/latest.php").retrieve().body(MealDbResponse.class);
+            return toMeals(response);
+        });
     }
 
     private List<MealDbMeal> toMeals(MealDbResponse response) {
@@ -121,5 +146,14 @@ public class MealDbClient {
             return "<invalid>";
         }
         return baseUrl.substring(0, lastSlash + 1) + "***";
+    }
+
+    private <T> T execute(String operation, Supplier<T> action) {
+        try {
+            return action.get();
+        } catch (RestClientException ex) {
+            ExternalApiReporter.captureFailure("mealdb", operation, ex);
+            throw ex;
+        }
     }
 }

@@ -1,8 +1,10 @@
 package com.mealflow.appapi.recipes.image;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.mealflow.appapi.monitoring.ExternalApiReporter;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+import java.util.function.Supplier;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -11,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.multipart.MultipartFile;
 
 @Service
@@ -41,14 +44,14 @@ public class ImageKitClient {
         body.add("folder", properties.getUploadFolder());
         body.add("tags", "mealflow,recipes,user:" + userId);
 
-        ImageKitUploadResponse response = uploadClient
+        ImageKitUploadResponse response = execute("upload", () -> uploadClient
                 .post()
                 .uri("/files/upload")
                 .contentType(MediaType.MULTIPART_FORM_DATA)
                 .header("Authorization", "Basic " + basicAuthToken())
                 .body(body)
                 .retrieve()
-                .body(ImageKitUploadResponse.class);
+                .body(ImageKitUploadResponse.class));
 
         if (response == null || response.url == null || response.url.isBlank()) {
             throw new ImageUploadValidationException("Image upload failed. Try again.");
@@ -63,12 +66,15 @@ public class ImageKitClient {
         }
         ensureConfigured();
 
-        apiClient
-                .delete()
-                .uri("/files/{fileId}", fileId)
-                .header("Authorization", "Basic " + basicAuthToken())
-                .retrieve()
-                .toBodilessEntity();
+        execute("delete", () -> {
+            apiClient
+                    .delete()
+                    .uri("/files/{fileId}", fileId)
+                    .header("Authorization", "Basic " + basicAuthToken())
+                    .retrieve()
+                    .toBodilessEntity();
+            return null;
+        });
     }
 
     private void ensureConfigured() {
@@ -86,6 +92,15 @@ public class ImageKitClient {
     private String basicAuthToken() {
         String token = properties.getPrivateKey() + ":";
         return Base64.getEncoder().encodeToString(token.getBytes(StandardCharsets.UTF_8));
+    }
+
+    private <T> T execute(String operation, Supplier<T> action) {
+        try {
+            return action.get();
+        } catch (RestClientException ex) {
+            ExternalApiReporter.captureFailure("imagekit", operation, ex);
+            throw ex;
+        }
     }
 
     private static class NamedBytesResource extends ByteArrayResource {
