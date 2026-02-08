@@ -4,8 +4,7 @@ import java.time.Instant;
 import java.util.Optional;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
-public interface RecipeImageUploadTicketRepository
-        extends MongoRepository<RecipeImageUploadTicket, String> {
+public interface RecipeImageUploadTicketRepository extends MongoRepository<RecipeImageUploadTicket, String> {
     Optional<RecipeImageUploadTicket> findFirstByUserIdAndImageFileIdAndConsumedFalseOrderByCreatedAtDesc(
             String userId, String imageFileId);
 

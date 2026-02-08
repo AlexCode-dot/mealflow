@@ -62,8 +62,8 @@ public class RecipeImageService {
         String fileName = buildFilename(userId, file);
         ImageKitUploadResult result = imageKitClient.upload(file, fileName, userId);
 
-        ticketRepository.save(new RecipeImageUploadTicket(
-                userId, result.url(), result.fileId(), clock.instant(), false));
+        ticketRepository.save(
+                new RecipeImageUploadTicket(userId, result.url(), result.fileId(), clock.instant(), false));
 
         incrementDailyQuota(userId);
         return result;
@@ -81,8 +81,7 @@ public class RecipeImageService {
         }
 
         int ttlMinutes = uploadProps.getTicketTtlMinutes();
-        if (ttlMinutes > 0
-                && ticket.getCreatedAt().isBefore(clock.instant().minusSeconds(ttlMinutes * 60L))) {
+        if (ttlMinutes > 0 && ticket.getCreatedAt().isBefore(clock.instant().minusSeconds(ttlMinutes * 60L))) {
             return null;
         }
 
@@ -159,7 +158,8 @@ public class RecipeImageService {
             try (var stream = file.getInputStream()) {
                 int read = stream.read(head);
                 if (read < 12) {
-                throw new ImageUploadValidationException("Unsupported image type. Please use JPG, PNG, WEBP, or HEIC.");
+                    throw new ImageUploadValidationException(
+                            "Unsupported image type. Please use JPG, PNG, WEBP, or HEIC.");
                 }
             }
 

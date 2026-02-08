@@ -8,6 +8,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 public class RecipeImageUploadTicket {
     @Id
     private String id;
+
     private String userId;
     private String imageUrl;
     private String imageFileId;

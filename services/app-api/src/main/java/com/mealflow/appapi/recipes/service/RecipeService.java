@@ -183,11 +183,7 @@ public class RecipeService {
     }
 
     private ImageResolution resolveImageForPatch(
-            String userId,
-            Recipe existing,
-            String imageUrl,
-            String imageFileId,
-            Boolean fromExternal) {
+            String userId, Recipe existing, String imageUrl, String imageFileId, Boolean fromExternal) {
         if (imageFileId == null && imageUrl == null) {
             return new ImageResolution(null, null);
         }
