@@ -1,4 +1,4 @@
-type AuthEvent = 'loggedOut';
+type AuthEvent = 'loggedOut' | 'loggedIn';
 type Listener = (event: AuthEvent) => void;
 
 const listeners = new Set<Listener>();
