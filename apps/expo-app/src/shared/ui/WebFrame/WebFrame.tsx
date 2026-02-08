@@ -32,7 +32,7 @@ export function WebFrame({ children }: Props) {
         isWeb && !useFramedShell && styles.shellWebFullBleed,
       ]}
     >
-      {isWeb ? <ShellBackdrop /> : null}
+      {isWeb ? <ShellBackdrop styles={styles} /> : null}
       <View
         style={[
           styles.frame,
@@ -41,13 +41,13 @@ export function WebFrame({ children }: Props) {
         ]}
       >
         {children}
-        {isWeb ? <FadeEdges /> : null}
+        {isWeb ? <FadeEdges styles={styles} /> : null}
       </View>
     </Shell>
   );
 }
 
-function ShellBackdrop() {
+function ShellBackdrop({ styles }: { styles: ReturnType<typeof createStyles> }) {
   return (
     <View style={[styles.shellBackdrop, { pointerEvents: 'none' }]}>
       <LinearGradient
@@ -68,7 +68,7 @@ function ShellBackdrop() {
   );
 }
 
-function FadeEdges() {
+function FadeEdges({ styles }: { styles: ReturnType<typeof createStyles> }) {
   return (
     <View style={[styles.fadeLayer, { pointerEvents: 'none' }]}>
       <LinearGradient

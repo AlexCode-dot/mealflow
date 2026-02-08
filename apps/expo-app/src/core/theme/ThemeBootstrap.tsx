@@ -33,6 +33,10 @@ export function ThemeBootstrap() {
     const unsubscribe = authEvents.subscribe((event) => {
       if (event === 'loggedOut') {
         setThemeName(DEFAULT_THEME_NAME);
+        return;
+      }
+      if (event === 'loggedIn') {
+        void loadTheme();
       }
     });
 

@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import { authApi } from '@/src/features/auth/api/authApi';
 import { tokenStore } from '@/src/core/auth/tokenStore';
+import { authEvents } from '@/src/core/auth/authEvents';
 import { toApiError } from '@/src/core/http/toApiError';
 import { mapAuthError } from '@/src/features/auth/errors/mapAuthError';
 import type { UiError } from '@/src/shared/errors/errorTypes';
@@ -37,6 +38,7 @@ export const useRegister = (): RegisterView => {
         const res = await authApi.register(email.trim(), password);
         tokenStore.setAccessToken(res.accessToken);
         await tokenStore.setRefreshToken(res.refreshToken);
+        authEvents.emit('loggedIn');
         return true;
       } catch (e) {
         const uiErr = mapAuthError(toApiError(e));
