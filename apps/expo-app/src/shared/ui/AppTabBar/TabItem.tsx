@@ -1,10 +1,11 @@
 import { Pressable, View, Animated } from 'react-native';
 import { useMemo } from 'react';
-import { theme } from '@/src/shared/theme/theme';
+import { useTheme, useThemedStyles } from '@/src/shared/theme';
 import { getTabIcon } from './tabIcons';
 import { useFocusAnim } from './useFocusAnim';
-import { styles } from './AppTabBar.styles';
+import { createStyles } from './AppTabBar.styles';
 import { TAB_BAR } from '@/src/shared/ui/layout/tabBar';
+import { resolveTabBarItemColor } from '@/src/shared/ui';
 
 type Props = {
   routeKey: string;
@@ -25,7 +26,11 @@ export function TabItem({
   onLongPress,
   accessibilityLabel,
 }: Props) {
+  const theme = useTheme();
+  const styles = useThemedStyles(createStyles);
   const Icon = useMemo(() => getTabIcon(routeName), [routeName]);
+  const iconColor = resolveTabBarItemColor(theme, isFocused);
+  const labelColor = resolveTabBarItemColor(theme, true);
   const { scale, iconTranslateY, labelOpacity, labelTranslateY } = useFocusAnim({
     isFocused,
     labelHeight: TAB_BAR.LABEL_HEIGHT,
@@ -47,7 +52,7 @@ export function TabItem({
           style={[styles.iconBox, { transform: [{ translateY: iconTranslateY }, { scale }] }]}
         >
           <Icon
-            color={theme.colors.textOnPrimary}
+            color={iconColor}
             size={isFocused ? TAB_BAR.ICON_SIZE_ACTIVE : TAB_BAR.ICON_SIZE}
             strokeWidth={TAB_BAR.ICON_STROKE}
           />
@@ -61,6 +66,7 @@ export function TabItem({
               allowFontScaling={false}
               style={[
                 styles.label,
+                { color: labelColor },
                 { opacity: labelOpacity, transform: [{ translateY: labelTranslateY }] },
               ]}
             >

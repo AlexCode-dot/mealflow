@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { ModalSheet } from '@/src/shared/ui/ModalSheet';
-import { theme } from '@/src/shared/theme/theme';
+import { type Theme, useThemedStyles } from '@/src/shared/theme';
 
 type Props = {
   visible: boolean;
@@ -24,6 +24,7 @@ export function FormSheet({
   footerFullBleed = false,
   overlay,
 }: Props) {
+  const styles = useThemedStyles(createStyles);
   const sheetStyle = footerFullBleed
     ? {
         paddingBottom: 0,
@@ -58,42 +59,43 @@ export function FormSheet({
   );
 }
 
-const styles = StyleSheet.create({
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginTop: theme.spacing.s2,
-    marginBottom: theme.spacing.s4,
-  },
-  headerSide: {
-    minWidth: 32,
-    alignItems: 'flex-end',
-  },
-  headerAction: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  title: {
-    color: theme.colors.text,
-    fontSize: 22,
-    fontWeight: '600',
-    textAlign: 'center',
-    flex: 1,
-    paddingHorizontal: 4,
-  },
-  content: {
-    gap: theme.spacing.s3,
-  },
-  footer: {
-    marginTop: theme.spacing.s4,
-  },
-  footerBleed: {
-    marginHorizontal: -theme.spacing.s4,
-    marginBottom: 0,
-    marginTop: 0,
-  },
-  container: {
-    position: 'relative',
-  },
-});
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
+    header: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      marginTop: theme.spacing.s2,
+      marginBottom: theme.spacing.s4,
+    },
+    headerSide: {
+      minWidth: 32,
+      alignItems: 'flex-end',
+    },
+    headerAction: {
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    title: {
+      color: theme.colors.text,
+      fontSize: 22,
+      fontWeight: '600',
+      textAlign: 'center',
+      flex: 1,
+      paddingHorizontal: 4,
+    },
+    content: {
+      gap: theme.spacing.s3,
+    },
+    footer: {
+      marginTop: theme.spacing.s4,
+    },
+    footerBleed: {
+      marginHorizontal: -theme.spacing.s4,
+      marginBottom: 0,
+      marginTop: 0,
+    },
+    container: {
+      position: 'relative',
+    },
+  });

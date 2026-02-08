@@ -1,7 +1,7 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SlidersHorizontal } from 'lucide-react-native';
 import { SearchField, UnderlineTabs } from '@/src/shared/ui';
-import { theme } from '@/src/shared/theme/theme';
+import { type Theme, useTheme, useThemedStyles } from '@/src/shared/theme';
 
 type Tab = {
   key: string;
@@ -29,6 +29,8 @@ export function RecipeListHeader({
   activeFilterCount,
   hint,
 }: Props) {
+  const theme = useTheme();
+  const styles = useThemedStyles(createStyles);
   return (
     <View style={styles.root}>
       <UnderlineTabs tabs={tabs} value={value} onChange={onChange} />
@@ -62,55 +64,56 @@ export function RecipeListHeader({
   );
 }
 
-const styles = StyleSheet.create({
-  root: {
-    gap: theme.spacing.s4,
-  },
-  searchRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: theme.spacing.s1,
-  },
-  searchField: {
-    flex: 1,
-  },
-  filterBtn: {
-    width: 64,
-    height: 52,
-    borderRadius: theme.radius.md,
-    backgroundColor: theme.colors.bgLight,
-    borderWidth: 1,
-    borderColor: theme.colors.borderNeutral,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  filterBadge: {
-    position: 'absolute',
-    top: -6,
-    right: -6,
-    minWidth: 18,
-    height: 18,
-    paddingHorizontal: 4,
-    borderRadius: 9,
-    backgroundColor: theme.colors.primaryDark,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 2,
-    borderColor: theme.colors.bg,
-  },
-  filterBadgeText: {
-    color: theme.colors.textOnPrimary,
-    fontSize: 10,
-    fontWeight: '900',
-    lineHeight: 12,
-  },
-  muted: {
-    color: theme.colors.textMuted,
-    fontSize: 13,
-    fontWeight: '600',
-    lineHeight: 18,
-  },
-  pressed: {
-    opacity: 0.9,
-  },
-});
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
+    root: {
+      gap: theme.spacing.s4,
+    },
+    searchRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: theme.spacing.s1,
+    },
+    searchField: {
+      flex: 1,
+    },
+    filterBtn: {
+      width: 64,
+      height: 52,
+      borderRadius: theme.radius.md,
+      backgroundColor: theme.colors.bgLight,
+      borderWidth: 1,
+      borderColor: theme.colors.borderNeutral,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    filterBadge: {
+      position: 'absolute',
+      top: -6,
+      right: -6,
+      minWidth: 18,
+      height: 18,
+      paddingHorizontal: 4,
+      borderRadius: 9,
+      backgroundColor: theme.colors.primaryDark,
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderWidth: 2,
+      borderColor: theme.colors.bg,
+    },
+    filterBadgeText: {
+      color: theme.colors.textOnPrimary,
+      fontSize: 10,
+      fontWeight: '900',
+      lineHeight: 12,
+    },
+    muted: {
+      color: theme.colors.textMuted,
+      fontSize: 13,
+      fontWeight: '600',
+      lineHeight: 18,
+    },
+    pressed: {
+      opacity: 0.9,
+    },
+  });

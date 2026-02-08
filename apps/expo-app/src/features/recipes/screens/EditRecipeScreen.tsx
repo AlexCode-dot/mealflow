@@ -7,9 +7,10 @@ import {
   ErrorText,
   SectionEmpty,
   useBottomBarActions,
+  resolveBottomActionBarColor,
   ConfirmSheet,
 } from '@/src/shared/ui';
-import { theme } from '@/src/shared/theme/theme';
+import { type Theme, useTheme, useThemedStyles } from '@/src/shared/theme';
 import {
   useEditRecipe,
   useRecipeImagePicker,
@@ -35,6 +36,8 @@ import { TAB_BAR } from '@/src/shared/ui/layout/tabBar';
 import { routes } from '@/src/core/navigation/routes';
 
 export function EditRecipeScreen() {
+  const theme = useTheme();
+  const styles = useThemedStyles(createStyles);
   const params = useLocalSearchParams<{ id?: string }>();
   const id = typeof params.id === 'string' ? params.id : '';
   const view = useEditRecipe(id);
@@ -107,15 +110,14 @@ export function EditRecipeScreen() {
     onEditIngredient: ingredientEditor.openEdit,
     onEditStep: stepEditor.openEdit,
   });
+  const actionColor = resolveBottomActionBarColor(theme);
 
   const actionItems = useMemo(
     () => [
       {
         key: 'cancel',
         label: 'Cancel',
-        icon: (
-          <XCircle color={theme.colors.textOnPrimary} size={TAB_BAR.ICON_SIZE} strokeWidth={2.25} />
-        ),
+        icon: <XCircle color={actionColor} size={TAB_BAR.ICON_SIZE} strokeWidth={2.25} />,
         onPress: onCancel,
       },
       {
@@ -126,18 +128,20 @@ export function EditRecipeScreen() {
             : state.isSaving
               ? 'Saving…'
               : 'Save recipe',
-        icon: (
-          <Download
-            color={theme.colors.textOnPrimary}
-            size={TAB_BAR.ICON_SIZE}
-            strokeWidth={2.25}
-          />
-        ),
+        icon: <Download color={actionColor} size={TAB_BAR.ICON_SIZE} strokeWidth={2.25} />,
         onPress: onSave,
         disabled: !state.canSave || isUploading || state.isRemovingImage,
       },
     ],
-    [state.canSave, state.isSaving, state.isRemovingImage, onCancel, onSave, isUploading],
+    [
+      actionColor,
+      state.canSave,
+      state.isSaving,
+      state.isRemovingImage,
+      onCancel,
+      onSave,
+      isUploading,
+    ],
   );
 
   useBottomBarActions(actionItems);
@@ -327,22 +331,23 @@ export function EditRecipeScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  screenContent: {
-    padding: 0,
-    gap: 0,
-  },
-  root: {
-    flex: 1,
-  },
-  listSeparator: {
-    height: theme.spacing.s2,
-  },
-  stickyAdd: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: TAB_BAR.BOX_HEIGHT + TAB_BAR.PADDING_TOP - 42,
-    alignItems: 'center',
-  },
-});
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
+    screenContent: {
+      padding: 0,
+      gap: 0,
+    },
+    root: {
+      flex: 1,
+    },
+    listSeparator: {
+      height: theme.spacing.s2,
+    },
+    stickyAdd: {
+      position: 'absolute',
+      left: 0,
+      right: 0,
+      bottom: TAB_BAR.BOX_HEIGHT + TAB_BAR.PADDING_TOP - 42,
+      alignItems: 'center',
+    },
+  });

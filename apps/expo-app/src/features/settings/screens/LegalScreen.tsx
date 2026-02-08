@@ -4,7 +4,7 @@ import Constants from 'expo-constants';
 import { router } from 'expo-router';
 import { ChevronRight, FileText, Mail, ShieldCheck, Trash2 } from 'lucide-react-native';
 import { Card, Screen, useGlobalToast } from '@/src/shared/ui';
-import { theme } from '@/src/shared/theme/theme';
+import { type Theme, useThemedStyles } from '@/src/shared/theme';
 
 type LegalConfig = {
   privacyUrl?: string;
@@ -17,6 +17,7 @@ type SupportConfig = {
 };
 
 export function LegalScreen() {
+  const styles = useThemedStyles(createStyles);
   const { showValidationError, show } = useGlobalToast();
   const legal = Constants.expoConfig?.extra?.legal as LegalConfig | undefined;
   const support = Constants.expoConfig?.extra?.support as SupportConfig | undefined;
@@ -97,51 +98,52 @@ export function LegalScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  root: { flex: 1 },
-  card: {
-    gap: theme.spacing.s3,
-    padding: theme.spacing.s5,
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: '900',
-    color: theme.colors.text,
-  },
-  sectionSubtitle: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: theme.colors.textMuted,
-  },
-  sectionText: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: theme.colors.textMuted,
-  },
-  divider: {
-    height: 1,
-    backgroundColor: theme.colors.dividerSoft,
-  },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: theme.spacing.s3,
-    paddingVertical: theme.spacing.s2,
-  },
-  iconWrap: {
-    width: 52,
-    height: 52,
-    borderRadius: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  rowText: {
-    flex: 1,
-    fontSize: 14,
-    fontWeight: '700',
-    color: theme.colors.text,
-  },
-});
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
+    root: { flex: 1 },
+    card: {
+      gap: theme.spacing.s3,
+      padding: theme.spacing.s5,
+    },
+    sectionTitle: {
+      fontSize: 16,
+      fontWeight: '900',
+      color: theme.colors.text,
+    },
+    sectionSubtitle: {
+      fontSize: 13,
+      fontWeight: '700',
+      color: theme.colors.textMuted,
+    },
+    sectionText: {
+      fontSize: 13,
+      fontWeight: '600',
+      color: theme.colors.textMuted,
+    },
+    divider: {
+      height: 1,
+      backgroundColor: theme.colors.dividerSoft,
+    },
+    row: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: theme.spacing.s3,
+      paddingVertical: theme.spacing.s2,
+    },
+    iconWrap: {
+      width: 52,
+      height: 52,
+      borderRadius: 16,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    rowText: {
+      flex: 1,
+      fontSize: 14,
+      fontWeight: '700',
+      color: theme.colors.text,
+    },
+  });
 
 function LegalRow({
   label,

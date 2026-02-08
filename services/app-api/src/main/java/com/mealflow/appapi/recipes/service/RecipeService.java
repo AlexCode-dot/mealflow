@@ -7,10 +7,14 @@ import com.mealflow.appapi.recipes.repository.RecipeRepository;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.List;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 @Service
 public class RecipeService {
+    private static final int DEFAULT_PAGE_LIMIT = 24;
+    private static final int MAX_PAGE_LIMIT = 100;
 
     private final RecipeRepository recipeRepository;
     private final RecipeImageService imageService;
@@ -26,10 +30,34 @@ public class RecipeService {
         return recipeRepository.findAllByUserIdOrderByCreatedAtDesc(userId);
     }
 
+    public List<Recipe> listForUser(String userId, Integer limit, Integer offset) {
+        if (limit == null && offset == null) {
+            return listForUser(userId);
+        }
+        int safeLimit = sanitizeLimit(limit);
+        int safeOffset = sanitizeOffset(offset);
+        Pageable pageable = PageRequest.of(safeOffset / safeLimit, safeLimit);
+        return recipeRepository.findAllByUserIdOrderByCreatedAtDesc(userId, pageable);
+    }
+
     public Recipe getForUser(String userId, String recipeId) {
         return recipeRepository
                 .findByIdAndUserId(recipeId, userId)
                 .orElseThrow(() -> new RecipeNotFoundException("Recipe not found"));
+    }
+
+    private int sanitizeLimit(Integer limit) {
+        if (limit == null || limit <= 0) {
+            return DEFAULT_PAGE_LIMIT;
+        }
+        return Math.min(limit, MAX_PAGE_LIMIT);
+    }
+
+    private int sanitizeOffset(Integer offset) {
+        if (offset == null || offset < 0) {
+            return 0;
+        }
+        return offset;
     }
 
     public Recipe create(

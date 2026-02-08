@@ -7,9 +7,10 @@ import {
   ErrorText,
   SectionEmpty,
   useBottomBarActions,
+  resolveBottomActionBarColor,
   ConfirmSheet,
 } from '@/src/shared/ui';
-import { theme } from '@/src/shared/theme/theme';
+import { type Theme, useTheme, useThemedStyles } from '@/src/shared/theme';
 import {
   useCreateRecipe,
   useRecipeImagePicker,
@@ -37,6 +38,8 @@ import { normalizePath } from '@/src/core/navigation/normalizePath';
 import { buildHref } from '@/src/core/navigation/buildHref';
 
 export function NewRecipeScreen() {
+  const theme = useTheme();
+  const styles = useThemedStyles(createStyles);
   const params = useLocalSearchParams<{ returnTo?: string }>();
   const returnTo = normalizePath(typeof params.returnTo === 'string' ? params.returnTo : null);
   const view = useCreateRecipe();
@@ -62,6 +65,7 @@ export function NewRecipeScreen() {
     steps: stepRows,
     setSteps: data.setSteps,
   });
+  const actionColor = resolveBottomActionBarColor(theme);
 
   const submitRef = useRef(actions.submit);
   useEffect(() => {
@@ -103,26 +107,18 @@ export function NewRecipeScreen() {
       {
         key: 'cancel',
         label: 'Cancel',
-        icon: (
-          <XCircle color={theme.colors.textOnPrimary} size={TAB_BAR.ICON_SIZE} strokeWidth={2.25} />
-        ),
+        icon: <XCircle color={actionColor} size={TAB_BAR.ICON_SIZE} strokeWidth={2.25} />,
         onPress: onCancel,
       },
       {
         key: 'save',
         label: isUploading ? 'Uploading…' : state.isSaving ? 'Saving…' : 'Save recipe',
-        icon: (
-          <Download
-            color={theme.colors.textOnPrimary}
-            size={TAB_BAR.ICON_SIZE}
-            strokeWidth={2.25}
-          />
-        ),
+        icon: <Download color={actionColor} size={TAB_BAR.ICON_SIZE} strokeWidth={2.25} />,
         onPress: submit,
         disabled: !state.canSubmit || isUploading,
       },
     ],
-    [isUploading, state.canSubmit, state.isSaving, onCancel, submit],
+    [actionColor, isUploading, state.canSubmit, state.isSaving, onCancel, submit],
   );
 
   useBottomBarActions(actionItems);
@@ -317,22 +313,23 @@ export function NewRecipeScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  screenContent: {
-    padding: 0,
-    gap: 0,
-  },
-  root: {
-    flex: 1,
-  },
-  listSeparator: {
-    height: theme.spacing.s2,
-  },
-  stickyAdd: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: TAB_BAR.BOX_HEIGHT + TAB_BAR.PADDING_TOP - 42,
-    alignItems: 'center',
-  },
-});
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
+    screenContent: {
+      padding: 0,
+      gap: 0,
+    },
+    root: {
+      flex: 1,
+    },
+    listSeparator: {
+      height: theme.spacing.s2,
+    },
+    stickyAdd: {
+      position: 'absolute',
+      left: 0,
+      right: 0,
+      bottom: TAB_BAR.BOX_HEIGHT + TAB_BAR.PADDING_TOP - 42,
+      alignItems: 'center',
+    },
+  });

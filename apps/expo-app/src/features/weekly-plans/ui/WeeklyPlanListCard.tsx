@@ -1,6 +1,6 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { ChevronRight, Utensils } from 'lucide-react-native';
-import { theme } from '@/src/shared/theme/theme';
+import { type Theme, useTheme, useThemedStyles } from '@/src/shared/theme';
 
 export type WeeklyPlanListCardMode = 'summary' | 'upcoming';
 
@@ -25,6 +25,8 @@ export function WeeklyPlanListCard({
   hasPlan = false,
   onPress,
 }: Props) {
+  const theme = useTheme();
+  const styles = useThemedStyles(createStyles);
   return (
     <Pressable
       onPress={onPress}
@@ -63,80 +65,81 @@ export function WeeklyPlanListCard({
   );
 }
 
-const styles = StyleSheet.create({
-  card: {
-    backgroundColor: theme.colors.surface,
-    borderRadius: theme.radius.md,
-    borderWidth: 1,
-    borderColor: theme.colors.borderNeutral,
-    padding: theme.spacing.s3,
-  },
-  cardCurrent: {
-    borderLeftWidth: 3,
-    borderLeftColor: theme.colors.primary,
-  },
-  cardEmpty: {
-    backgroundColor: theme.colors.bgLight,
-  },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: theme.spacing.s2,
-  },
-  content: {
-    flex: 1,
-    gap: theme.spacing.s1,
-  },
-  titleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: theme.spacing.s2,
-    flexWrap: 'wrap',
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: '800',
-    color: theme.colors.text,
-  },
-  titleCurrent: {},
-  range: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: theme.colors.textMuted,
-  },
-  rangeCurrent: {},
-  metaRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: theme.spacing.s2,
-  },
-  metaText: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: theme.colors.textMuted,
-  },
-  statusRow: {
-    alignItems: 'flex-start',
-  },
-  statusPill: {
-    backgroundColor: theme.colors.bgLight,
-    borderRadius: theme.radius.pill,
-    paddingHorizontal: theme.spacing.s3,
-    paddingVertical: 4,
-    borderWidth: 1,
-    borderColor: theme.colors.borderNeutral,
-  },
-  statusPillActive: {
-    backgroundColor: theme.colors.primary,
-    borderColor: theme.colors.primary,
-  },
-  statusText: {
-    color: theme.colors.textMuted,
-    fontWeight: '800',
-    fontSize: 12,
-  },
-  statusTextActive: {
-    color: theme.colors.textOnPrimary,
-  },
-});
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
+    card: {
+      backgroundColor: theme.colors.surface,
+      borderRadius: theme.radius.md,
+      borderWidth: 1,
+      borderColor: theme.colors.borderNeutral,
+      padding: theme.spacing.s3,
+    },
+    cardCurrent: {
+      borderLeftWidth: 3,
+      borderLeftColor: theme.colors.primary,
+    },
+    cardEmpty: {
+      backgroundColor: theme.colors.bgLight,
+    },
+    row: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      gap: theme.spacing.s2,
+    },
+    content: {
+      flex: 1,
+      gap: theme.spacing.s1,
+    },
+    titleRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: theme.spacing.s2,
+      flexWrap: 'wrap',
+    },
+    title: {
+      fontSize: 18,
+      fontWeight: '800',
+      color: theme.colors.text,
+    },
+    titleCurrent: {},
+    range: {
+      fontSize: 14,
+      fontWeight: '600',
+      color: theme.colors.textMuted,
+    },
+    rangeCurrent: {},
+    metaRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: theme.spacing.s2,
+    },
+    metaText: {
+      fontSize: 13,
+      fontWeight: '700',
+      color: theme.colors.textMuted,
+    },
+    statusRow: {
+      alignItems: 'flex-start',
+    },
+    statusPill: {
+      backgroundColor: theme.colors.bgLight,
+      borderRadius: theme.radius.pill,
+      paddingHorizontal: theme.spacing.s3,
+      paddingVertical: 4,
+      borderWidth: 1,
+      borderColor: theme.colors.borderNeutral,
+    },
+    statusPillActive: {
+      backgroundColor: theme.colors.primary,
+      borderColor: theme.colors.primary,
+    },
+    statusText: {
+      color: theme.colors.textMuted,
+      fontWeight: '800',
+      fontSize: 12,
+    },
+    statusTextActive: {
+      color: theme.colors.textOnPrimary,
+    },
+  });

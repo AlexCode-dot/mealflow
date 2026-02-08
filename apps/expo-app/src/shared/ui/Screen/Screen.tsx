@@ -1,4 +1,4 @@
-import type { ReactElement, ReactNode } from 'react';
+import type { ReactElement, ReactNode, RefObject } from 'react';
 import {
   ScrollView,
   View,
@@ -6,9 +6,11 @@ import {
   type RefreshControlProps,
   type StyleProp,
   type ViewStyle,
+  type NativeScrollEvent,
+  type NativeSyntheticEvent,
 } from 'react-native';
 import { AppHeader } from '@/src/shared/ui/AppHeader';
-import { theme } from '@/src/shared/theme/theme';
+import { type Theme, useThemedStyles } from '@/src/shared/theme';
 import { ProfileButton } from './ProfileButton';
 
 type Props = {
@@ -28,6 +30,13 @@ type Props = {
   refreshControl?: ReactElement<RefreshControlProps>;
 
   /**
+   * Optional scroll ref + handler for long lists.
+   */
+  scrollRef?: RefObject<ScrollView>;
+  onScroll?: (event: NativeSyntheticEvent<NativeScrollEvent>) => void;
+  scrollEventThrottle?: number;
+
+  /**
    * Optional extra styling for the content wrapper.
    */
   contentStyle?: StyleProp<ViewStyle>;
@@ -44,7 +53,11 @@ export function Screen({
   onTitlePress,
   refreshControl,
   contentStyle,
+  scrollRef,
+  onScroll,
+  scrollEventThrottle = 16,
 }: Props) {
+  const styles = useThemedStyles(createStyles);
   const headerRight = rightSlot ?? (showProfileIcon ? <ProfileButton /> : undefined);
 
   return (
@@ -58,7 +71,13 @@ export function Screen({
       />
 
       {scroll ? (
-        <ScrollView contentContainerStyle={styles.scrollContainer} refreshControl={refreshControl}>
+        <ScrollView
+          ref={scrollRef}
+          contentContainerStyle={styles.scrollContainer}
+          refreshControl={refreshControl}
+          onScroll={onScroll}
+          scrollEventThrottle={scrollEventThrottle}
+        >
           <View style={[styles.content, styles.fill, contentStyle]}>{children}</View>
         </ScrollView>
       ) : (
@@ -68,19 +87,20 @@ export function Screen({
   );
 }
 
-const styles = StyleSheet.create({
-  root: {
-    flex: 1,
-    backgroundColor: theme.colors.bg,
-  },
-  fill: {
-    flex: 1,
-  },
-  scrollContainer: {
-    flexGrow: 1,
-  },
-  content: {
-    padding: theme.spacing.s4,
-    gap: theme.spacing.s4,
-  },
-});
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
+    root: {
+      flex: 1,
+      backgroundColor: theme.colors.bg,
+    },
+    fill: {
+      flex: 1,
+    },
+    scrollContainer: {
+      flexGrow: 1,
+    },
+    content: {
+      padding: theme.spacing.s4,
+      gap: theme.spacing.s4,
+    },
+  });

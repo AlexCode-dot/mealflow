@@ -2,16 +2,24 @@ package com.mealflow.appapi.inspiration.service;
 
 import com.mealflow.appapi.inspiration.provider.MealDbClient;
 import com.mealflow.appapi.inspiration.provider.MealDbMeal;
+import io.sentry.Sentry;
+import io.sentry.SentryLevel;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 @Service
 public class InspirationService {
 
+    private static final Logger logger = LoggerFactory.getLogger(InspirationService.class);
     private static final int DEFAULT_LIMIT = 24;
     private static final int MAX_LIMIT = 60;
     private static final int MAX_RANDOM = 12;
+    private static final int RANDOM_FALLBACK_MAX_ATTEMPTS_MULTIPLIER = 3;
+    private static final long RANDOM_FALLBACK_REPORT_INTERVAL_MS = 5 * 60 * 1000;
+    private static volatile long lastFallbackReportAt = 0;
 
     private final MealDbClient mealDbClient;
 
@@ -66,7 +74,29 @@ public class InspirationService {
         List<MealDbMeal> results = new java.util.ArrayList<>();
         java.util.Set<String> ids = new java.util.HashSet<>();
 
-        for (int i = 0; i < target; i++) {
+        // Prefer premium batch endpoint; fallback to single random calls if needed.
+        try {
+            List<MealDbMeal> selection = mealDbClient.randomSelection();
+            if (selection != null && !selection.isEmpty()) {
+                selection = new java.util.ArrayList<>(selection);
+                java.util.Collections.shuffle(selection);
+                for (MealDbMeal meal : selection) {
+                    if (meal == null || meal.id() == null || !ids.add(meal.id())) {
+                        continue;
+                    }
+                    results.add(meal);
+                    if (results.size() >= target) {
+                        return results;
+                    }
+                }
+            }
+        } catch (Exception ignored) {
+            // Fall back to per-item random below.
+        }
+
+        maybeReportRandomFallback();
+        int maxAttempts = Math.max(target, 1) * RANDOM_FALLBACK_MAX_ATTEMPTS_MULTIPLIER;
+        for (int i = 0; i < maxAttempts && results.size() < target; i++) {
             MealDbMeal meal = mealDbClient.random();
             if (meal == null || meal.id() == null || !ids.add(meal.id())) {
                 continue;
@@ -75,5 +105,20 @@ public class InspirationService {
         }
 
         return results;
+    }
+
+    private static void maybeReportRandomFallback() {
+        long now = System.currentTimeMillis();
+        long last = lastFallbackReportAt;
+        if (now - last < RANDOM_FALLBACK_REPORT_INTERVAL_MS) {
+            return;
+        }
+        lastFallbackReportAt = now;
+        logger.debug("MealDB random selection unavailable; falling back to per-item random calls");
+        Sentry.captureMessage("MealDB random selection unavailable; falling back to per-item random calls", scope -> {
+            scope.setLevel(SentryLevel.WARNING);
+            scope.setTag("external_api", "mealdb");
+            scope.setTag("fallback", "randomselection");
+        });
     }
 }

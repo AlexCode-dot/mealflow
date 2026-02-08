@@ -4,9 +4,10 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ToastBanner } from '@/src/shared/ui/ToastBanner/ToastBanner';
 import { useRetryCountdown } from '@/src/shared/hooks/useRetryCountdown';
 import { useGlobalToast } from './GlobalToastProvider';
-import { theme } from '@/src/shared/theme/theme';
+import { type Theme, useThemedStyles } from '@/src/shared/theme';
 
 export function GlobalToastHost() {
+  const styles = useThemedStyles(createStyles);
   const { toast, clear } = useGlobalToast();
   const insets = useSafeAreaInsets();
   const retry = useRetryCountdown(toast?.retryAfterSeconds);
@@ -77,15 +78,16 @@ export function GlobalToastHost() {
   );
 }
 
-const styles = StyleSheet.create({
-  overlay: {
-    position: 'absolute',
-    top: 0,
-    left: theme.spacing.s3,
-    right: theme.spacing.s3,
-    zIndex: 50,
-  },
-  wrap: {
-    width: '100%',
-  },
-});
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
+    overlay: {
+      position: 'absolute',
+      top: 0,
+      left: theme.spacing.s3,
+      right: theme.spacing.s3,
+      zIndex: 50,
+    },
+    wrap: {
+      width: '100%',
+    },
+  });

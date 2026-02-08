@@ -3,10 +3,11 @@ import { View, StyleSheet } from 'react-native';
 import { AuthScreen, AuthBottomCta } from '@/src/shared/ui';
 import { RegisterForm } from '@/src/features/auth/ui/RegisterForm';
 import { useRegister } from '@/src/features/auth/hooks/useRegister';
-import { theme } from '@/src/shared/theme/theme';
+import { type Theme, useThemedStyles } from '@/src/shared/theme';
 import { routes } from '@/src/core/navigation/routes';
 
 export default function RegisterScreen() {
+  const styles = useThemedStyles(createStyles);
   const router = useRouter();
   const view = useRegister();
   const { state, actions } = view;
@@ -39,8 +40,9 @@ export default function RegisterScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  formWrap: {
-    gap: theme.spacing.s4,
-  },
-});
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
+    formWrap: {
+      gap: theme.spacing.s4,
+    },
+  });

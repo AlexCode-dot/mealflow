@@ -1,6 +1,6 @@
 import { Pressable, StyleSheet, Text } from 'react-native';
 import { Plus } from 'lucide-react-native';
-import { theme } from '@/src/shared/theme/theme';
+import { type Theme, useTheme, useThemedStyles } from '@/src/shared/theme';
 
 type Props = {
   label: string;
@@ -10,6 +10,8 @@ type Props = {
 };
 
 export function RecipeAddButton({ label, onPress, compact = false, variant = 'outline' }: Props) {
+  const theme = useTheme();
+  const styles = useThemedStyles(createStyles);
   const isSolid = variant === 'solid';
 
   return (
@@ -40,38 +42,39 @@ export function RecipeAddButton({ label, onPress, compact = false, variant = 'ou
   );
 }
 
-const styles = StyleSheet.create({
-  button: {
-    alignSelf: 'center',
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: theme.spacing.s2,
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: theme.radius.pill,
-    borderWidth: 2,
-    borderColor: theme.colors.primaryDark,
-  },
-  compact: {
-    paddingVertical: 15,
-    paddingHorizontal: 24,
-  },
-  label: {
-    color: theme.colors.primaryDark,
-    fontSize: 15,
-    fontWeight: '700',
-  },
-  solid: {
-    backgroundColor: theme.colors.primary,
-    borderColor: theme.colors.primaryDark,
-  },
-  solidBorderless: {
-    borderWidth: 0,
-  },
-  labelSolid: {
-    color: theme.colors.textOnPrimary,
-  },
-  labelCompact: {
-    fontSize: 18,
-  },
-});
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
+    button: {
+      alignSelf: 'center',
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: theme.spacing.s2,
+      paddingVertical: 12,
+      paddingHorizontal: 20,
+      borderRadius: theme.radius.pill,
+      borderWidth: 2,
+      borderColor: theme.colors.primaryDark,
+    },
+    compact: {
+      paddingVertical: 15,
+      paddingHorizontal: 24,
+    },
+    label: {
+      color: theme.colors.primaryDark,
+      fontSize: 15,
+      fontWeight: '700',
+    },
+    solid: {
+      backgroundColor: theme.colors.primary,
+      borderColor: theme.colors.primaryDark,
+    },
+    solidBorderless: {
+      borderWidth: 0,
+    },
+    labelSolid: {
+      color: theme.colors.textOnPrimary,
+    },
+    labelCompact: {
+      fontSize: 18,
+    },
+  });

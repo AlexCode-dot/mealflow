@@ -1,6 +1,5 @@
-import { useCallback } from 'react';
-import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
-import { ArrowUp } from 'lucide-react-native';
+import { useCallback, useEffect, useState } from 'react';
+import { ActivityIndicator, FlatList, StyleSheet, Text, View } from 'react-native';
 import { router } from 'expo-router';
 import {
   Screen,
@@ -9,8 +8,9 @@ import {
   Button,
   ToastBanner,
   useGlobalToast,
+  ScrollToTopFab,
 } from '@/src/shared/ui';
-import { theme } from '@/src/shared/theme/theme';
+import { type Theme, useTheme, useThemedStyles } from '@/src/shared/theme';
 import { routes } from '@/src/core/navigation/routes';
 import type { InspirationListItem, RecipeListItem } from '@/src/features/recipes/types';
 import { RECIPE_CATEGORY_OPTIONS } from '@/src/features/recipes/constants/recipePickerOptions';
@@ -23,10 +23,18 @@ import {
 import { useRecipesScreen, type RecipeListTabKey } from '@/src/features/recipes/hooks';
 
 export function RecipesScreen() {
+  const theme = useTheme();
+  const styles = useThemedStyles(createStyles);
   const view = useRecipesScreen();
-  const { state, filters, data, actions, toast, discoveryListRef } = view;
+  const { state, filters, data, actions, toast, savedListRef, discoveryListRef } = view;
   const { toast: globalToast } = useGlobalToast();
+  const [savedScrolled, setSavedScrolled] = useState(false);
+  const [discoveryScrolled, setDiscoveryScrolled] = useState(false);
   const allowDiscoveryLoadMore = data.savedFilterMode !== 'saved';
+  const showSavedEndMessage =
+    !data.saved.canLoadMore && data.visibleSavedItems.length >= 8 && savedScrolled;
+  const showDiscoveryEndMessage =
+    !data.discovery.canLoadMore && data.visibleDiscoveryItems.length >= 8 && discoveryScrolled;
 
   const active = state.tab === 'saved' ? data.saved : data.discovery;
   const toastBanner =
@@ -100,8 +108,24 @@ export function RecipesScreen() {
         </View>
       );
     },
-    [actions, data, filters, state.hasDiscoveryFilters, state.tab],
+    [
+      actions,
+      data,
+      filters,
+      state.hasDiscoveryFilters,
+      state.tab,
+      styles.headerBlock,
+      styles.muted,
+    ],
   );
+
+  useEffect(() => {
+    if (state.tab === 'saved') {
+      setDiscoveryScrolled(false);
+    } else {
+      setSavedScrolled(false);
+    }
+  }, [state.tab]);
 
   return (
     <Screen title="Recipes" scroll={false} contentStyle={styles.screenContent}>
@@ -110,13 +134,30 @@ export function RecipesScreen() {
         {state.tab === 'saved' ? (
           <FlatList<RecipeListItem>
             key="saved"
+            ref={savedListRef}
             data={data.visibleSavedItems}
             keyExtractor={(r) => r.id}
             numColumns={2}
             showsVerticalScrollIndicator={false}
+            onEndReached={data.saved.canLoadMore ? data.saved.loadMore : undefined}
+            onEndReachedThreshold={0.4}
+            onScroll={(event) => {
+              const y = event.nativeEvent.contentOffset.y;
+              actions.handleSavedScroll(y);
+              if (!savedScrolled && y > 60) setSavedScrolled(true);
+            }}
             refreshControl={active.refreshControl}
             contentContainerStyle={styles.listContent}
             columnWrapperStyle={data.visibleSavedItems.length ? styles.gridRow : undefined}
+            ListFooterComponent={
+              <View style={styles.listFooter}>
+                {data.saved.isLoadingMore ? (
+                  <ActivityIndicator color={theme.colors.primaryDark} />
+                ) : data.saved.canLoadMore || !showSavedEndMessage ? null : (
+                  <Text style={styles.footerText}>No more recipes</Text>
+                )}
+              </View>
+            }
             ListHeaderComponent={renderHeader('saved')}
             renderItem={({ item }) => (
               <RecipeSavedGridItem item={item} onPress={(id) => router.push(routes.recipe(id))} />
@@ -135,6 +176,7 @@ export function RecipesScreen() {
             onScroll={(event) => {
               const y = event.nativeEvent.contentOffset.y;
               actions.handleDiscoveryScroll(y);
+              if (!discoveryScrolled && y > 60) setDiscoveryScrolled(true);
             }}
             refreshControl={active.refreshControl}
             contentContainerStyle={styles.listContent}
@@ -143,7 +185,7 @@ export function RecipesScreen() {
                 <View style={styles.listFooter}>
                   {data.discovery.isLoadingMore ? (
                     <ActivityIndicator color={theme.colors.primaryDark} />
-                  ) : data.discovery.canLoadMore ? null : (
+                  ) : data.discovery.canLoadMore || !showDiscoveryEndMessage ? null : (
                     <Text style={styles.footerText}>No more recipes</Text>
                   )}
                 </View>
@@ -162,14 +204,7 @@ export function RecipesScreen() {
           />
         )}
 
-        {state.tab === 'inspiration' && state.showScrollTop ? (
-          <Pressable
-            style={[styles.scrollTop, { top: 17, left: '50%' }]}
-            onPress={actions.handleScrollTop}
-          >
-            <ArrowUp color={theme.colors.textOnPrimary} size={20} strokeWidth={2.5} />
-          </Pressable>
-        ) : null}
+        <ScrollToTopFab visible={state.showScrollTop} onPress={actions.handleScrollTop} />
 
         <FilterSheet
           visible={filters.filtersOpen}
@@ -195,54 +230,45 @@ export function RecipesScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  screenContent: {
-    padding: 0,
-    gap: 0,
-  },
-  root: {
-    flex: 1,
-    backgroundColor: theme.colors.bg,
-  },
-  listContent: {
-    paddingBottom: theme.spacing.s6,
-    paddingHorizontal: theme.spacing.s3,
-  },
-  gridRow: {
-    gap: theme.spacing.s2,
-  },
-  headerBlock: {
-    gap: theme.spacing.s3,
-    paddingTop: theme.spacing.s3,
-    paddingBottom: theme.spacing.s4,
-  },
-  muted: {
-    color: theme.colors.textMuted,
-    fontWeight: '600',
-  },
-  listFooter: {
-    paddingVertical: theme.spacing.s4,
-    alignItems: 'center',
-  },
-  footerText: {
-    color: theme.colors.textMuted,
-    fontWeight: '600',
-  },
-  toast: {
-    position: 'absolute',
-    top: -theme.spacing.s6 - theme.spacing.s4,
-    left: theme.spacing.s3,
-    right: theme.spacing.s3,
-    zIndex: 5,
-  },
-  scrollTop: {
-    position: 'absolute',
-    marginLeft: -18,
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: theme.colors.primary,
-  },
-});
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
+    screenContent: {
+      padding: 0,
+      gap: 0,
+    },
+    root: {
+      flex: 1,
+      backgroundColor: theme.colors.bg,
+    },
+    listContent: {
+      paddingBottom: theme.spacing.s6,
+      paddingHorizontal: theme.spacing.s3,
+    },
+    gridRow: {
+      gap: theme.spacing.s2,
+    },
+    headerBlock: {
+      gap: theme.spacing.s3,
+      paddingTop: theme.spacing.s3,
+      paddingBottom: theme.spacing.s4,
+    },
+    muted: {
+      color: theme.colors.textMuted,
+      fontWeight: '600',
+    },
+    listFooter: {
+      paddingVertical: theme.spacing.s4,
+      alignItems: 'center',
+    },
+    footerText: {
+      color: theme.colors.textMuted,
+      fontWeight: '600',
+    },
+    toast: {
+      position: 'absolute',
+      top: -theme.spacing.s6 - theme.spacing.s4,
+      left: theme.spacing.s3,
+      right: theme.spacing.s3,
+      zIndex: 5,
+    },
+  });

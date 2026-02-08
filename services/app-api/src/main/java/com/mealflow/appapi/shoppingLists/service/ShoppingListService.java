@@ -21,10 +21,14 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 @Service
 public class ShoppingListService {
+    private static final int DEFAULT_PAGE_LIMIT = 20;
+    private static final int MAX_PAGE_LIMIT = 100;
 
     private final ShoppingListRepository shoppingListRepository;
     private final WeeklyPlanRepository weeklyPlanRepository;
@@ -50,6 +54,19 @@ public class ShoppingListService {
             return shoppingListRepository.findAllByUserIdOrderByUpdatedAtDesc(userId);
         }
         return shoppingListRepository.findAllByUserIdAndStatusOrderByUpdatedAtDesc(userId, status);
+    }
+
+    public List<ShoppingList> listForUser(String userId, ShoppingListStatus status, Integer limit, Integer offset) {
+        if (limit == null && offset == null) {
+            return listForUser(userId, status);
+        }
+        int safeLimit = sanitizeLimit(limit);
+        int safeOffset = sanitizeOffset(offset);
+        Pageable pageable = PageRequest.of(safeOffset / safeLimit, safeLimit);
+        if (status == null) {
+            return shoppingListRepository.findAllByUserIdOrderByUpdatedAtDesc(userId, pageable);
+        }
+        return shoppingListRepository.findAllByUserIdAndStatusOrderByUpdatedAtDesc(userId, status, pageable);
     }
 
     public ShoppingList getForUser(String userId, String listId) {
@@ -254,5 +271,19 @@ public class ShoppingListService {
                 .filter(item -> Objects.equals(item.getId(), itemId))
                 .findFirst()
                 .orElseThrow(() -> new ShoppingListNotFoundException("Shopping list item not found"));
+    }
+
+    private int sanitizeLimit(Integer limit) {
+        if (limit == null || limit <= 0) {
+            return DEFAULT_PAGE_LIMIT;
+        }
+        return Math.min(limit, MAX_PAGE_LIMIT);
+    }
+
+    private int sanitizeOffset(Integer offset) {
+        if (offset == null || offset < 0) {
+            return 0;
+        }
+        return offset;
     }
 }

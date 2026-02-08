@@ -18,6 +18,8 @@ export type ShoppingListOverviewState = {
   isLoading: boolean;
   isRefreshing: boolean;
   isGenerating: boolean;
+  isLoadingMoreArchived: boolean;
+  canLoadMoreArchived: boolean;
   error: UiError | null;
 };
 
@@ -36,6 +38,7 @@ export type ShoppingListOverviewActions = {
   handleRefresh: () => Promise<void>;
   openActiveList: () => void;
   openArchivedList: (id: string) => void;
+  loadMoreArchived: () => Promise<void>;
   requestGenerateFromCurrentWeek: () => void;
 };
 
@@ -56,6 +59,7 @@ export type ShoppingListOverviewView = {
 };
 
 export function useShoppingListOverviewScreen(): ShoppingListOverviewView {
+  const archivedPageSize = 20;
   const params = useLocalSearchParams<{ toast?: string }>();
   const toastParam = typeof params.toast === 'string' ? params.toast : null;
   const isFocused = useIsFocused();
@@ -70,15 +74,20 @@ export function useShoppingListOverviewScreen(): ShoppingListOverviewView {
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isLoadingMoreArchived, setIsLoadingMoreArchived] = useState(false);
+  const [archivedOffset, setArchivedOffset] = useState(0);
+  const [canLoadMoreArchived, setCanLoadMoreArchived] = useState(true);
   const [error, setError] = useState<UiError | null>(null);
   const [confirmGenerateOpen, setConfirmGenerateOpen] = useState(false);
 
   const load = useCallback(async () => {
     setError(null);
+    setArchivedOffset(0);
+    setCanLoadMoreArchived(true);
     try {
       const [activeSummaries, archived] = await Promise.all([
         shoppingListsApi.list('active'),
-        shoppingListsApi.list('archived'),
+        shoppingListsApi.list('archived', { limit: archivedPageSize, offset: 0 }),
       ]);
 
       let active = activeSummaries[0] ?? null;
@@ -98,6 +107,8 @@ export function useShoppingListOverviewScreen(): ShoppingListOverviewView {
       const activeFull = active ? await shoppingListsApi.get(active.id) : null;
       setActiveList(activeFull);
       setArchivedLists(archived);
+      setArchivedOffset(archived.length);
+      setCanLoadMoreArchived(archived.length >= archivedPageSize);
     } catch (err) {
       const uiErr = mapCommonError(toApiError(err));
       setError(uiErr);
@@ -155,6 +166,31 @@ export function useShoppingListOverviewScreen(): ShoppingListOverviewView {
     router.push(routes.shoppingListDetail(id));
   }, []);
 
+  const loadMoreArchived = useCallback(async () => {
+    if (isLoading || isLoadingMoreArchived || !canLoadMoreArchived) return;
+    setIsLoadingMoreArchived(true);
+    try {
+      const next = await shoppingListsApi.list('archived', {
+        limit: archivedPageSize,
+        offset: archivedOffset,
+      });
+      if (!next.length) {
+        setCanLoadMoreArchived(false);
+        return;
+      }
+      setArchivedLists((prev) => [...prev, ...next]);
+      setArchivedOffset((prev) => prev + next.length);
+      if (next.length < archivedPageSize) {
+        setCanLoadMoreArchived(false);
+      }
+    } catch (err) {
+      const uiErr = mapCommonError(toApiError(err));
+      showApiError(uiErr, 'Load more failed');
+    } finally {
+      setIsLoadingMoreArchived(false);
+    }
+  }, [archivedOffset, canLoadMoreArchived, isLoading, isLoadingMoreArchived, showApiError]);
+
   const generateFromCurrentWeek = useCallback(async () => {
     const weekStart = currentWeekStartIso();
     setIsGenerating(true);
@@ -190,8 +226,16 @@ export function useShoppingListOverviewScreen(): ShoppingListOverviewView {
   const progress = totalCount === 0 ? 0 : Math.round((checkedCount / totalCount) * 100);
 
   const state = useMemo(
-    () => ({ tab, isLoading, isRefreshing, isGenerating, error }),
-    [error, isGenerating, isLoading, isRefreshing, tab],
+    () => ({
+      tab,
+      isLoading,
+      isRefreshing,
+      isGenerating,
+      isLoadingMoreArchived,
+      canLoadMoreArchived,
+      error,
+    }),
+    [canLoadMoreArchived, error, isGenerating, isLoading, isLoadingMoreArchived, isRefreshing, tab],
   );
 
   const data = useMemo(
@@ -213,6 +257,7 @@ export function useShoppingListOverviewScreen(): ShoppingListOverviewView {
       handleRefresh,
       openActiveList,
       openArchivedList,
+      loadMoreArchived,
       requestGenerateFromCurrentWeek: () => {
         if (totalCount === 0) {
           void confirmGenerate();
@@ -227,6 +272,7 @@ export function useShoppingListOverviewScreen(): ShoppingListOverviewView {
       load,
       openActiveList,
       openArchivedList,
+      loadMoreArchived,
       setConfirmGenerateOpen,
       totalCount,
     ],

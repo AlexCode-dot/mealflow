@@ -3,7 +3,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { Button } from '@/src/shared/ui/Button/Button';
 import { ModalSheet } from '@/src/shared/ui/ModalSheet/ModalSheet';
-import { theme } from '@/src/shared/theme/theme';
+import { type Theme, useThemedStyles } from '@/src/shared/theme';
 import { isWeb, WEB } from '@/src/shared/ui/webStyles';
 
 type Props = {
@@ -30,6 +30,7 @@ export function PickerSheetContent({
   children,
   doneLabel = 'Done',
 }: ContentProps) {
+  const styles = useThemedStyles(createStyles);
   const handleDone = onDone ?? onClose;
 
   return (
@@ -99,9 +100,16 @@ type PickerSelectProps = {
 };
 
 export function PickerSelect({ value, onChange, options, placeholder }: PickerSelectProps) {
+  const styles = useThemedStyles(createStyles);
   if (!isWeb) {
     return (
-      <Picker selectedValue={value} onValueChange={(next) => onChange(String(next))}>
+      <Picker
+        selectedValue={value}
+        onValueChange={(next) => onChange(String(next))}
+        style={styles.picker}
+        itemStyle={styles.pickerItem}
+        dropdownIconColor={styles.picker.color as string}
+      >
         {placeholder ? <Picker.Item label={placeholder} value="" /> : null}
         {options.map((option) => (
           <Picker.Item key={option.value} label={option.label} value={option.value} />
@@ -136,96 +144,104 @@ export function PickerSelect({ value, onChange, options, placeholder }: PickerSe
   );
 }
 
-const styles = StyleSheet.create({
-  root: {
-    gap: theme.spacing.s2,
-    paddingTop: theme.spacing.s2,
-  },
-  rootWeb: {
-    paddingHorizontal: theme.spacing.s3,
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: theme.colors.text,
-    textAlign: 'center',
-    marginBottom: theme.spacing.s1,
-  },
-  pickerWrap: {
-    borderWidth: 1,
-    borderColor: theme.colors.borderNeutral,
-    backgroundColor: theme.colors.bgLight,
-    borderRadius: theme.radius.md,
-    overflow: 'hidden',
-  },
-  pickerWrapWeb: {
-    alignSelf: 'center',
-    width: '100%',
-    maxWidth: WEB.frameMaxWidth,
-  },
-  button: {
-    borderRadius: theme.radius.pill,
-    minHeight: 50,
-  },
-  overlaySheet: {
-    backgroundColor: theme.colors.bg,
-    borderTopLeftRadius: 36,
-    borderTopRightRadius: 36,
-    padding: theme.spacing.s4,
-    borderWidth: 1,
-    borderColor: theme.colors.borderNeutral,
-  },
-  overlaySheetWeb: {
-    alignSelf: 'center',
-    width: '100%',
-    maxWidth: WEB.frameMaxWidth,
-    borderRadius: 16,
-  },
-  overlaySheetWebWrap: {
-    width: '100%',
-    alignItems: 'center',
-  },
-  handle: {
-    alignSelf: 'center',
-    width: 72,
-    height: 4,
-    borderRadius: 999,
-    backgroundColor: theme.colors.borderNeutral,
-    marginTop: 0,
-    marginBottom: theme.spacing.s3,
-  },
-  webList: {
-    maxHeight: 320,
-    borderRadius: 12,
-    backgroundColor: theme.colors.bgLight,
-    width: '100%',
-  },
-  webListContent: {
-    paddingVertical: theme.spacing.s1,
-  },
-  webItem: {
-    paddingVertical: theme.spacing.s2,
-    paddingHorizontal: theme.spacing.s4,
-    borderBottomWidth: 1,
-    borderBottomColor: theme.colors.borderNeutral,
-  },
-  webItemActive: {
-    backgroundColor: theme.colors.primaryLight,
-  },
-  webItemPressed: {
-    opacity: 0.7,
-  },
-  webItemText: {
-    color: theme.colors.text,
-    fontSize: 15,
-    fontWeight: '600',
-  },
-  webItemTextActive: {
-    color: theme.colors.primaryDark,
-    fontWeight: '800',
-  },
-  webListWrap: {
-    gap: theme.spacing.s2,
-    width: '100%',
-  },
-});
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
+    root: {
+      gap: theme.spacing.s2,
+      paddingTop: theme.spacing.s2,
+    },
+    rootWeb: {
+      paddingHorizontal: theme.spacing.s3,
+    },
+    title: {
+      fontSize: 18,
+      fontWeight: '700',
+      color: theme.colors.text,
+      textAlign: 'center',
+      marginBottom: theme.spacing.s1,
+    },
+    pickerWrap: {
+      borderWidth: 1,
+      borderColor: theme.colors.borderNeutral,
+      backgroundColor: theme.colors.bgLight,
+      borderRadius: theme.radius.md,
+      overflow: 'hidden',
+    },
+    pickerWrapWeb: {
+      alignSelf: 'center',
+      width: '100%',
+      maxWidth: WEB.frameMaxWidth,
+    },
+    button: {
+      borderRadius: theme.radius.pill,
+      minHeight: 50,
+    },
+    overlaySheet: {
+      backgroundColor: theme.colors.bg,
+      borderTopLeftRadius: 36,
+      borderTopRightRadius: 36,
+      padding: theme.spacing.s4,
+      borderWidth: 1,
+      borderColor: theme.colors.borderNeutral,
+    },
+    overlaySheetWeb: {
+      alignSelf: 'center',
+      width: '100%',
+      maxWidth: WEB.frameMaxWidth,
+      borderRadius: 16,
+    },
+    overlaySheetWebWrap: {
+      width: '100%',
+      alignItems: 'center',
+    },
+    handle: {
+      alignSelf: 'center',
+      width: 72,
+      height: 4,
+      borderRadius: 999,
+      backgroundColor: theme.colors.borderNeutral,
+      marginTop: 0,
+      marginBottom: theme.spacing.s3,
+    },
+    webList: {
+      maxHeight: 320,
+      borderRadius: 12,
+      backgroundColor: theme.colors.bgLight,
+      width: '100%',
+    },
+    webListContent: {
+      paddingVertical: theme.spacing.s1,
+    },
+    webItem: {
+      paddingVertical: theme.spacing.s2,
+      paddingHorizontal: theme.spacing.s4,
+      borderBottomWidth: 1,
+      borderBottomColor: theme.colors.borderNeutral,
+    },
+    webItemActive: {
+      backgroundColor: theme.colors.primaryLight,
+    },
+    webItemPressed: {
+      opacity: 0.7,
+    },
+    webItemText: {
+      color: theme.colors.text,
+      fontSize: 15,
+      fontWeight: '600',
+    },
+    webItemTextActive: {
+      color: theme.colors.primaryDark,
+      fontWeight: '800',
+    },
+    picker: {
+      color: theme.colors.text,
+    },
+    pickerItem: {
+      color: theme.colors.text,
+      fontSize: 20,
+    },
+    webListWrap: {
+      gap: theme.spacing.s2,
+      width: '100%',
+    },
+  });

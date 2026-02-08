@@ -55,6 +55,7 @@ export type RecipesScreenActions = {
   handleScrollTop: () => void;
   handleSavePress: (item: InspirationListItem) => void;
   handleSaveConfirm: () => Promise<void>;
+  handleSavedScroll: (offsetY: number) => void;
   handleDiscoveryScroll: (offsetY: number) => void;
 };
 
@@ -69,6 +70,7 @@ export type RecipesScreenView = {
   data: RecipesScreenData;
   actions: RecipesScreenActions;
   toast: RecipesScreenToast;
+  savedListRef: RefObject<FlatList<RecipeListItem> | null>;
   discoveryListRef: RefObject<FlatList<InspirationListItem> | null>;
 };
 
@@ -76,7 +78,7 @@ export function useRecipesScreen(): RecipesScreenView {
   const params = useLocalSearchParams<{ toast?: string; tab?: string }>();
   const toastParam = typeof params.toast === 'string' ? params.toast : null;
   const tabParam = typeof params.tab === 'string' ? params.tab : null;
-  const saved = useRecipesList();
+  const saved = useRecipesList({ paginated: true, pageSize: 24 });
   const view = useRecipeListView({
     savedItems: saved.items,
   });
@@ -90,6 +92,7 @@ export function useRecipesScreen(): RecipesScreenView {
   const { showApiError, showValidationError } = useGlobalToast();
   const [showToast, setShowToast] = useState(false);
   const isFocused = useIsFocused();
+  const savedListRef = useRef<FlatList<RecipeListItem> | null>(null);
   const discoveryListRef = useRef<FlatList<InspirationListItem> | null>(null);
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [saveTarget, setSaveTarget] = useState<InspirationListItem | null>(null);
@@ -172,8 +175,12 @@ export function useRecipesScreen(): RecipesScreenView {
   }, [isFocused, toastState.toast]);
 
   const handleScrollTop = useCallback(() => {
+    if (view.tab === 'saved') {
+      savedListRef.current?.scrollToOffset({ offset: 0, animated: true });
+      return;
+    }
     discoveryListRef.current?.scrollToOffset({ offset: 0, animated: true });
-  }, []);
+  }, [view.tab]);
 
   const handleSavePress = useCallback((item: InspirationListItem) => {
     setSaveTarget(item);
@@ -207,6 +214,10 @@ export function useRecipesScreen(): RecipesScreenView {
   }, [loadSaved, saveCategory, saveTarget, showApiError, showValidationError, toastState]);
 
   const handleDiscoveryScroll = useCallback((offsetY: number) => {
+    setShowScrollTop(offsetY > 500);
+  }, []);
+
+  const handleSavedScroll = useCallback((offsetY: number) => {
     setShowScrollTop(offsetY > 500);
   }, []);
 
@@ -287,9 +298,17 @@ export function useRecipesScreen(): RecipesScreenView {
       handleScrollTop,
       handleSavePress,
       handleSaveConfirm,
+      handleSavedScroll,
       handleDiscoveryScroll,
     }),
-    [setTab, handleScrollTop, handleSavePress, handleSaveConfirm, handleDiscoveryScroll],
+    [
+      setTab,
+      handleScrollTop,
+      handleSavePress,
+      handleSaveConfirm,
+      handleSavedScroll,
+      handleDiscoveryScroll,
+    ],
   );
 
   const toast = useMemo<RecipesScreenToast>(
@@ -307,6 +326,7 @@ export function useRecipesScreen(): RecipesScreenView {
       data,
       actions,
       toast,
+      savedListRef,
       discoveryListRef,
     }),
     [state, filters, data, actions, toast],

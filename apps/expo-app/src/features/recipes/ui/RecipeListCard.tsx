@@ -3,7 +3,7 @@ import { Image, Pressable, StyleSheet, Text, View, type ColorValue } from 'react
 import { LinearGradient } from 'expo-linear-gradient';
 import { Bookmark } from 'lucide-react-native';
 import { IconStat, Shimmer } from '@/src/shared/ui';
-import { theme } from '@/src/shared/theme/theme';
+import { type Theme, useTheme, useThemedStyles } from '@/src/shared/theme';
 import { RECIPE_IMAGE_FADE_MODE } from '@/src/features/recipes/constants/recipeUiConfig';
 
 type MetaStat = {
@@ -38,6 +38,8 @@ export function RecipeListCard({
   saveDisabled = false,
   savedBadge = false,
 }: Props) {
+  const theme = useTheme();
+  const styles = useThemedStyles(createStyles);
   const leftMeta = metaLeft ?? null;
   const middleMeta = metaMiddle ?? null;
   const hasImage = Boolean(imageUrl);
@@ -137,105 +139,106 @@ export function RecipeListCard({
   );
 }
 
-const styles = StyleSheet.create({
-  cardShadow: {
-    marginBottom: 10,
-    borderRadius: 18,
-    shadowColor: '#000',
-    shadowOpacity: 0.16,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 8 },
-    elevation: 8,
-  },
-  card: {
-    flexDirection: 'row',
-    gap: theme.spacing.s3,
-    padding: theme.spacing.s3,
-    borderRadius: 18,
-    borderWidth: 1.5,
-    borderColor: theme.colors.borderGreen,
-    backgroundColor: theme.colors.surface,
-  },
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
+    cardShadow: {
+      marginBottom: 10,
+      borderRadius: 18,
+      shadowColor: '#000',
+      shadowOpacity: 0.16,
+      shadowRadius: 12,
+      shadowOffset: { width: 0, height: 8 },
+      elevation: 8,
+    },
+    card: {
+      flexDirection: 'row',
+      gap: theme.spacing.s3,
+      padding: theme.spacing.s3,
+      borderRadius: 18,
+      borderWidth: 1.5,
+      borderColor: theme.colors.borderGreen,
+      backgroundColor: theme.colors.surface,
+    },
 
-  imageFrame: {
-    position: 'relative',
-    width: 118,
-    borderRadius: 16,
-    borderWidth: 2,
-    borderColor: theme.colors.primaryDark,
-    backgroundColor: theme.colors.bg,
-    overflow: 'hidden',
-  },
-  image: {
-    width: '100%',
-    height: 108,
-  },
-  imageFade: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
-    height: 14,
-  },
+    imageFrame: {
+      position: 'relative',
+      width: 118,
+      borderRadius: 16,
+      borderWidth: 2,
+      borderColor: theme.colors.primaryDark,
+      backgroundColor: theme.colors.bg,
+      overflow: 'hidden',
+    },
+    image: {
+      width: '100%',
+      height: 108,
+    },
+    imageFade: {
+      position: 'absolute',
+      left: 0,
+      right: 0,
+      bottom: 0,
+      height: 14,
+    },
 
-  content: {
-    flex: 1,
-    justifyContent: 'center',
-    gap: theme.spacing.s2,
-  },
+    content: {
+      flex: 1,
+      justifyContent: 'center',
+      gap: theme.spacing.s2,
+    },
 
-  title: {
-    color: theme.colors.text,
-    fontSize: 18,
-    fontWeight: '700',
-    lineHeight: 24,
-  },
+    title: {
+      color: theme.colors.text,
+      fontSize: 18,
+      fontWeight: '700',
+      lineHeight: 24,
+    },
 
-  subtitle: {
-    color: theme.colors.textMuted,
-    fontSize: 12,
-    fontWeight: '700',
-  },
+    subtitle: {
+      color: theme.colors.textMuted,
+      fontSize: 12,
+      fontWeight: '700',
+    },
 
-  metaRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    gap: theme.spacing.s4,
-    marginTop: theme.spacing.s2,
-  },
+    metaRow: {
+      flexDirection: 'row',
+      alignItems: 'flex-end',
+      gap: theme.spacing.s4,
+      marginTop: theme.spacing.s2,
+    },
 
-  saveWrap: {
-    marginLeft: 'auto',
-    alignItems: 'center',
-  },
-  savePressed: {
-    opacity: 0.8,
-  },
-  saveDisabled: {
-    opacity: 0.45,
-  },
-  saveLabelSaved: {
-    color: theme.colors.primaryDark,
-  },
+    saveWrap: {
+      marginLeft: 'auto',
+      alignItems: 'center',
+    },
+    savePressed: {
+      opacity: 0.8,
+    },
+    saveDisabled: {
+      opacity: 0.45,
+    },
+    saveLabelSaved: {
+      color: theme.colors.primaryDark,
+    },
 
-  pressed: {
-    opacity: 0.9,
-  },
-  savedBadge: {
-    position: 'absolute',
-    top: theme.spacing.s2,
-    right: theme.spacing.s2,
-    paddingHorizontal: theme.spacing.s2,
-    paddingVertical: 4,
-    borderRadius: 999,
-    backgroundColor: 'rgba(227,243,230,0.92)',
-    borderWidth: 1.5,
-    borderColor: theme.colors.primaryDark,
-  },
-  savedBadgeText: {
-    fontSize: 10,
-    fontWeight: '800',
-    color: theme.colors.primaryDark,
-    letterSpacing: 0.3,
-  },
-});
+    pressed: {
+      opacity: 0.9,
+    },
+    savedBadge: {
+      position: 'absolute',
+      top: theme.spacing.s2,
+      right: theme.spacing.s2,
+      paddingHorizontal: theme.spacing.s2,
+      paddingVertical: 4,
+      borderRadius: 999,
+      backgroundColor: 'rgba(227,243,230,0.92)',
+      borderWidth: 1.5,
+      borderColor: theme.colors.primaryDark,
+    },
+    savedBadgeText: {
+      fontSize: 10,
+      fontWeight: '800',
+      color: theme.colors.primaryDark,
+      letterSpacing: 0.3,
+    },
+  });

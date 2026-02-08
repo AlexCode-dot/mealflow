@@ -16,9 +16,11 @@ import {
   TextField,
   useGlobalToast,
 } from '@/src/shared/ui';
-import { theme } from '@/src/shared/theme/theme';
+import { type Theme, useTheme, useThemedStyles } from '@/src/shared/theme';
 
 export default function ShoppingListDetailsScreen() {
+  const theme = useTheme();
+  const styles = useThemedStyles(createStyles);
   const view = useShoppingListDetailsScreen();
   const { state, data, actions, toast, addSheet, editSheet, renameSheet, confirms, options } = view;
   const { toast: globalToast } = useGlobalToast();
@@ -308,6 +310,7 @@ function SectionBlock({
   onEdit: (item: ShoppingListItem) => void;
   onDelete: (item: ShoppingListItem) => void;
 }) {
+  const styles = useThemedStyles(createStyles);
   if (items.length === 0) {
     return (
       <View style={styles.sectionBlock}>
@@ -335,134 +338,135 @@ function SectionBlock({
   );
 }
 
-const styles = StyleSheet.create({
-  root: {
-    flex: 1,
-  },
-  content: {
-    gap: theme.spacing.s4,
-  },
-  summaryCard: {
-    borderRadius: theme.radius.lg,
-    borderWidth: 1,
-    borderColor: theme.colors.primaryLight,
-    backgroundColor: theme.colors.primary,
-    padding: theme.spacing.s4,
-    gap: theme.spacing.s3,
-  },
-  summaryHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  summaryText: {
-    gap: theme.spacing.s1,
-  },
-  summaryTitle: {
-    fontSize: 18,
-    fontWeight: '800',
-    color: theme.colors.textOnPrimary,
-  },
-  summaryMeta: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: theme.colors.iconMutedOnPrimary,
-  },
-  summaryPercent: {
-    fontSize: 16,
-    fontWeight: '800',
-    color: theme.colors.textOnPrimary,
-  },
-  progressTrack: {
-    height: 10,
-    borderRadius: 999,
-    backgroundColor: 'rgba(245,241,230,0.35)',
-    overflow: 'hidden',
-  },
-  progressFill: {
-    height: '100%',
-    borderRadius: 999,
-    backgroundColor: theme.colors.surface,
-  },
-  sections: {
-    gap: theme.spacing.s4,
-  },
-  sectionBlock: {
-    gap: theme.spacing.s3,
-  },
-  sectionTitle: {
-    fontSize: 12,
-    fontWeight: '800',
-    letterSpacing: 0.6,
-    color: theme.colors.textMuted,
-    textTransform: 'uppercase',
-  },
-  sectionEmpty: {
-    color: theme.colors.textMuted,
-    fontSize: 13,
-    fontWeight: '600',
-  },
-  list: {
-    gap: theme.spacing.s3,
-  },
-  emptyBlock: {
-    padding: theme.spacing.s4,
-    backgroundColor: theme.colors.bgLight,
-    borderRadius: theme.radius.md,
-    borderWidth: 1,
-    borderColor: theme.colors.borderNeutral,
-    gap: theme.spacing.s2,
-    alignItems: 'center',
-  },
-  emptyTitle: {
-    fontSize: 15,
-    fontWeight: '800',
-    color: theme.colors.text,
-  },
-  emptySubtitle: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: theme.colors.textMuted,
-  },
-  toastOverlay: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    top: 0,
-    zIndex: 5,
-    alignItems: 'center',
-    pointerEvents: 'box-none',
-  },
-  toastWrap: {
-    width: '92%',
-  },
-  sheetFooter: {
-    paddingHorizontal: theme.spacing.s4,
-    paddingTop: theme.spacing.s3,
-    paddingBottom: theme.spacing.s5,
-  },
-  formError: {
-    color: theme.colors.error,
-    fontSize: 13,
-    fontWeight: '700',
-    marginBottom: theme.spacing.s2,
-  },
-  optionsSheet: {
-    gap: theme.spacing.s4,
-    paddingBottom: theme.spacing.s4,
-  },
-  optionRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: theme.spacing.s3,
-    paddingVertical: theme.spacing.s3,
-  },
-  optionText: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: theme.colors.text,
-  },
-  optionDanger: {
-    color: theme.colors.error,
-  },
-});
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
+    root: {
+      flex: 1,
+    },
+    content: {
+      gap: theme.spacing.s4,
+    },
+    summaryCard: {
+      borderRadius: theme.radius.lg,
+      borderWidth: 1,
+      borderColor: theme.colors.primaryLight,
+      backgroundColor: theme.colors.primary,
+      padding: theme.spacing.s4,
+      gap: theme.spacing.s3,
+    },
+    summaryHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+    },
+    summaryText: {
+      gap: theme.spacing.s1,
+    },
+    summaryTitle: {
+      fontSize: 18,
+      fontWeight: '800',
+      color: theme.colors.textOnPrimary,
+    },
+    summaryMeta: {
+      fontSize: 12,
+      fontWeight: '700',
+      color: theme.colors.iconMutedOnPrimary,
+    },
+    summaryPercent: {
+      fontSize: 16,
+      fontWeight: '800',
+      color: theme.colors.textOnPrimary,
+    },
+    progressTrack: {
+      height: 10,
+      borderRadius: 999,
+      backgroundColor: 'rgba(245,241,230,0.35)',
+      overflow: 'hidden',
+    },
+    progressFill: {
+      height: '100%',
+      borderRadius: 999,
+      backgroundColor: theme.colors.surface,
+    },
+    sections: {
+      gap: theme.spacing.s4,
+    },
+    sectionBlock: {
+      gap: theme.spacing.s3,
+    },
+    sectionTitle: {
+      fontSize: 12,
+      fontWeight: '800',
+      letterSpacing: 0.6,
+      color: theme.colors.textMuted,
+      textTransform: 'uppercase',
+    },
+    sectionEmpty: {
+      color: theme.colors.textMuted,
+      fontSize: 13,
+      fontWeight: '600',
+    },
+    list: {
+      gap: theme.spacing.s3,
+    },
+    emptyBlock: {
+      padding: theme.spacing.s4,
+      backgroundColor: theme.colors.bgLight,
+      borderRadius: theme.radius.md,
+      borderWidth: 1,
+      borderColor: theme.colors.borderNeutral,
+      gap: theme.spacing.s2,
+      alignItems: 'center',
+    },
+    emptyTitle: {
+      fontSize: 15,
+      fontWeight: '800',
+      color: theme.colors.text,
+    },
+    emptySubtitle: {
+      fontSize: 12,
+      fontWeight: '600',
+      color: theme.colors.textMuted,
+    },
+    toastOverlay: {
+      position: 'absolute',
+      left: 0,
+      right: 0,
+      top: 0,
+      zIndex: 5,
+      alignItems: 'center',
+      pointerEvents: 'box-none',
+    },
+    toastWrap: {
+      width: '92%',
+    },
+    sheetFooter: {
+      paddingHorizontal: theme.spacing.s4,
+      paddingTop: theme.spacing.s3,
+      paddingBottom: theme.spacing.s5,
+    },
+    formError: {
+      color: theme.colors.error,
+      fontSize: 13,
+      fontWeight: '700',
+      marginBottom: theme.spacing.s2,
+    },
+    optionsSheet: {
+      gap: theme.spacing.s4,
+      paddingBottom: theme.spacing.s4,
+    },
+    optionRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: theme.spacing.s3,
+      paddingVertical: theme.spacing.s3,
+    },
+    optionText: {
+      fontSize: 15,
+      fontWeight: '700',
+      color: theme.colors.text,
+    },
+    optionDanger: {
+      color: theme.colors.error,
+    },
+  });

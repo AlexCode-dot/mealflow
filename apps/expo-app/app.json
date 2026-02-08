@@ -11,7 +11,11 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.alexcode.mealflow",
-      "buildNumber": "1"
+      "buildNumber": "1",
+      "icon": "./assets/icons/mealflow_icon_1024.png",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "package": "com.alexcode.mealflow",
@@ -22,7 +26,8 @@
         "backgroundImage": "./assets/android-adaptive/background.png"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "permissions": ["android.permission.RECORD_AUDIO"]
     },
     "web": {
       "output": "static",
@@ -34,12 +39,9 @@
         "expo-splash-screen",
         {
           "image": "./assets/splash/mealflow_splash_1242x2436.png",
-          "imageWidth": 200,
           "resizeMode": "contain",
-          "backgroundColor": "#ffffff",
-          "dark": {
-            "backgroundColor": "#000000"
-          }
+          "imageWidth": 600,
+          "backgroundColor": "#7BB13B"
         }
       ],
       [
@@ -62,6 +64,10 @@
       },
       "support": {
         "email": "mealflows@gmail.com"
+      },
+      "router": {},
+      "eas": {
+        "projectId": "9b48085b-5d13-42a8-aa9a-28642f1b06ad"
       }
     }
   }

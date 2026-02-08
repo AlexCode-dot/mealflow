@@ -5,7 +5,7 @@ import { PickerSelect, PickerSheetOverlay } from '@/src/shared/ui';
 import { ErrorText } from '@/src/shared/ui/ErrorText';
 import { FormSheet } from '@/src/shared/ui/FormSheet';
 import { TextField } from '@/src/shared/ui/TextField';
-import { theme } from '@/src/shared/theme/theme';
+import { type Theme, useTheme, useThemedStyles } from '@/src/shared/theme';
 import { RecipeAmountField } from '@/src/features/recipes/ui/RecipeAmountField';
 import { RecipeActionBar } from '@/src/features/recipes/ui/RecipeActionBar';
 import { RecipeIngredientRow } from '@/src/features/recipes/ui/RecipeIngredientRow';
@@ -52,6 +52,8 @@ export function IngredientEditorSheet({
   onCancel,
   onDelete,
 }: Props) {
+  const theme = useTheme();
+  const styles = useThemedStyles(createStyles);
   const [pickerOpen, setPickerOpen] = useState<'unit' | null>(null);
   const unitLabel = useMemo(() => {
     const selected = UNITS.find((u) => u.key === unit);
@@ -146,54 +148,55 @@ export function IngredientEditorSheet({
   );
 }
 
-const styles = StyleSheet.create({
-  section: {
-    gap: theme.spacing.s2,
-  },
-  label: {
-    color: theme.colors.textMuted,
-    fontSize: 13,
-    fontWeight: '700',
-  },
-  row: {
-    flexDirection: 'row',
-    gap: theme.spacing.s3,
-  },
-  rowItem: {
-    flex: 1,
-    gap: theme.spacing.s2,
-  },
-  preview: {
-    gap: theme.spacing.s2,
-  },
-  previewHeader: {
-    gap: theme.spacing.s2,
-  },
-  previewTitle: {
-    color: theme.colors.textMuted,
-    fontSize: 16,
-    fontWeight: '700',
-  },
-  previewDivider: {
-    height: 1,
-    backgroundColor: theme.colors.borderNeutral,
-  },
-  deleteAction: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 4,
-  },
-  deleteLabel: {
-    color: theme.colors.textMuted,
-    fontSize: 11,
-    fontWeight: '600',
-  },
-  pickerOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    justifyContent: 'flex-end',
-    backgroundColor: 'rgba(0,0,0,0.35)',
-  },
-});
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
+    section: {
+      gap: theme.spacing.s2,
+    },
+    label: {
+      color: theme.colors.textMuted,
+      fontSize: 13,
+      fontWeight: '700',
+    },
+    row: {
+      flexDirection: 'row',
+      gap: theme.spacing.s3,
+    },
+    rowItem: {
+      flex: 1,
+      gap: theme.spacing.s2,
+    },
+    preview: {
+      gap: theme.spacing.s2,
+    },
+    previewHeader: {
+      gap: theme.spacing.s2,
+    },
+    previewTitle: {
+      color: theme.colors.textMuted,
+      fontSize: 16,
+      fontWeight: '700',
+    },
+    previewDivider: {
+      height: 1,
+      backgroundColor: theme.colors.borderNeutral,
+    },
+    deleteAction: {
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 4,
+    },
+    deleteLabel: {
+      color: theme.colors.textMuted,
+      fontSize: 11,
+      fontWeight: '600',
+    },
+    pickerOverlay: {
+      ...StyleSheet.absoluteFillObject,
+      justifyContent: 'flex-end',
+      backgroundColor: 'rgba(0,0,0,0.35)',
+    },
+  });
 
 function sanitizeAmountInput(value: string, unit: string) {
   const cleaned = value.replace(/[^0-9.]/g, '');

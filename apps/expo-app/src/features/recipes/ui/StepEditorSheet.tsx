@@ -3,7 +3,7 @@ import { Trash2 } from 'lucide-react-native';
 import { FormSheet } from '@/src/shared/ui/FormSheet';
 import { TextField } from '@/src/shared/ui/TextField';
 import { ErrorText } from '@/src/shared/ui/ErrorText';
-import { theme } from '@/src/shared/theme/theme';
+import { type Theme, useTheme, useThemedStyles } from '@/src/shared/theme';
 import { RecipeStepRow } from '@/src/features/recipes/ui/RecipeStepRow';
 import { RecipeActionBar } from '@/src/features/recipes/ui/RecipeActionBar';
 
@@ -28,6 +28,8 @@ export function StepEditorSheet({
   onCancel,
   onDelete,
 }: Props) {
+  const theme = useTheme();
+  const styles = useThemedStyles(createStyles);
   return (
     <FormSheet
       visible={visible}
@@ -71,41 +73,42 @@ export function StepEditorSheet({
   );
 }
 
-const styles = StyleSheet.create({
-  section: {
-    gap: theme.spacing.s2,
-  },
-  label: {
-    color: theme.colors.textMuted,
-    fontSize: 13,
-    fontWeight: '700',
-  },
-  multiline: {
-    minHeight: 120,
-  },
-  preview: {
-    gap: theme.spacing.s2,
-  },
-  previewHeader: {
-    gap: theme.spacing.s2,
-  },
-  previewTitle: {
-    color: theme.colors.textMuted,
-    fontSize: 16,
-    fontWeight: '700',
-  },
-  previewDivider: {
-    height: 1,
-    backgroundColor: theme.colors.borderNeutral,
-  },
-  deleteAction: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 4,
-  },
-  deleteLabel: {
-    color: theme.colors.textMuted,
-    fontSize: 11,
-    fontWeight: '600',
-  },
-});
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
+    section: {
+      gap: theme.spacing.s2,
+    },
+    label: {
+      color: theme.colors.textMuted,
+      fontSize: 13,
+      fontWeight: '700',
+    },
+    multiline: {
+      minHeight: 120,
+    },
+    preview: {
+      gap: theme.spacing.s2,
+    },
+    previewHeader: {
+      gap: theme.spacing.s2,
+    },
+    previewTitle: {
+      color: theme.colors.textMuted,
+      fontSize: 16,
+      fontWeight: '700',
+    },
+    previewDivider: {
+      height: 1,
+      backgroundColor: theme.colors.borderNeutral,
+    },
+    deleteAction: {
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 4,
+    },
+    deleteLabel: {
+      color: theme.colors.textMuted,
+      fontSize: 11,
+      fontWeight: '600',
+    },
+  });

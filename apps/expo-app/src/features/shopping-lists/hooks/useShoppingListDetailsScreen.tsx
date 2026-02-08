@@ -10,7 +10,7 @@ import type { UiError } from '@/src/shared/errors/errorTypes';
 import { toApiError } from '@/src/core/http/toApiError';
 import { useToastState } from '@/src/shared/hooks/useToastState';
 import { useBottomBarActions, useGlobalToast, type BottomActionBarItem } from '@/src/shared/ui';
-import { theme } from '@/src/shared/theme/theme';
+import { useTheme } from '@/src/shared/theme';
 import { TAB_BAR } from '@/src/shared/ui/layout/tabBar';
 import { routes } from '@/src/core/navigation/routes';
 import { normalizePath } from '@/src/core/navigation/normalizePath';
@@ -201,6 +201,8 @@ export function useShoppingListDetailsScreen(): ShoppingListDetailsView {
     }
     router.back();
   }, [returnTo]);
+
+  const theme = useTheme();
 
   const parseQuantity = (value: string) => {
     const trimmed = value.trim();
@@ -502,7 +504,7 @@ export function useShoppingListDetailsScreen(): ShoppingListDetailsView {
         icon: (
           <MoreVertical
             size={TAB_BAR.ICON_SIZE}
-            color={theme.colors.textOnPrimary}
+            color={theme.colors.tabBarAccent}
             strokeWidth={2.25}
           />
         ),
@@ -512,7 +514,7 @@ export function useShoppingListDetailsScreen(): ShoppingListDetailsView {
         key: 'clear',
         label: 'Clear checked',
         icon: (
-          <ListX size={TAB_BAR.ICON_SIZE} color={theme.colors.textOnPrimary} strokeWidth={2.25} />
+          <ListX size={TAB_BAR.ICON_SIZE} color={theme.colors.tabBarAccent} strokeWidth={2.25} />
         ),
         onPress: () => {
           setClearMode('checked');
@@ -521,16 +523,16 @@ export function useShoppingListDetailsScreen(): ShoppingListDetailsView {
         disabled: !hasChecked,
       },
     ];
-  }, [checkedItems.length, openOptions]);
+  }, [checkedItems.length, openOptions, theme.colors.tabBarAccent]);
 
   const centerAction = useMemo(
     () => ({
       label: 'Add Item',
-      icon: <Plus color={theme.colors.textOnPrimary} size={38} strokeWidth={2.75} />,
+      icon: <Plus color={theme.colors.tabBarAddButtonIcon} size={38} strokeWidth={2.75} />,
       onPress: openAddSheet,
       accessibilityLabel: 'Add item',
     }),
-    [openAddSheet],
+    [openAddSheet, theme.colors.tabBarAddButtonIcon],
   );
 
   useBottomBarActions(

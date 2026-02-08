@@ -1,6 +1,6 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { ChevronRight, Utensils } from 'lucide-react-native';
-import { theme } from '@/src/shared/theme/theme';
+import { type Theme, useTheme, useThemedStyles } from '@/src/shared/theme';
 import { formatRelativeTime } from '@/src/features/shopping-lists/utils/relativeTime';
 
 type Props = {
@@ -11,6 +11,8 @@ type Props = {
 };
 
 export function ArchivedListCard({ title, updatedAt, itemCount, onPress }: Props) {
+  const theme = useTheme();
+  const styles = useThemedStyles(createStyles);
   const archivedLabel = formatRelativeTime(updatedAt);
 
   return (
@@ -33,44 +35,45 @@ export function ArchivedListCard({ title, updatedAt, itemCount, onPress }: Props
   );
 }
 
-const styles = StyleSheet.create({
-  root: {
-    borderRadius: theme.radius.lg,
-    backgroundColor: theme.colors.bgLight,
-    borderWidth: 1,
-    borderColor: theme.colors.borderNeutral,
-    padding: theme.spacing.s4,
-  },
-  pressed: {
-    opacity: 0.9,
-  },
-  body: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: theme.spacing.s3,
-  },
-  text: {
-    flex: 1,
-    gap: theme.spacing.s1,
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: '800',
-    color: theme.colors.text,
-  },
-  subtitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: theme.colors.textMuted,
-  },
-  metaRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: theme.spacing.s2,
-  },
-  metaText: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: theme.colors.textMuted,
-  },
-});
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
+    root: {
+      borderRadius: theme.radius.lg,
+      backgroundColor: theme.colors.bgLight,
+      borderWidth: 1,
+      borderColor: theme.colors.borderNeutral,
+      padding: theme.spacing.s4,
+    },
+    pressed: {
+      opacity: 0.9,
+    },
+    body: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: theme.spacing.s3,
+    },
+    text: {
+      flex: 1,
+      gap: theme.spacing.s1,
+    },
+    title: {
+      fontSize: 18,
+      fontWeight: '800',
+      color: theme.colors.text,
+    },
+    subtitle: {
+      fontSize: 14,
+      fontWeight: '600',
+      color: theme.colors.textMuted,
+    },
+    metaRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: theme.spacing.s2,
+    },
+    metaText: {
+      fontSize: 13,
+      fontWeight: '600',
+      color: theme.colors.textMuted,
+    },
+  });

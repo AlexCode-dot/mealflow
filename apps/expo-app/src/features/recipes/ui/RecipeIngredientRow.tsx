@@ -1,6 +1,6 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Check, GripVertical } from 'lucide-react-native';
-import { theme } from '@/src/shared/theme/theme';
+import { type Theme, useTheme, useThemedStyles } from '@/src/shared/theme';
 
 type Props = {
   name: string;
@@ -19,6 +19,8 @@ export function RecipeIngredientRow({
   onDrag,
   showHandle = false,
 }: Props) {
+  const theme = useTheme();
+  const styles = useThemedStyles(createStyles);
   const hasHandle = Boolean(onDrag) || showHandle;
   const derivedAmount = amount ?? formatAmount(quantity, unit);
 
@@ -52,50 +54,51 @@ export function RecipeIngredientRow({
   );
 }
 
-const styles = StyleSheet.create({
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: theme.spacing.s3,
-    paddingVertical: 12,
-    borderRadius: theme.radius.md,
-    borderWidth: 1.5,
-    borderColor: theme.colors.borderNeutral,
-    backgroundColor: theme.colors.bgLight,
-    gap: theme.spacing.s2,
-  },
-  checkBadge: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: theme.colors.borderGreen,
-    backgroundColor: theme.colors.primaryLight,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  name: {
-    flex: 1,
-    color: theme.colors.text,
-    fontSize: 15,
-    fontWeight: '600',
-  },
-  amountInline: {
-    color: theme.colors.textMuted,
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  dragHandle: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: theme.colors.borderGreen,
-    backgroundColor: theme.colors.primaryLight,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
+    row: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: theme.spacing.s3,
+      paddingVertical: 12,
+      borderRadius: theme.radius.md,
+      borderWidth: 1.5,
+      borderColor: theme.colors.borderNeutral,
+      backgroundColor: theme.colors.bgLight,
+      gap: theme.spacing.s2,
+    },
+    checkBadge: {
+      width: 28,
+      height: 28,
+      borderRadius: 14,
+      borderWidth: 1,
+      borderColor: theme.colors.borderGreen,
+      backgroundColor: theme.colors.primaryLight,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    name: {
+      flex: 1,
+      color: theme.colors.text,
+      fontSize: 15,
+      fontWeight: '600',
+    },
+    amountInline: {
+      color: theme.colors.textMuted,
+      fontSize: 14,
+      fontWeight: '600',
+    },
+    dragHandle: {
+      width: 32,
+      height: 32,
+      borderRadius: 16,
+      borderWidth: 1,
+      borderColor: theme.colors.borderGreen,
+      backgroundColor: theme.colors.primaryLight,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+  });
 
 function formatAmount(quantity?: number | null, unit?: string | null): string {
   const unitText = unit?.trim();

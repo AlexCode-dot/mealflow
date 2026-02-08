@@ -7,7 +7,7 @@ import {
   type TextStyle,
   type ViewStyle,
 } from 'react-native';
-import { theme } from '@/src/shared/theme/theme';
+import { type Theme, useThemedStyles } from '@/src/shared/theme';
 
 type Props = {
   icon: ReactNode;
@@ -18,6 +18,7 @@ type Props = {
 };
 
 export function IconStat({ icon, label, style, labelStyle, iconWrapStyle }: Props) {
+  const styles = useThemedStyles(createStyles);
   return (
     <View style={[styles.root, style]}>
       <View style={[styles.iconWrap, iconWrapStyle]}>{icon}</View>
@@ -28,20 +29,21 @@ export function IconStat({ icon, label, style, labelStyle, iconWrapStyle }: Prop
   );
 }
 
-const styles = StyleSheet.create({
-  root: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: theme.spacing.s1,
-    paddingHorizontal: 5,
-  },
-  iconWrap: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  label: {
-    color: theme.colors.textMuted,
-    fontSize: 10,
-    fontWeight: '700',
-  },
-});
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
+    root: {
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: theme.spacing.s1,
+      paddingHorizontal: 5,
+    },
+    iconWrap: {
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    label: {
+      color: theme.colors.textMuted,
+      fontSize: 10,
+      fontWeight: '700',
+    },
+  });

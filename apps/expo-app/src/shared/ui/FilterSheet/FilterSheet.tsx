@@ -2,7 +2,7 @@ import { useMemo, useState, type ReactNode } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { PickerSelect, PickerSheet } from '@/src/shared/ui/PickerSheet/PickerSheet';
 import { X, ChevronDown, XCircle } from 'lucide-react-native';
-import { theme } from '@/src/shared/theme/theme';
+import { type Theme, useTheme, useThemedStyles } from '@/src/shared/theme';
 import { Button } from '@/src/shared/ui/Button';
 import { Chip } from '@/src/shared/ui/Chip';
 import { ModalSheet } from '@/src/shared/ui/ModalSheet';
@@ -59,6 +59,8 @@ export function FilterSheet({
   onApply,
   onClose,
 }: Props) {
+  const theme = useTheme();
+  const styles = useThemedStyles(createStyles);
   const [tagInputs, setTagInputs] = useState<Record<string, string>>({});
   const [activePicker, setActivePicker] = useState<PickerState | null>(null);
 
@@ -317,159 +319,160 @@ export function FilterSheet({
   );
 }
 
-const styles = StyleSheet.create({
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: theme.spacing.s2,
-  },
-  headerSide: {
-    width: 48,
-  },
-  title: {
-    color: theme.colors.text,
-    fontSize: 26,
-    fontWeight: '700',
-  },
-  clearButton: {
-    minWidth: 48,
-    alignItems: 'center',
-    paddingVertical: 4,
-    paddingHorizontal: 6,
-    borderRadius: theme.radius.sm,
-    gap: 2,
-  },
-  clearLabel: {
-    color: theme.colors.primaryDark,
-    fontSize: 13,
-    fontWeight: '800',
-  },
-  sections: {
-    gap: theme.spacing.s4,
-    paddingBottom: theme.spacing.s3,
-    paddingTop: theme.spacing.s4,
-  },
-  section: {
-    gap: theme.spacing.s2,
-  },
-  sectionInline: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: theme.spacing.s3,
-  },
-  sectionTitle: {
-    color: theme.colors.text,
-    fontSize: 14,
-    fontWeight: '800',
-  },
-  options: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: theme.spacing.s2,
-  },
-  optionsRow: {
-    flexWrap: 'nowrap',
-    width: '100%',
-    justifyContent: 'space-between',
-    gap: 6,
-  },
-  optionCell: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  rowChip: {
-    alignSelf: 'stretch',
-    width: '100%',
-    justifyContent: 'center',
-  },
-  pickerWrap: {
-    borderWidth: 1,
-    borderColor: theme.colors.borderNeutral,
-    backgroundColor: theme.colors.bgLight,
-    borderRadius: theme.radius.sm,
-    overflow: 'hidden',
-  },
-  pickerButton: {
-    minHeight: 48,
-    justifyContent: 'center',
-    paddingLeft: theme.spacing.s3,
-    paddingRight: theme.spacing.s6,
-  },
-  pickerValue: {
-    color: theme.colors.textMuted,
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  pickerHalf: {
-    flex: 1,
-  },
-  pickerChevron: {
-    position: 'absolute',
-    right: theme.spacing.s2,
-    top: '50%',
-    marginTop: -9,
-  },
-  pickerRow: {
-    flexDirection: 'row',
-    gap: theme.spacing.s3,
-  },
-  pickerItem: {
-    flex: 1,
-    gap: theme.spacing.s1,
-  },
-  pickerLabelRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: theme.spacing.s2,
-  },
-  pickerIcon: {
-    width: 20,
-    alignItems: 'center',
-  },
-  pickerLabel: {
-    color: theme.colors.text,
-    fontSize: 13,
-    fontWeight: '800',
-  },
-  picker: {
-    height: 180,
-  },
-  tagsWrap: {
-    gap: theme.spacing.s2,
-  },
-  tagInputRow: {
-    flexDirection: 'row',
-    alignItems: 'stretch',
-    width: '100%',
-  },
-  tagInputField: {
-    flex: 1,
-  },
-  tags: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: theme.spacing.s2,
-  },
-  tag: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: theme.spacing.s1,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: theme.radius.pill,
-    borderWidth: 2,
-    borderColor: theme.colors.primaryDark,
-    backgroundColor: theme.colors.primaryLight,
-  },
-  tagLabel: {
-    color: theme.colors.primaryDark,
-    fontSize: 13,
-    fontWeight: '800',
-  },
-  footer: {
-    paddingTop: theme.spacing.s3,
-    paddingBottom: theme.spacing.s4,
-  },
-});
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
+    header: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      marginBottom: theme.spacing.s2,
+    },
+    headerSide: {
+      width: 48,
+    },
+    title: {
+      color: theme.colors.text,
+      fontSize: 26,
+      fontWeight: '700',
+    },
+    clearButton: {
+      minWidth: 48,
+      alignItems: 'center',
+      paddingVertical: 4,
+      paddingHorizontal: 6,
+      borderRadius: theme.radius.sm,
+      gap: 2,
+    },
+    clearLabel: {
+      color: theme.colors.primaryDark,
+      fontSize: 13,
+      fontWeight: '800',
+    },
+    sections: {
+      gap: theme.spacing.s4,
+      paddingBottom: theme.spacing.s3,
+      paddingTop: theme.spacing.s4,
+    },
+    section: {
+      gap: theme.spacing.s2,
+    },
+    sectionInline: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      gap: theme.spacing.s3,
+    },
+    sectionTitle: {
+      color: theme.colors.text,
+      fontSize: 14,
+      fontWeight: '800',
+    },
+    options: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: theme.spacing.s2,
+    },
+    optionsRow: {
+      flexWrap: 'nowrap',
+      width: '100%',
+      justifyContent: 'space-between',
+      gap: 6,
+    },
+    optionCell: {
+      flex: 1,
+      alignItems: 'center',
+    },
+    rowChip: {
+      alignSelf: 'stretch',
+      width: '100%',
+      justifyContent: 'center',
+    },
+    pickerWrap: {
+      borderWidth: 1,
+      borderColor: theme.colors.borderNeutral,
+      backgroundColor: theme.colors.bgLight,
+      borderRadius: theme.radius.sm,
+      overflow: 'hidden',
+    },
+    pickerButton: {
+      minHeight: 48,
+      justifyContent: 'center',
+      paddingLeft: theme.spacing.s3,
+      paddingRight: theme.spacing.s6,
+    },
+    pickerValue: {
+      color: theme.colors.textMuted,
+      fontSize: 14,
+      fontWeight: '600',
+    },
+    pickerHalf: {
+      flex: 1,
+    },
+    pickerChevron: {
+      position: 'absolute',
+      right: theme.spacing.s2,
+      top: '50%',
+      marginTop: -9,
+    },
+    pickerRow: {
+      flexDirection: 'row',
+      gap: theme.spacing.s3,
+    },
+    pickerItem: {
+      flex: 1,
+      gap: theme.spacing.s1,
+    },
+    pickerLabelRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: theme.spacing.s2,
+    },
+    pickerIcon: {
+      width: 20,
+      alignItems: 'center',
+    },
+    pickerLabel: {
+      color: theme.colors.text,
+      fontSize: 13,
+      fontWeight: '800',
+    },
+    picker: {
+      height: 180,
+    },
+    tagsWrap: {
+      gap: theme.spacing.s2,
+    },
+    tagInputRow: {
+      flexDirection: 'row',
+      alignItems: 'stretch',
+      width: '100%',
+    },
+    tagInputField: {
+      flex: 1,
+    },
+    tags: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: theme.spacing.s2,
+    },
+    tag: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: theme.spacing.s1,
+      paddingVertical: 8,
+      paddingHorizontal: 12,
+      borderRadius: theme.radius.pill,
+      borderWidth: 2,
+      borderColor: theme.colors.primaryDark,
+      backgroundColor: theme.colors.primaryLight,
+    },
+    tagLabel: {
+      color: theme.colors.primaryDark,
+      fontSize: 13,
+      fontWeight: '800',
+    },
+    footer: {
+      paddingTop: theme.spacing.s3,
+      paddingBottom: theme.spacing.s4,
+    },
+  });

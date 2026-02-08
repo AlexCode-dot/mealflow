@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { theme } from '@/src/shared/theme/theme';
+import { type Theme, useThemedStyles } from '@/src/shared/theme';
 import { RecipeAddButton } from '@/src/features/recipes/ui/RecipeAddButton';
 
 type Props = {
@@ -20,6 +20,7 @@ export function RecipeEditorListSection({
   onAdd,
   showInlineAdd = true,
 }: Props) {
+  const styles = useThemedStyles(createStyles);
   const showList = itemsCount > 0;
 
   return (
@@ -34,11 +35,12 @@ export function RecipeEditorListSection({
   );
 }
 
-const styles = StyleSheet.create({
-  list: {
-    gap: theme.spacing.s3,
-  },
-  listWithSticky: {
-    paddingBottom: theme.spacing.s6 + 70,
-  },
-});
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
+    list: {
+      gap: theme.spacing.s3,
+    },
+    listWithSticky: {
+      paddingBottom: theme.spacing.s6 + 70,
+    },
+  });

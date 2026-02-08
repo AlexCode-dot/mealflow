@@ -1,6 +1,6 @@
 import { Pressable, Text, StyleSheet, View, type TextStyle, type ViewStyle } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { theme } from '@/src/shared/theme/theme';
+import { type Theme, useTheme, useThemedStyles } from '@/src/shared/theme';
 
 type Props = {
   title: string;
@@ -18,6 +18,8 @@ export function GradientButton({
   fullWidth = false,
   size = 'md',
 }: Props) {
+  const theme = useTheme();
+  const styles = useThemedStyles(createStyles);
   const sizeStyle = sizeStyles[size];
 
   return (
@@ -47,48 +49,49 @@ export function GradientButton({
   );
 }
 
-const styles = StyleSheet.create({
-  wrap: {
-    borderRadius: theme.radius.pill,
-  },
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
+    wrap: {
+      borderRadius: theme.radius.pill,
+    },
 
-  fullWidth: {
-    alignSelf: 'stretch',
-  },
+    fullWidth: {
+      alignSelf: 'stretch',
+    },
 
-  glow: {
-    borderRadius: theme.radius.pill,
-    // Premium lift
-    shadowColor: '#000',
-    shadowOpacity: 0.22,
-    shadowRadius: 20,
-    shadowOffset: { width: 0, height: 12 },
-    elevation: 10,
-  } satisfies ViewStyle,
+    glow: {
+      borderRadius: theme.radius.pill,
+      // Premium lift
+      shadowColor: '#000',
+      shadowOpacity: 0.22,
+      shadowRadius: 20,
+      shadowOffset: { width: 0, height: 12 },
+      elevation: 10,
+    } satisfies ViewStyle,
 
-  gradient: {
-    borderRadius: theme.radius.pill,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(245,241,230,0.22)',
-  },
+    gradient: {
+      borderRadius: theme.radius.pill,
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderWidth: 1,
+      borderColor: 'rgba(245,241,230,0.22)',
+    },
 
-  text: {
-    color: theme.colors.textOnPrimary,
-    fontWeight: '900',
-    letterSpacing: 0.3,
-  },
+    text: {
+      color: theme.colors.textOnPrimary,
+      fontWeight: '900',
+      letterSpacing: 0.3,
+    },
 
-  pressed: {
-    opacity: 0.92,
-    transform: [{ translateY: 1 }],
-  },
+    pressed: {
+      opacity: 0.92,
+      transform: [{ translateY: 1 }],
+    },
 
-  disabled: {
-    opacity: 0.55,
-  },
-});
+    disabled: {
+      opacity: 0.55,
+    },
+  });
 
 const sizeStyles = {
   md: StyleSheet.create({

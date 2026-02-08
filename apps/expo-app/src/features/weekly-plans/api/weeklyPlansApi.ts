@@ -7,9 +7,18 @@ import type {
 } from '@/src/features/weekly-plans/types';
 
 export const weeklyPlansApi = {
-  list(weeklyStart?: string): Promise<WeeklyPlanListItem[]> {
-    const query = weeklyStart ? `?weeklyStart=${encodeURIComponent(weeklyStart)}` : '';
-    return httpClient.appApi.get<WeeklyPlanListItem[]>(`/api/weekly-plans${query}`);
+  list(
+    params?: string | { weeklyStart?: string; limit?: number; offset?: number },
+  ): Promise<WeeklyPlanListItem[]> {
+    const resolved = typeof params === 'string' ? { weeklyStart: params } : (params ?? {});
+    const search = new URLSearchParams();
+    if (resolved.weeklyStart) search.set('weeklyStart', resolved.weeklyStart);
+    if (resolved.limit != null) search.set('limit', String(resolved.limit));
+    if (resolved.offset != null) search.set('offset', String(resolved.offset));
+    const query = search.toString();
+    return httpClient.appApi.get<WeeklyPlanListItem[]>(
+      `/api/weekly-plans${query ? `?${query}` : ''}`,
+    );
   },
 
   get(id: string): Promise<WeeklyPlan> {

@@ -1,6 +1,10 @@
 import { useCallback, useMemo, useState } from 'react';
 import type { RecipeListItem } from '@/src/features/recipes/types';
-import { DISCOVERY_FILTERS, SAVED_FILTERS } from '@/src/features/recipes/constants/recipeFilters';
+import {
+  buildDiscoveryFilters,
+  buildSavedFilters,
+} from '@/src/features/recipes/constants/recipeFilters';
+import { useTheme } from '@/src/shared/theme';
 
 const TABS = [
   { key: 'saved', label: 'Saved recipes' },
@@ -14,13 +18,17 @@ type Args = {
 };
 
 export function useRecipeListView({ savedItems }: Args) {
+  const theme = useTheme();
   const [tab, setTab] = useState<RecipeListTabKey>('saved');
   const [query, setQuery] = useState('');
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [savedFilters, setSavedFilters] = useState<Record<string, string[]>>({});
   const [discoveryFilters, setDiscoveryFilters] = useState<Record<string, string[]>>({});
 
-  const filterSections = tab === 'saved' ? SAVED_FILTERS : DISCOVERY_FILTERS;
+  const filterSections = useMemo(
+    () => (tab === 'saved' ? buildSavedFilters(theme) : buildDiscoveryFilters(theme)),
+    [tab, theme],
+  );
   const filterSelection = tab === 'saved' ? savedFilters : discoveryFilters;
   const activeFilterCount = Object.values(filterSelection).reduce(
     (acc, values) => acc + values.length,

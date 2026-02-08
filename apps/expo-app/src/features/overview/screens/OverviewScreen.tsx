@@ -23,16 +23,27 @@ import {
   SectionEmpty,
   useBottomBarActions,
 } from '@/src/shared/ui';
-import { theme } from '@/src/shared/theme/theme';
+import { type Theme, useTheme, useThemedStyles } from '@/src/shared/theme';
 import { useOverviewScreen } from '@/src/features/overview/hooks/useOverviewScreen';
 import { buildWeekDays } from '@/src/features/weekly-plans/utils/weeklyPlanDates';
 import { WeekStrip } from '@/src/features/weekly-plans/ui/WeekStrip';
 
 export default function OverviewScreen() {
-  return Platform.OS === 'web' ? <OverviewScreenWeb /> : <OverviewScreenNative />;
+  const theme = useTheme();
+  const styles = useThemedStyles(createStyles);
+  return Platform.OS === 'web' ? (
+    <OverviewScreenWeb theme={theme} styles={styles} />
+  ) : (
+    <OverviewScreenNative theme={theme} styles={styles} />
+  );
 }
 
-function OverviewScreenNative() {
+type OverviewScreenProps = {
+  theme: Theme;
+  styles: ReturnType<typeof createStyles>;
+};
+
+function OverviewScreenNative({ theme, styles }: OverviewScreenProps) {
   const { state, data, actions } = useOverviewScreen();
   useBottomBarActions(null);
   const { width } = useWindowDimensions();
@@ -63,6 +74,8 @@ function OverviewScreenNative() {
       state={state}
       data={data}
       actions={actions}
+      theme={theme}
+      styles={styles}
       carouselNode={
         <View
           onLayout={(event) => {
@@ -146,7 +159,7 @@ function OverviewScreenNative() {
   );
 }
 
-function OverviewScreenWeb() {
+function OverviewScreenWeb({ theme, styles }: OverviewScreenProps) {
   const { state, data, actions } = useOverviewScreen();
   useBottomBarActions(null);
   const { width } = useWindowDimensions();
@@ -164,6 +177,8 @@ function OverviewScreenWeb() {
       state={state}
       data={data}
       actions={actions}
+      theme={theme}
+      styles={styles}
       carouselNode={
         <View
           onLayout={(event) => {
@@ -237,7 +252,9 @@ function OverviewScreenLayout({
   actions,
   carouselNode,
   dotsNode,
-}: OverviewLayoutProps) {
+  theme,
+  styles,
+}: OverviewLayoutProps & OverviewScreenProps) {
   const hasPlan = Boolean(data.planId);
   const hasInspiration = data.inspiration.length > 0;
   const weekDays = useMemo(() => buildWeekDays(data.weekStart), [data.weekStart]);
@@ -366,171 +383,178 @@ function OverviewScreenLayout({
   );
 }
 
-const styles = StyleSheet.create({
-  content: {
-    gap: theme.spacing.s4,
-  },
-  carouselSection: {
-    gap: theme.spacing.s3,
-  },
-  carousel: {
-    alignSelf: 'center',
-  },
-  carouselContainer: {
-    alignItems: 'center',
-  },
-  carouselScroll: {
-    alignItems: 'center',
-    paddingVertical: theme.spacing.s2,
-  },
-  carouselItemWrap: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  carouselCard: {
-    borderRadius: 24,
-    overflow: 'hidden',
-    backgroundColor: theme.colors.surface,
-  },
-  carouselPressed: {
-    transform: [{ scale: 0.98 }],
-  },
-  carouselImage: {
-    width: '100%',
-    height: '100%',
-  },
-  carouselImageFallback: {
-    flex: 1,
-    backgroundColor: theme.colors.surfaceAlt,
-  },
-  carouselFade: {
-    ...StyleSheet.absoluteFillObject,
-  },
-  carouselText: {
-    position: 'absolute',
-    left: theme.spacing.s4,
-    right: theme.spacing.s4,
-    bottom: theme.spacing.s4,
-  },
-  carouselTitle: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: '700',
-  },
-  carouselSubtitle: {
-    color: 'rgba(255,255,255,0.85)',
-    marginTop: 4,
-  },
-  carouselDots: {
-    alignItems: 'center',
-  },
-  carouselDotRow: {
-    gap: 6,
-  },
-  carouselDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 999,
-    backgroundColor: theme.colors.surfaceAlt,
-  },
-  carouselDotActive: {
-    width: 18,
-    borderRadius: 999,
-    backgroundColor: theme.colors.primary,
-  },
-  carouselFooter: {
-    marginTop: theme.spacing.s2,
-  },
-  findCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderRadius: 18,
-    backgroundColor: theme.colors.surface,
-    paddingVertical: theme.spacing.s3,
-    paddingHorizontal: theme.spacing.s4,
-  },
-  findCardPressed: {
-    opacity: 0.9,
-  },
-  findContent: {
-    flex: 1,
-  },
-  findTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: theme.colors.text,
-  },
-  findSubtitle: {
-    color: theme.colors.textMuted,
-    marginTop: 2,
-  },
-  findChevronWrap: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
-    backgroundColor: theme.colors.surfaceAlt,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  sectionSpacing: {
-    gap: theme.spacing.s3,
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-  },
-  sectionTitle: {
-    fontSize: 17,
-    fontWeight: '700',
-    color: theme.colors.text,
-  },
-  sectionSubtitle: {
-    marginTop: 2,
-    color: theme.colors.textMuted,
-  },
-  weekBadge: {
-    backgroundColor: theme.colors.surfaceAlt,
-    borderRadius: 12,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-  },
-  weekBadgeText: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: theme.colors.text,
-  },
-  heroPlanned: {
-    fontSize: 14,
-    color: theme.colors.textMuted,
-  },
-  weeklyCta: {
-    marginTop: theme.spacing.s2,
-    borderRadius: 14,
-    backgroundColor: theme.colors.primary,
-    paddingVertical: theme.spacing.s3,
-    paddingHorizontal: theme.spacing.s4,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  weeklyCtaPressed: {
-    opacity: 0.92,
-  },
-  weeklyCtaText: {
-    flex: 1,
-    paddingRight: theme.spacing.s3,
-  },
-  weeklyCtaTitle: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: theme.colors.textOnPrimary,
-  },
-  weeklyCtaSubtitle: {
-    marginTop: 4,
-    color: 'rgba(255,255,255,0.75)',
-  },
-  quickRows: {
-    gap: theme.spacing.s2,
-  },
-});
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
+    content: {
+      gap: theme.spacing.s4,
+    },
+    carouselSection: {
+      gap: theme.spacing.s3,
+    },
+    carousel: {
+      alignSelf: 'center',
+    },
+    carouselContainer: {
+      alignItems: 'center',
+    },
+    carouselScroll: {
+      alignItems: 'center',
+      paddingVertical: theme.spacing.s2,
+    },
+    carouselItemWrap: {
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    carouselCard: {
+      borderRadius: 24,
+      overflow: 'hidden',
+      backgroundColor: theme.colors.surface,
+    },
+    carouselPressed: {
+      transform: [{ scale: 0.98 }],
+    },
+    carouselImage: {
+      width: '100%',
+      height: '100%',
+    },
+    carouselImageFallback: {
+      flex: 1,
+      backgroundColor: theme.colors.surfaceAlt,
+    },
+    carouselFade: {
+      ...StyleSheet.absoluteFillObject,
+    },
+    carouselText: {
+      position: 'absolute',
+      left: theme.spacing.s4,
+      right: theme.spacing.s4,
+      bottom: theme.spacing.s4,
+    },
+    carouselTitle: {
+      color: '#fff',
+      fontSize: 18,
+      fontWeight: '700',
+    },
+    carouselSubtitle: {
+      color: 'rgba(255,255,255,0.85)',
+      marginTop: 4,
+    },
+    carouselDots: {
+      alignItems: 'center',
+    },
+    carouselDotRow: {
+      gap: 6,
+    },
+    carouselDot: {
+      width: 6,
+      height: 6,
+      borderRadius: 999,
+      backgroundColor: 'transparent',
+      borderWidth: 1,
+      borderColor: theme.colors.primary,
+      opacity: 0.6,
+    },
+    carouselDotActive: {
+      width: 18,
+      height: 6,
+      borderRadius: 999,
+      backgroundColor: theme.colors.primary,
+      borderWidth: 1,
+      borderColor: theme.colors.primary,
+    },
+    carouselFooter: {
+      marginTop: theme.spacing.s2,
+    },
+    findCard: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      borderRadius: 18,
+      backgroundColor: theme.colors.surface,
+      paddingVertical: theme.spacing.s3,
+      paddingHorizontal: theme.spacing.s4,
+    },
+    findCardPressed: {
+      opacity: 0.9,
+    },
+    findContent: {
+      flex: 1,
+    },
+    findTitle: {
+      fontSize: 16,
+      fontWeight: '700',
+      color: theme.colors.text,
+    },
+    findSubtitle: {
+      color: theme.colors.textMuted,
+      marginTop: 2,
+    },
+    findChevronWrap: {
+      width: 34,
+      height: 34,
+      borderRadius: 17,
+      backgroundColor: theme.colors.surfaceAlt,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    sectionSpacing: {
+      gap: theme.spacing.s3,
+    },
+    sectionHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'flex-start',
+    },
+    sectionTitle: {
+      fontSize: 17,
+      fontWeight: '700',
+      color: theme.colors.text,
+    },
+    sectionSubtitle: {
+      marginTop: 2,
+      color: theme.colors.textMuted,
+    },
+    weekBadge: {
+      backgroundColor: theme.colors.surfaceAlt,
+      borderRadius: 12,
+      paddingHorizontal: 10,
+      paddingVertical: 6,
+    },
+    weekBadgeText: {
+      fontSize: 12,
+      fontWeight: '700',
+      color: theme.colors.text,
+    },
+    heroPlanned: {
+      fontSize: 14,
+      color: theme.colors.textMuted,
+    },
+    weeklyCta: {
+      marginTop: theme.spacing.s2,
+      borderRadius: 14,
+      backgroundColor: theme.colors.primary,
+      paddingVertical: theme.spacing.s3,
+      paddingHorizontal: theme.spacing.s4,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+    },
+    weeklyCtaPressed: {
+      opacity: 0.92,
+    },
+    weeklyCtaText: {
+      flex: 1,
+      paddingRight: theme.spacing.s3,
+    },
+    weeklyCtaTitle: {
+      fontSize: 15,
+      fontWeight: '700',
+      color: theme.colors.textOnPrimary,
+    },
+    weeklyCtaSubtitle: {
+      marginTop: 4,
+      color: 'rgba(255,255,255,0.75)',
+    },
+    quickRows: {
+      gap: theme.spacing.s2,
+    },
+  });

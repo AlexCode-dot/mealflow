@@ -6,7 +6,11 @@ export { SegmentedTabs } from './SegmentedTabs';
 export { UnderlineTabs } from './UnderlineTabs';
 export { UnderlineTabsBar } from './UnderlineTabsBar';
 export type { UnderlineTabsBarTab } from './UnderlineTabsBar';
-export { BottomActionBar } from './BottomActionBar';
+export {
+  BottomActionBar,
+  resolveBottomActionBarColor,
+  resolveTabBarItemColor,
+} from './BottomActionBar';
 export type { BottomActionBarItem } from './BottomActionBar';
 export { BottomBarProvider, useBottomBarActions, useBottomBarState } from './BottomBar';
 
@@ -20,6 +24,7 @@ export { TextField } from './TextField';
 export { ErrorText } from './ErrorText';
 export { LoadingScreen } from './LoadingScreen';
 export { SearchField } from './SearchField';
+export { ScrollToTopFab } from './ScrollToTopFab';
 export { IconStat } from './IconStat';
 export { IconStatRow } from './IconStatRow';
 export { EmptyState } from './EmptyState';

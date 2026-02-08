@@ -1,5 +1,5 @@
 import { Pressable, StyleSheet, Text, type StyleProp, type ViewStyle } from 'react-native';
-import { theme } from '@/src/shared/theme/theme';
+import { type Theme, useThemedStyles } from '@/src/shared/theme';
 
 type Props = {
   label: string;
@@ -19,10 +19,11 @@ export function Chip({
   size = 'default',
   style,
 }: Props) {
+  const styles = useThemedStyles(createStyles);
   const pressable = Boolean(onPress);
 
-  const v = variant === 'recipes' ? recipeStyles : defaultStyles;
-  const s = size === 'compact' ? compactStyles : styles;
+  const v = variant === 'recipes' ? styles.recipe : styles.default;
+  const s = size === 'compact' ? styles.compact : styles;
 
   return (
     <Pressable
@@ -46,51 +47,55 @@ export function Chip({
   );
 }
 
-const styles = StyleSheet.create({
-  base: {
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    borderRadius: theme.radius.pill,
-    borderWidth: 2,
-    alignSelf: 'flex-start',
-  },
-  pressed: { opacity: 0.88 },
-  text: { fontSize: 14, fontWeight: '900', textAlign: 'center' },
-});
+const createStyles = (theme: Theme) => {
+  const base = StyleSheet.create({
+    base: {
+      paddingVertical: 10,
+      paddingHorizontal: 16,
+      borderRadius: theme.radius.pill,
+      borderWidth: 2,
+      alignSelf: 'flex-start',
+    },
+    pressed: { opacity: 0.88 },
+    text: { fontSize: 14, fontWeight: '900', textAlign: 'center' },
+  });
 
-const compactStyles = StyleSheet.create({
-  base: {
-    paddingVertical: 8,
-    paddingHorizontal: 10,
-    borderRadius: theme.radius.pill,
-    borderWidth: 2,
-    alignSelf: 'flex-start',
-  },
-  text: { fontSize: 12, fontWeight: '800', textAlign: 'center' },
-});
+  const compact = StyleSheet.create({
+    base: {
+      paddingVertical: 8,
+      paddingHorizontal: 10,
+      borderRadius: theme.radius.pill,
+      borderWidth: 2,
+      alignSelf: 'flex-start',
+    },
+    text: { fontSize: 12, fontWeight: '800', textAlign: 'center' },
+  });
 
-const defaultStyles = StyleSheet.create({
-  unselected: {
-    backgroundColor: theme.colors.bgLight,
-    borderColor: theme.colors.borderNeutral,
-  },
-  selected: {
-    backgroundColor: theme.colors.primaryLight,
-    borderColor: theme.colors.borderGreen,
-  },
-  textUnselected: { color: theme.colors.text },
-  textSelected: { color: theme.colors.primaryDark },
-});
+  const defaultStyles = StyleSheet.create({
+    unselected: {
+      backgroundColor: theme.colors.bgLight,
+      borderColor: theme.colors.borderNeutral,
+    },
+    selected: {
+      backgroundColor: theme.colors.primaryLight,
+      borderColor: theme.colors.borderGreen,
+    },
+    textUnselected: { color: theme.colors.text },
+    textSelected: { color: theme.colors.primaryDark },
+  });
 
-const recipeStyles = StyleSheet.create({
-  unselected: {
-    backgroundColor: 'transparent',
-    borderColor: theme.colors.primaryDark,
-  },
-  selected: {
-    backgroundColor: theme.colors.primaryLight,
-    borderColor: theme.colors.primaryDark,
-  },
-  textUnselected: { color: theme.colors.primaryDark },
-  textSelected: { color: theme.colors.primaryDark },
-});
+  const recipeStyles = StyleSheet.create({
+    unselected: {
+      backgroundColor: 'transparent',
+      borderColor: theme.colors.primaryDark,
+    },
+    selected: {
+      backgroundColor: theme.colors.primaryLight,
+      borderColor: theme.colors.primaryDark,
+    },
+    textUnselected: { color: theme.colors.primaryDark },
+    textSelected: { color: theme.colors.primaryDark },
+  });
+
+  return { ...base, compact, default: defaultStyles, recipe: recipeStyles };
+};

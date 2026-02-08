@@ -3,7 +3,7 @@ import { Pressable, Text, View, StyleSheet } from 'react-native';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-import { theme } from '@/src/shared/theme/theme';
+import { type Theme, useTheme, useThemedStyles } from '@/src/shared/theme';
 import { WEB, WEB_TEXT_ELLIPSIS, isWeb } from '@/src/shared/ui/webStyles';
 
 type Props = {
@@ -24,6 +24,8 @@ export function AppHeader({
   rightSlot,
   onTitlePress,
 }: Props) {
+  const theme = useTheme();
+  const styles = useThemedStyles(createStyles);
   const insets = useSafeAreaInsets();
   const topInset = isWeb ? WEB.headerTopInset : insets.top;
 
@@ -53,11 +55,7 @@ export function AppHeader({
         <View style={styles.side}>
           {showBack ? (
             <Pressable onPress={handleBack} hitSlop={10} style={styles.iconBtn}>
-              <MaterialCommunityIcons
-                name="arrow-left"
-                size={32}
-                color={theme.colors.textOnPrimary}
-              />
+              <MaterialCommunityIcons name="arrow-left" size={32} color={theme.colors.headerText} />
             </Pressable>
           ) : (
             <View style={styles.iconBtn} />
@@ -102,55 +100,56 @@ export function AppHeader({
   );
 }
 
-const styles = StyleSheet.create({
-  root: {
-    backgroundColor: theme.colors.primary,
-    paddingHorizontal: theme.spacing.s4,
-  },
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
+    root: {
+      backgroundColor: theme.colors.headerBg,
+      paddingHorizontal: theme.spacing.s4,
+    },
 
-  inner: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
+    inner: {
+      flex: 1,
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
 
-  side: {
-    width: 52,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
+    side: {
+      width: 52,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
 
-  iconBtn: {
-    width: 44,
-    height: 44,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
+    iconBtn: {
+      width: 44,
+      height: 44,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
 
-  center: {
-    flex: 1,
-    minWidth: 0,
-    alignItems: 'center',
-    justifyContent: 'center',
-    overflow: 'hidden',
-  },
+    center: {
+      flex: 1,
+      minWidth: 0,
+      alignItems: 'center',
+      justifyContent: 'center',
+      overflow: 'hidden',
+    },
 
-  title: {
-    color: theme.colors.textOnPrimary,
-    fontSize: 26,
-    fontWeight: '500',
-    maxWidth: '100%',
-    flexShrink: 1,
-    textAlign: 'center',
-  },
-  titleCompact: {
-    fontSize: 22,
-  },
-  titlePressable: {
-    maxWidth: '100%',
-    flexShrink: 1,
-  },
-  titleWeb: {
-    ...WEB_TEXT_ELLIPSIS,
-  },
-});
+    title: {
+      color: theme.colors.headerText,
+      fontSize: 26,
+      fontWeight: '500',
+      maxWidth: '100%',
+      flexShrink: 1,
+      textAlign: 'center',
+    },
+    titleCompact: {
+      fontSize: 22,
+    },
+    titlePressable: {
+      maxWidth: '100%',
+      flexShrink: 1,
+    },
+    titleWeb: {
+      ...WEB_TEXT_ELLIPSIS,
+    },
+  });

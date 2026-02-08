@@ -8,7 +8,7 @@ import {
   type TextStyle,
   type ViewStyle,
 } from 'react-native';
-import { theme } from '@/src/shared/theme/theme';
+import { type Theme, useThemedStyles } from '@/src/shared/theme';
 
 type Props = {
   label?: string;
@@ -52,6 +52,7 @@ export function TextField({
   containerStyle,
   inputStyle,
 }: Props) {
+  const styles = useThemedStyles(createStyles);
   const submitBehavior: TextInputProps['submitBehavior'] =
     returnKeyType === 'done' ? 'blurAndSubmit' : 'submit';
 
@@ -82,25 +83,26 @@ export function TextField({
   );
 }
 
-const styles = StyleSheet.create({
-  root: { gap: theme.spacing.s2 },
-  label: {
-    fontSize: 13,
-    fontWeight: '800',
-    color: theme.colors.text,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: theme.colors.borderNeutral,
-    backgroundColor: theme.colors.bgLight,
-    paddingHorizontal: theme.spacing.s3,
-    paddingVertical: 10,
-    borderRadius: theme.radius.sm,
-    fontSize: 16,
-    color: theme.colors.text,
-  },
-  inputInvalid: {
-    borderColor: theme.colors.error,
-    backgroundColor: theme.colors.errorBg,
-  },
-});
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
+    root: { gap: theme.spacing.s2 },
+    label: {
+      fontSize: 13,
+      fontWeight: '800',
+      color: theme.colors.text,
+    },
+    input: {
+      borderWidth: 1,
+      borderColor: theme.colors.borderNeutral,
+      backgroundColor: theme.colors.bgLight,
+      paddingHorizontal: theme.spacing.s3,
+      paddingVertical: 10,
+      borderRadius: theme.radius.sm,
+      fontSize: 16,
+      color: theme.colors.text,
+    },
+    inputInvalid: {
+      borderColor: theme.colors.error,
+      backgroundColor: theme.colors.errorBg,
+    },
+  });

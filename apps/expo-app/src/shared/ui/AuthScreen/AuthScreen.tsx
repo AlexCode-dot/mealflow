@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
-import { theme } from '@/src/shared/theme/theme';
+import { type Theme, useTheme, useThemedStyles } from '@/src/shared/theme';
 import { Card } from '@/src/shared/ui/Card';
 import { EnterFadeUp } from '@/src/shared/ui/animations';
 
@@ -14,6 +14,8 @@ type Props = {
 };
 
 export function AuthScreen({ children, variant, scroll = true, bottomCta }: Props) {
+  const theme = useTheme();
+  const styles = useThemedStyles(createStyles);
   const title = 'MealFlow';
   const subtitle =
     variant === 'login'
@@ -93,65 +95,66 @@ export function AuthScreen({ children, variant, scroll = true, bottomCta }: Prop
   );
 }
 
-const styles = StyleSheet.create({
-  safe: { flex: 1 },
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
+    safe: { flex: 1 },
 
-  overlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0,0,0,0.04)',
-  },
+    overlay: {
+      ...StyleSheet.absoluteFillObject,
+      backgroundColor: 'rgba(0,0,0,0.04)',
+    },
 
-  scrollContainer: {
-    flexGrow: 1,
-    padding: theme.spacing.s4,
-  },
+    scrollContainer: {
+      flexGrow: 1,
+      padding: theme.spacing.s4,
+    },
 
-  content: {
-    flexGrow: 1,
-    minHeight: 520,
-  },
+    content: {
+      flexGrow: 1,
+      minHeight: 520,
+    },
 
-  brand: {
-    marginTop: theme.spacing.s6,
-    alignItems: 'center',
-    gap: 6,
-  },
-  brandTitle: {
-    color: theme.colors.textOnPrimary,
-    fontSize: 44,
-    fontWeight: '900',
-    letterSpacing: 0.2,
-  },
-  brandSubtitle: {
-    color: theme.colors.iconMutedOnPrimary,
-    fontSize: 13,
-    fontWeight: '700',
-    textAlign: 'center',
-    paddingHorizontal: theme.spacing.s4,
-  },
+    brand: {
+      marginTop: theme.spacing.s6,
+      alignItems: 'center',
+      gap: 6,
+    },
+    brandTitle: {
+      color: theme.colors.textOnPrimary,
+      fontSize: 44,
+      fontWeight: '900',
+      letterSpacing: 0.2,
+    },
+    brandSubtitle: {
+      color: theme.colors.iconMutedOnPrimary,
+      fontSize: 13,
+      fontWeight: '700',
+      textAlign: 'center',
+      paddingHorizontal: theme.spacing.s4,
+    },
 
-  center: {
-    flex: 1,
-    justifyContent: 'center',
-    paddingTop: theme.spacing.s6,
-    paddingBottom: theme.spacing.s6,
-  },
+    center: {
+      flex: 1,
+      justifyContent: 'center',
+      paddingTop: theme.spacing.s6,
+      paddingBottom: theme.spacing.s6,
+    },
 
-  card: {
-    padding: theme.spacing.s4,
-  },
+    card: {
+      padding: theme.spacing.s4,
+    },
 
-  // Auth-only “floating glass” feel
-  cardGlass: {
-    backgroundColor: 'rgba(247,243,232,0.74)',
-    borderColor: 'rgba(207,200,183,0.52)',
-  },
+    // Auth-only “floating glass” feel
+    cardGlass: {
+      backgroundColor: 'rgba(247,243,232,0.74)',
+      borderColor: 'rgba(207,200,183,0.52)',
+    },
 
-  cardInner: {
-    gap: theme.spacing.s4,
-  },
+    cardInner: {
+      gap: theme.spacing.s4,
+    },
 
-  bottomSpacer: {
-    height: 120,
-  },
-});
+    bottomSpacer: {
+      height: 120,
+    },
+  });

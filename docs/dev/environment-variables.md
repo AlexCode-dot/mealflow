@@ -61,7 +61,8 @@ Defined in `services/app-api/src/main/resources/application.properties`.
 | `APP_API_MONGODB_URI` | Dev only | Mongo URI for dev profile | `mongodb://root:rootpass@localhost:27018/app-db?authSource=admin` |
 | `IDENTITY_JWKS_URI` | Yes (prod) | JWKS endpoint for JWT verification | `http://localhost:8081/.well-known/jwks.json` |
 | `IDENTITY_JWT_ISSUER` | Yes (prod) | JWT issuer check (must match Identity Service `JWT_ISSUER`) | `http://localhost:8081` |
-| `MEALDB_BASE_URL` | No | External inspiration provider base URL | `https://www.themealdb.com/api/json/v1/1` |
+| `MEALDB_BASE_URL` | No | External inspiration provider base URL (without API key) | `https://www.themealdb.com/api/json/v2` |
+| `MEALDB_API_KEY` | No | TheMealDB API key used by App API | `1` |
 | `CORS_ALLOWED_ORIGINS` | No | Comma-separated allowed origins | `http://localhost:8083,http://localhost:19006` |
 | `RATE_LIMIT_ENABLED` | No | Enable rate limiting | `true` |
 | `RATE_LIMIT_API_PER_MINUTE` | No | API requests/minute | `120` |
