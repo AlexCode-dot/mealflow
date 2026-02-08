@@ -2,11 +2,11 @@ package com.mealflow.appapi.inspiration.provider;
 
 import java.util.List;
 import java.util.Objects;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @Component
 public class MealDbClient {
@@ -81,7 +81,8 @@ public class MealDbClient {
     }
 
     public List<MealDbMeal> randomSelection() {
-        MealDbResponse response = restClient.get().uri("/randomselection.php").retrieve().body(MealDbResponse.class);
+        MealDbResponse response =
+                restClient.get().uri("/randomselection.php").retrieve().body(MealDbResponse.class);
         return toMeals(response);
     }
 

@@ -115,12 +115,10 @@ public class InspirationService {
         }
         lastFallbackReportAt = now;
         logger.debug("MealDB random selection unavailable; falling back to per-item random calls");
-        Sentry.captureMessage(
-                "MealDB random selection unavailable; falling back to per-item random calls",
-                scope -> {
-                    scope.setLevel(SentryLevel.WARNING);
-                    scope.setTag("external_api", "mealdb");
-                    scope.setTag("fallback", "randomselection");
-                });
+        Sentry.captureMessage("MealDB random selection unavailable; falling back to per-item random calls", scope -> {
+            scope.setLevel(SentryLevel.WARNING);
+            scope.setTag("external_api", "mealdb");
+            scope.setTag("fallback", "randomselection");
+        });
     }
 }
