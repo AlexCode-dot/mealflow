@@ -30,8 +30,10 @@ public class MealDbClient {
         return execute("searchByName", () -> {
             MealDbResponse response = restClient
                     .get()
-                    .uri(uriBuilder ->
-                            uriBuilder.path("/search.php").queryParam("s", query).build())
+                    .uri(uriBuilder -> uriBuilder
+                            .path("/search.php")
+                            .queryParam("s", query)
+                            .build())
                     .retrieve()
                     .body(MealDbResponse.class);
             return toMeals(response);
@@ -56,8 +58,10 @@ public class MealDbClient {
         return execute("filterByCategory", () -> {
             MealDbResponse response = restClient
                     .get()
-                    .uri(uriBuilder ->
-                            uriBuilder.path("/filter.php").queryParam("c", category).build())
+                    .uri(uriBuilder -> uriBuilder
+                            .path("/filter.php")
+                            .queryParam("c", category)
+                            .build())
                     .retrieve()
                     .body(MealDbResponse.class);
             return toMeals(response);
