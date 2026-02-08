@@ -24,6 +24,7 @@ type UseRecipeDiscoveryResult = {
   load: () => Promise<void>;
   refreshControl: ReactElement<RefreshControlProps>;
   loadMore: () => void;
+  resetRandom: () => void;
   canLoadMore: boolean;
 };
 
@@ -117,9 +118,15 @@ export function useRecipeDiscovery({
         setItems((prev) => {
           const existing = new Set(prev.map((item) => item.id));
           const unique = next.filter((item) => !existing.has(item.id));
-          if (!unique.length) return prev;
+          if (!unique.length) {
+            setHasMore(false);
+            return prev;
+          }
           const merged = [...prev, ...unique];
           const maxItems = 60;
+          if (merged.length >= maxItems) {
+            setHasMore(false);
+          }
           return merged.length > maxItems ? merged.slice(0, maxItems) : merged;
         });
       })
@@ -131,6 +138,27 @@ export function useRecipeDiscovery({
         setIsLoadingMore(false);
       });
   }, [canLoadMore, hasFilters, isLoading, isLoadingMore]);
+
+  const resetRandom = useCallback(() => {
+    if (hasFilters) return;
+    setError(null);
+    setHasMore(true);
+    setLastCount(0);
+    setIsLoading(true);
+    inspirationApi
+      .random(8)
+      .then((next) => {
+        setItems(next);
+        if (next.length < 8) setHasMore(false);
+      })
+      .catch((e) => {
+        const uiErr = mapCommonError(toApiError(e));
+        setError(uiErr.message);
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
+  }, [hasFilters]);
 
   const refresh = useCallback(async () => {
     setIsRefreshing(true);
@@ -154,6 +182,7 @@ export function useRecipeDiscovery({
     load,
     refreshControl,
     loadMore,
+    resetRandom,
     canLoadMore,
   };
 }

@@ -35,6 +35,8 @@ export function RecipesScreen() {
     !data.saved.canLoadMore && data.visibleSavedItems.length >= 8 && savedScrolled;
   const showDiscoveryEndMessage =
     !data.discovery.canLoadMore && data.visibleDiscoveryItems.length >= 8 && discoveryScrolled;
+  const showDiscoveryReset =
+    !state.hasDiscoveryFilters && !data.discovery.canLoadMore && discoveryScrolled;
 
   const active = state.tab === 'saved' ? data.saved : data.discovery;
   const toastBanner =
@@ -186,7 +188,17 @@ export function RecipesScreen() {
                   {data.discovery.isLoadingMore ? (
                     <ActivityIndicator color={theme.colors.primaryDark} />
                   ) : data.discovery.canLoadMore || !showDiscoveryEndMessage ? null : (
-                    <Text style={styles.footerText}>No more recipes</Text>
+                    <View style={styles.footerActions}>
+                      <Text style={styles.footerText}>No more recipes</Text>
+                      {showDiscoveryReset ? (
+                        <Button
+                          title="Get a fresh batch"
+                          variant="secondary"
+                          size="small"
+                          onPress={actions.handleDiscoveryReset}
+                        />
+                      ) : null}
+                    </View>
                   )}
                 </View>
               ) : null
@@ -259,6 +271,10 @@ const createStyles = (theme: Theme) =>
     listFooter: {
       paddingVertical: theme.spacing.s4,
       alignItems: 'center',
+    },
+    footerActions: {
+      alignItems: 'center',
+      gap: theme.spacing.s2,
     },
     footerText: {
       color: theme.colors.textMuted,
