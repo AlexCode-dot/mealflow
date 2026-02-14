@@ -7,7 +7,7 @@
     "icon": "./assets/icons/mealflow_icon_1024.png",
     "scheme": "mealflow",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": false,
+    "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.alexcode.mealflow",
