@@ -5,7 +5,7 @@ import { getTabIcon } from './tabIcons';
 import { useFocusAnim } from './useFocusAnim';
 import { createStyles } from './AppTabBar.styles';
 import { TAB_BAR } from '@/src/shared/ui/layout/tabBar';
-import { resolveTabBarItemColor } from '@/src/shared/ui';
+import { resolveTabBarItemColor } from '@/src/shared/ui/BottomActionBar';
 
 type Props = {
   routeKey: string;

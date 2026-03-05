@@ -1,5 +1,13 @@
 import { useMemo } from 'react';
-import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
+import {
+  Pressable,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
 import DraggableFlatList, { type RenderItemParams } from 'react-native-draggable-flatlist';
 import { Check, CalendarDays, GripVertical, List, Plus, Users, X } from 'lucide-react-native';
 import { RECIPE_PORTIONS_OPTIONS } from '@/src/features/recipes/constants/recipePickerOptions';
@@ -279,13 +287,12 @@ export default function WeeklyPlanDetailScreen() {
                     placeholder="Meal name..."
                   />
 
-                  <TextField
+                  <InlineItemAddField
                     label="Items"
                     value={addSheet.itemInput}
                     onChangeText={addSheet.setItemInput}
-                    placeholder="Add an item and press enter..."
-                    returnKeyType="done"
-                    onSubmitEditing={addSheet.handleAddItem}
+                    placeholder="Add an item..."
+                    onAdd={addSheet.handleAddItem}
                   />
                   {addSheet.items.length ? (
                     <View style={styles.extrasList}>
@@ -371,13 +378,12 @@ export default function WeeklyPlanDetailScreen() {
                     </View>
                   </View>
 
-                  <TextField
+                  <InlineItemAddField
                     label="Extra items"
                     value={editSheet.editExtraInput}
                     onChangeText={editSheet.setEditExtraInput}
-                    placeholder="Add extra items to the meal..."
-                    returnKeyType="done"
-                    onSubmitEditing={editSheet.handleEditExtraAdd}
+                    placeholder="Add extra item..."
+                    onAdd={editSheet.handleEditExtraAdd}
                   />
                   {editSheet.editExtraItems.length ? (
                     <View style={styles.extrasList}>
@@ -440,13 +446,12 @@ export default function WeeklyPlanDetailScreen() {
                     onChangeText={editSheet.setEditTitle}
                     placeholder="Meal name..."
                   />
-                  <TextField
+                  <InlineItemAddField
                     label="Items"
                     value={editSheet.editItemInput}
                     onChangeText={editSheet.setEditItemInput}
-                    placeholder="Add an item and press enter..."
-                    returnKeyType="done"
-                    onSubmitEditing={editSheet.handleEditItemAdd}
+                    placeholder="Add an item..."
+                    onAdd={editSheet.handleEditItemAdd}
                   />
                   {editSheet.editItems.length ? (
                     <View style={styles.itemRow}>
@@ -777,5 +782,104 @@ const createStyles = (theme: Theme) =>
       fontWeight: '800',
       color: theme.colors.textMuted,
       letterSpacing: 0.6,
+    },
+  });
+
+type InlineItemAddFieldProps = {
+  label: string;
+  value: string;
+  onChangeText: (v: string) => void;
+  onAdd: () => void;
+  placeholder: string;
+};
+
+function InlineItemAddField({
+  label,
+  value,
+  onChangeText,
+  onAdd,
+  placeholder,
+}: InlineItemAddFieldProps) {
+  const theme = useTheme();
+  const styles = useThemedStyles(createInlineItemAddFieldStyles);
+  const canAdd = value.trim().length > 0;
+
+  return (
+    <View style={styles.root}>
+      <Text style={styles.label}>{label}</Text>
+      <View style={styles.row}>
+        <TextInput
+          value={value}
+          onChangeText={onChangeText}
+          placeholder={placeholder}
+          returnKeyType="go"
+          onSubmitEditing={onAdd}
+          submitBehavior="submit"
+          style={styles.input}
+        />
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={`Add ${label.toLowerCase()}`}
+          onPress={onAdd}
+          disabled={!canAdd}
+          style={({ pressed }) => [
+            styles.addButton,
+            !canAdd ? styles.addButtonDisabled : null,
+            pressed && canAdd ? styles.addButtonPressed : null,
+          ]}
+        >
+          <Plus size={18} color={theme.colors.tabBarAddButtonIcon} strokeWidth={2.6} />
+        </Pressable>
+      </View>
+    </View>
+  );
+}
+
+const createInlineItemAddFieldStyles = (theme: Theme) =>
+  StyleSheet.create({
+    root: {
+      gap: theme.spacing.s2,
+    },
+    label: {
+      color: theme.colors.textMuted,
+      fontSize: 13,
+      fontWeight: '600',
+    },
+    row: {
+      flexDirection: 'row',
+      alignItems: 'stretch',
+      borderWidth: 1,
+      borderColor: theme.colors.borderNeutral,
+      backgroundColor: theme.colors.bgLight,
+      borderRadius: theme.radius.sm,
+      overflow: 'hidden',
+    },
+    input: {
+      flex: 1,
+      paddingHorizontal: theme.spacing.s3,
+      paddingVertical: 10,
+      fontSize: 16,
+      color: theme.colors.text,
+    },
+    addButton: {
+      alignSelf: 'stretch',
+      minHeight: 0,
+      minWidth: 48,
+      borderRadius: 0,
+      paddingHorizontal: theme.spacing.s2,
+      paddingVertical: 0,
+      backgroundColor: theme.colors.tabBarAddButtonBg,
+      borderWidth: 0,
+      borderColor: 'transparent',
+      borderLeftWidth: 1,
+      borderLeftColor: theme.colors.borderNeutral,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    addButtonDisabled: {
+      opacity: 0.45,
+    },
+    addButtonPressed: {
+      opacity: 0.85,
     },
   });
