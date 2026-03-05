@@ -83,8 +83,8 @@ class ShoppingListGeneratorTest {
     void mergePlan_shouldNotAddCustomTitle_whenCustomMealAlreadyHasItems() {
         ShoppingListGenerator generator = new ShoppingListGenerator();
 
-        PlanEntry customWithItems = new PlanEntry(
-                "entry-1", "MON", "Dinner", null, "Tacos", List.of("Eggs"), List.of(), null, null);
+        PlanEntry customWithItems =
+                new PlanEntry("entry-1", "MON", "Dinner", null, "Tacos", List.of("Eggs"), List.of(), null, null);
 
         WeeklyPlan plan = new WeeklyPlan(
                 "user-1",

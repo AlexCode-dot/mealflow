@@ -82,15 +82,9 @@ class ShoppingListControllerIT extends MongoTestContainerConfig {
         String token = tokens.issue(userId);
 
         Instant now = Instant.now();
-        PlanEntry entry =
-                new PlanEntry("entry-1", "MON", "Dinner", null, "Eggs", List.of(), List.of(), null, null);
-        WeeklyPlan plan = new WeeklyPlan(
-                userId,
-                "2024-12-09",
-                List.of(entry),
-                List.of("Breakfast", "Lunch", "Dinner"),
-                now,
-                now);
+        PlanEntry entry = new PlanEntry("entry-1", "MON", "Dinner", null, "Eggs", List.of(), List.of(), null, null);
+        WeeklyPlan plan =
+                new WeeklyPlan(userId, "2024-12-09", List.of(entry), List.of("Breakfast", "Lunch", "Dinner"), now, now);
         String planId = weeklyPlanRepository.save(plan).getId();
 
         HttpResponse<String> created = post("/api/shopping-lists?mode=replace", token, """
