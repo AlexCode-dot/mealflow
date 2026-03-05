@@ -19,6 +19,7 @@
       "distribution": "internal"
     },
     "production": {
+      "environment": "production",
       "autoIncrement": true,
       "android": {
         "buildType": "app-bundle"
@@ -28,9 +29,9 @@
   "submit": {
     "production": {
       "ios": {
-        "appleId": "your-apple-id@example.com",
-        "ascAppId": "1234567890",
-        "appleTeamId": "ABCDE12345"
+        "appleId": "mealflows@gmail.com",
+        "ascAppId": "6758921022",
+        "appleTeamId": "5KCHWRCMMS"
       },
       "android": {
         "serviceAccountKeyPath": "./service-account.json",

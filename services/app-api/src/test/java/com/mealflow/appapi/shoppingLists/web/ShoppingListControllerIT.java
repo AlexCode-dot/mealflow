@@ -77,6 +77,26 @@ class ShoppingListControllerIT extends MongoTestContainerConfig {
     }
 
     @Test
+    void generate_shouldUseCustomTitle_whenCustomMealHasNoItems() throws Exception {
+        String userId = "user-custom-title";
+        String token = tokens.issue(userId);
+
+        Instant now = Instant.now();
+        PlanEntry entry = new PlanEntry("entry-1", "MON", "Dinner", null, "Eggs", List.of(), List.of(), null, null);
+        WeeklyPlan plan =
+                new WeeklyPlan(userId, "2024-12-09", List.of(entry), List.of("Breakfast", "Lunch", "Dinner"), now, now);
+        String planId = weeklyPlanRepository.save(plan).getId();
+
+        HttpResponse<String> created = post("/api/shopping-lists?mode=replace", token, """
+{ "weeklyPlanId":"%s" }
+""".formatted(planId));
+
+        assertThat(created.statusCode(), is(200));
+        List<String> names = JsonPath.read(created.body(), "$.items[*].name");
+        assertThat(names, contains("Eggs"));
+    }
+
+    @Test
     void archive_shouldCreateNewActiveList() throws Exception {
         String token = tokens.issue("user-1");
 

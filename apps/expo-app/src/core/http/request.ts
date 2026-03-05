@@ -34,6 +34,10 @@ export async function request<T>(
     headers?: Record<string, string>;
   },
 ): Promise<T> {
+  if (!baseUrl) {
+    throw new Error('API base URL is not configured');
+  }
+
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     ...(options?.headers ?? {}),

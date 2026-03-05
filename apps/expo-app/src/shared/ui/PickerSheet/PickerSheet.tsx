@@ -54,6 +54,7 @@ export function PickerSheetOverlay({
   children,
   doneLabel = 'Done',
 }: ContentProps) {
+  const styles = useThemedStyles(createStyles);
   const sheet = (
     <View style={[styles.overlaySheet, isWeb && styles.overlaySheetWeb]}>
       <View style={styles.handle} />

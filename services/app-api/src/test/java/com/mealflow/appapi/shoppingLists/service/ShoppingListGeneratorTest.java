@@ -56,6 +56,50 @@ class ShoppingListGeneratorTest {
         assertThat(basil.getUnit(), nullValue());
     }
 
+    @Test
+    void mergePlan_shouldFallbackToCustomTitle_whenCustomMealHasNoItems() {
+        ShoppingListGenerator generator = new ShoppingListGenerator();
+
+        PlanEntry customNoItems =
+                new PlanEntry("entry-1", "MON", "Dinner", null, "Tacos", List.of(), List.of(), null, null);
+
+        WeeklyPlan plan = new WeeklyPlan(
+                "user-1",
+                "2024-12-09",
+                List.of(customNoItems),
+                List.of("Breakfast", "Lunch", "Dinner"),
+                Instant.now(),
+                Instant.now());
+
+        List<ShoppingListItem> merged = generator.mergePlan(List.of(), plan, Map.of());
+
+        assertThat(merged, hasSize(1));
+        ShoppingListItem tacos = findItem(merged, "Tacos", null);
+        assertThat(tacos.getQuantity(), nullValue());
+        assertThat(tacos.getUnit(), nullValue());
+    }
+
+    @Test
+    void mergePlan_shouldNotAddCustomTitle_whenCustomMealAlreadyHasItems() {
+        ShoppingListGenerator generator = new ShoppingListGenerator();
+
+        PlanEntry customWithItems =
+                new PlanEntry("entry-1", "MON", "Dinner", null, "Tacos", List.of("Eggs"), List.of(), null, null);
+
+        WeeklyPlan plan = new WeeklyPlan(
+                "user-1",
+                "2024-12-09",
+                List.of(customWithItems),
+                List.of("Breakfast", "Lunch", "Dinner"),
+                Instant.now(),
+                Instant.now());
+
+        List<ShoppingListItem> merged = generator.mergePlan(List.of(), plan, Map.of());
+
+        assertThat(merged, hasSize(1));
+        assertThat(merged.get(0).getName(), is("Eggs"));
+    }
+
     private ShoppingListItem findItem(List<ShoppingListItem> items, String name, String unit) {
         return items.stream()
                 .filter(item -> item.getName().equals(name)

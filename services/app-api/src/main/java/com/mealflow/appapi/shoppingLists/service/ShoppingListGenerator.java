@@ -29,8 +29,12 @@ public class ShoppingListGenerator {
 
         List<PlanEntry> entries = plan.getEntries() == null ? List.of() : plan.getEntries();
         for (PlanEntry entry : entries) {
-            addPlanItems(items, entry.getItems());
-            addPlanItems(items, entry.getExtraItems());
+            boolean hasItemInEntry = addPlanItems(items, entry.getItems());
+            boolean hasExtraItemInEntry = addPlanItems(items, entry.getExtraItems());
+
+            if (!hasItemInEntry && !hasExtraItemInEntry) {
+                addCustomTitleFallback(items, entry);
+            }
 
             if (entry.getRecipeId() == null || entry.getRecipeId().isBlank()) {
                 continue;
@@ -49,17 +53,31 @@ public class ShoppingListGenerator {
         return items;
     }
 
-    private void addPlanItems(List<ShoppingListItem> items, List<String> planItems) {
+    private boolean addPlanItems(List<ShoppingListItem> items, List<String> planItems) {
         if (planItems == null) {
-            return;
+            return false;
         }
+        boolean addedAny = false;
         for (String name : planItems) {
             String normalized = normalizeName(name);
             if (normalized.isBlank()) {
                 continue;
             }
             items.add(new ShoppingListItem(UUID.randomUUID().toString(), normalized, null, null, false));
+            addedAny = true;
         }
+        return addedAny;
+    }
+
+    private void addCustomTitleFallback(List<ShoppingListItem> items, PlanEntry entry) {
+        if (entry.getRecipeId() != null && !entry.getRecipeId().isBlank()) {
+            return;
+        }
+        String normalizedTitle = normalizeName(entry.getCustomTitle());
+        if (normalizedTitle.isBlank()) {
+            return;
+        }
+        items.add(new ShoppingListItem(UUID.randomUUID().toString(), normalizedTitle, null, null, false));
     }
 
     private void addIngredientItem(
