@@ -23,7 +23,6 @@ import {
 import {
   BottomActionBar,
   Card,
-  Chip,
   ConfirmSheet,
   FormSheet,
   LoadingScreen,
@@ -454,16 +453,27 @@ export default function WeeklyPlanDetailScreen() {
                     onAdd={editSheet.handleEditItemAdd}
                   />
                   {editSheet.editItems.length ? (
-                    <View style={styles.itemRow}>
+                    <View style={styles.extrasList}>
                       {editSheet.editItems.map((item, idx) => (
-                        <Chip
-                          key={`${item}-${idx}`}
-                          label={item}
-                          variant="recipes"
-                          onPress={() =>
-                            editSheet.setEditItems((prev) => prev.filter((_, i) => i !== idx))
-                          }
-                        />
+                        <View key={`${item}-${idx}`} style={styles.extrasRow}>
+                          <View style={styles.extrasLeft}>
+                            <View style={styles.extrasCheck}>
+                              <Check size={14} color={theme.colors.primaryDark} strokeWidth={2.6} />
+                            </View>
+                            <Text style={styles.extrasText}>{item}</Text>
+                          </View>
+                          <Pressable
+                            onPress={() =>
+                              editSheet.setEditItems((prev) => prev.filter((_, i) => i !== idx))
+                            }
+                            style={({ pressed }) => [
+                              styles.extrasRemove,
+                              pressed ? styles.extrasRemovePressed : null,
+                            ]}
+                          >
+                            <X size={14} color={theme.colors.primaryDark} strokeWidth={2.6} />
+                          </Pressable>
+                        </View>
                       ))}
                     </View>
                   ) : null}
@@ -651,11 +661,6 @@ const createStyles = (theme: Theme) =>
       ...StyleSheet.absoluteFillObject,
       backgroundColor: 'rgba(0,0,0,0.35)',
       justifyContent: 'flex-end',
-    },
-    itemRow: {
-      flexDirection: 'row',
-      flexWrap: 'wrap',
-      gap: theme.spacing.s2,
     },
     extrasList: {
       gap: theme.spacing.s2,
