@@ -1,4 +1,5 @@
-import { StyleSheet, Text, View } from 'react-native';
+import type { RefObject } from 'react';
+import { Keyboard, StyleSheet, Text, TextInput, View } from 'react-native';
 import { Clock, Users } from 'lucide-react-native';
 import { ErrorText, TextField } from '@/src/shared/ui';
 import { type Theme, useTheme, useThemedStyles } from '@/src/shared/theme';
@@ -14,6 +15,10 @@ type Props = {
   onDescriptionChange: (value: string) => void;
   onDescriptionBlur?: () => void;
   descriptionError?: string | null;
+  titleInputRef?: RefObject<TextInput | null>;
+  descriptionInputRef?: RefObject<TextInput | null>;
+  onTitleFocus?: () => void;
+  onDescriptionFocus?: () => void;
   time: string;
   portions: string;
   category: string;
@@ -29,6 +34,10 @@ export function RecipeEditorBasics({
   onDescriptionChange,
   onDescriptionBlur,
   descriptionError,
+  titleInputRef,
+  descriptionInputRef,
+  onTitleFocus,
+  onDescriptionFocus,
   time,
   portions,
   category,
@@ -36,14 +45,17 @@ export function RecipeEditorBasics({
 }: Props) {
   const theme = useTheme();
   const styles = useThemedStyles(createStyles);
+
   return (
     <View style={styles.section}>
       <Text style={styles.label}>Recipe Name</Text>
       <TextField
+        inputRef={titleInputRef}
         value={title}
         onChangeText={onTitleChange}
         placeholder="Name..."
         returnKeyType="next"
+        onFocus={() => onTitleFocus?.()}
         onBlur={onTitleBlur}
         maxLength={120}
         invalid={Boolean(titleError)}
@@ -52,6 +64,7 @@ export function RecipeEditorBasics({
 
       <Text style={styles.label}>Description</Text>
       <TextField
+        inputRef={descriptionInputRef}
         value={description}
         onChangeText={onDescriptionChange}
         placeholder="Write your recipe description..."
@@ -59,7 +72,10 @@ export function RecipeEditorBasics({
         numberOfLines={4}
         textAlignVertical="top"
         inputStyle={styles.multiline}
+        onFocus={() => onDescriptionFocus?.()}
         onBlur={onDescriptionBlur}
+        returnKeyType="done"
+        onSubmitEditing={() => Keyboard.dismiss()}
         maxLength={2000}
       />
       {descriptionError ? <ErrorText>{descriptionError}</ErrorText> : null}

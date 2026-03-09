@@ -2,18 +2,17 @@ import { useMemo } from 'react';
 import { Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
 import { Archive, CheckCircle2, ListMinus, PencilLine, Trash2 } from 'lucide-react-native';
 import { ShoppingListItemRow } from '@/src/features/shopping-lists/ui/ShoppingListItemRow';
+import { ShoppingListItemEditorSheet } from '@/src/features/shopping-lists/ui/ShoppingListItemEditorSheet';
+import { ShoppingListRenameSheet } from '@/src/features/shopping-lists/ui/ShoppingListRenameSheet';
 import type { ShoppingListItem } from '@/src/features/shopping-lists/types';
 import { useShoppingListDetailsScreen } from '@/src/features/shopping-lists/hooks/useShoppingListDetailsScreen';
 import {
-  Button,
   ConfirmSheet,
   ToastBanner,
-  FormSheet,
   LoadingScreen,
   ModalSheet,
   Screen,
   SegmentedTabs,
-  TextField,
   useGlobalToast,
 } from '@/src/shared/ui';
 import { type Theme, useTheme, useThemedStyles } from '@/src/shared/theme';
@@ -24,7 +23,6 @@ export default function ShoppingListDetailsScreen() {
   const view = useShoppingListDetailsScreen();
   const { state, data, actions, toast, addSheet, editSheet, renameSheet, confirms, options } = view;
   const { toast: globalToast } = useGlobalToast();
-
   const filterTabs = useMemo(
     () => [
       { key: 'all', label: `All (${data.totalCount})` },
@@ -132,104 +130,48 @@ export default function ShoppingListDetailsScreen() {
 
       {toastBanner}
 
-      <FormSheet
+      <ShoppingListItemEditorSheet
         visible={addSheet.open}
         title="Add Item"
-        onClose={() => addSheet.setOpen(false)}
-        footer={
-          <View style={styles.sheetFooter}>
-            {addSheet.formError ? <Text style={styles.formError}>{addSheet.formError}</Text> : null}
-            <Button
-              title={state.isSaving ? 'Saving...' : 'Add Item'}
-              onPress={addSheet.handleSave}
-              disabled={state.isSaving}
-            />
-          </View>
-        }
-        footerFullBleed
-      >
-        <TextField
-          label="Item name"
-          value={addSheet.name}
-          onChangeText={addSheet.setName}
-          placeholder="e.g. Tortilla"
-        />
-        <TextField
-          label="Quantity"
-          value={addSheet.quantity}
-          onChangeText={addSheet.setQuantity}
-          placeholder="Optional"
-          keyboardType="numeric"
-        />
-        <TextField
-          label="Unit"
-          value={addSheet.unit}
-          onChangeText={addSheet.setUnit}
-          placeholder="Optional"
-        />
-      </FormSheet>
+        name={addSheet.name}
+        quantity={addSheet.quantity}
+        unit={addSheet.unit}
+        onChangeName={addSheet.setName}
+        onChangeQuantity={addSheet.setQuantity}
+        onChangeUnit={addSheet.setUnit}
+        onSave={addSheet.handleSave}
+        onCancel={() => addSheet.setOpen(false)}
+        saveLabel={state.isSaving ? 'Saving...' : 'Add Item'}
+        disabled={state.isSaving}
+        formError={addSheet.formError}
+      />
 
-      <FormSheet
+      <ShoppingListItemEditorSheet
         visible={editSheet.open}
         title="Edit Item"
-        onClose={() => editSheet.setOpen(false)}
-        footer={
-          <View style={styles.sheetFooter}>
-            <Button
-              title={state.isSaving ? 'Saving...' : 'Save Changes'}
-              onPress={editSheet.handleSave}
-              disabled={state.isSaving}
-            />
-          </View>
-        }
-        footerFullBleed
-      >
-        <TextField
-          label="Item name"
-          value={editSheet.name}
-          onChangeText={editSheet.setName}
-          placeholder="e.g. Tortilla"
-        />
-        <TextField
-          label="Quantity"
-          value={editSheet.quantity}
-          onChangeText={editSheet.setQuantity}
-          placeholder="Optional"
-          keyboardType="numeric"
-        />
-        <TextField
-          label="Unit"
-          value={editSheet.unit}
-          onChangeText={editSheet.setUnit}
-          placeholder="Optional"
-        />
-      </FormSheet>
+        name={editSheet.name}
+        quantity={editSheet.quantity}
+        unit={editSheet.unit}
+        onChangeName={editSheet.setName}
+        onChangeQuantity={editSheet.setQuantity}
+        onChangeUnit={editSheet.setUnit}
+        onSave={editSheet.handleSave}
+        onCancel={() => editSheet.setOpen(false)}
+        saveLabel={state.isSaving ? 'Saving...' : 'Save Changes'}
+        disabled={state.isSaving}
+      />
 
-      <FormSheet
+      <ShoppingListRenameSheet
         visible={renameSheet.open}
         title="Rename List"
-        onClose={() => renameSheet.setOpen(false)}
-        footer={
-          <View style={styles.sheetFooter}>
-            {renameSheet.formError ? (
-              <Text style={styles.formError}>{renameSheet.formError}</Text>
-            ) : null}
-            <Button
-              title={state.isSaving ? 'Saving...' : 'Save Name'}
-              onPress={renameSheet.handleSave}
-              disabled={state.isSaving}
-            />
-          </View>
-        }
-        footerFullBleed
-      >
-        <TextField
-          label="List name"
-          value={renameSheet.title}
-          onChangeText={renameSheet.setTitle}
-          placeholder="e.g. Week 45"
-        />
-      </FormSheet>
+        value={renameSheet.title}
+        onChangeText={renameSheet.setTitle}
+        onSave={renameSheet.handleSave}
+        onCancel={() => renameSheet.setOpen(false)}
+        saveLabel={state.isSaving ? 'Saving...' : 'Save Name'}
+        disabled={state.isSaving}
+        formError={renameSheet.formError}
+      />
 
       <ConfirmSheet
         visible={confirms.deleteOpen}
@@ -439,17 +381,6 @@ const createStyles = (theme: Theme) =>
     },
     toastWrap: {
       width: '92%',
-    },
-    sheetFooter: {
-      paddingHorizontal: theme.spacing.s4,
-      paddingTop: theme.spacing.s3,
-      paddingBottom: theme.spacing.s5,
-    },
-    formError: {
-      color: theme.colors.error,
-      fontSize: 13,
-      fontWeight: '700',
-      marginBottom: theme.spacing.s2,
     },
     optionsSheet: {
       gap: theme.spacing.s4,

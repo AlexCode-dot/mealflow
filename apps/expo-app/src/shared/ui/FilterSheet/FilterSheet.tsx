@@ -1,12 +1,16 @@
-import { useMemo, useState, type ReactNode } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { PickerSelect, PickerSheet } from '@/src/shared/ui/PickerSheet/PickerSheet';
-import { X, ChevronDown, XCircle } from 'lucide-react-native';
+import { Check, ChevronDown, X, XCircle } from 'lucide-react-native';
 import { type Theme, useTheme, useThemedStyles } from '@/src/shared/theme';
-import { Button } from '@/src/shared/ui/Button';
+import { BottomActionBar, resolveBottomActionBarColor } from '@/src/shared/ui/BottomActionBar';
+import { TAB_BAR } from '@/src/shared/ui/layout/tabBar';
 import { Chip } from '@/src/shared/ui/Chip';
+import { useKeyboardInset } from '@/src/shared/hooks/useKeyboardInset';
+import { useKeyboardOpen } from '@/src/shared/hooks/useKeyboardOpen';
+import { useScrollToFocusedInput } from '@/src/shared/hooks/useScrollToFocusedInput';
+import { InlineAddField } from '@/src/shared/ui/InlineAddField';
 import { ModalSheet } from '@/src/shared/ui/ModalSheet';
-import { TextField } from '@/src/shared/ui/TextField';
 import { SegmentedTabs } from '@/src/shared/ui/SegmentedTabs';
 
 export type FilterOption = {
@@ -63,6 +67,18 @@ export function FilterSheet({
   const styles = useThemedStyles(createStyles);
   const [tagInputs, setTagInputs] = useState<Record<string, string>>({});
   const [activePicker, setActivePicker] = useState<PickerState | null>(null);
+  const isKeyboardOpen = useKeyboardOpen();
+  const keyboardInset = useKeyboardInset();
+  const [focusedTagSectionKey, setFocusedTagSectionKey] = useState<string | null>(null);
+  const scrollRef = useRef<ScrollView | null>(null);
+  const tagInputRefs = useRef<Record<string, TextInput | null>>({});
+  const actionColor = resolveBottomActionBarColor(theme);
+  const scrollToFocusedInput = useScrollToFocusedInput(scrollRef, 12);
+  useEffect(() => {
+    if (!isKeyboardOpen) {
+      setFocusedTagSectionKey(null);
+    }
+  }, [isKeyboardOpen]);
 
   const selectedMap = useMemo(() => {
     return sections.reduce<Record<string, Set<string>>>((acc, section) => {
@@ -137,23 +153,45 @@ export function FilterSheet({
     if (!selected) return placeholder ?? 'Any';
     return options.find((opt) => opt.key === selected)?.label ?? placeholder ?? 'Any';
   };
+  const focusedTagIndex = focusedTagSectionKey
+    ? sections.findIndex((candidate) => candidate.key === focusedTagSectionKey)
+    : -1;
 
   return (
-    <ModalSheet visible={visible} onClose={onClose}>
+    <ModalSheet
+      visible={visible}
+      onClose={onClose}
+      dismissKeyboardOnBackdropTap
+      onBackdropPress={activePicker ? () => setActivePicker(null) : undefined}
+      avoidKeyboard={false}
+      sheetStyle={styles.sheet}
+      sheetInnerStyle={styles.sheetInner}
+    >
       <View style={styles.header}>
         <View style={styles.headerSide} />
         <Text style={styles.title}>{title}</Text>
-        <Pressable style={styles.clearButton} onPress={onClear}>
-          <XCircle color={theme.colors.primaryDark} size={20} strokeWidth={2.6} />
-          <Text style={styles.clearLabel}>Clear</Text>
-        </Pressable>
+        <View style={styles.headerSide} />
       </View>
 
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.sections}>
-        {sections.map((section) => {
+      <ScrollView
+        ref={scrollRef}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={[
+          styles.sections,
+          { paddingBottom: theme.spacing.s3 + (keyboardInset > 0 ? keyboardInset : 0) },
+        ]}
+        keyboardShouldPersistTaps="handled"
+      >
+        {sections.map((section, index) => {
           const selected = selectedMap[section.key] ?? new Set<string>();
           const segmentedDefault = section.options?.[0]?.key ?? '';
           const segmentedValue = selection[section.key]?.[0] ?? segmentedDefault;
+          const hideSectionBelowFocusedTag =
+            isKeyboardOpen && focusedTagIndex !== -1 && index > focusedTagIndex;
+
+          if (hideSectionBelowFocusedTag) {
+            return null;
+          }
 
           return (
             <View
@@ -267,29 +305,50 @@ export function FilterSheet({
 
               {section.type === 'tags' ? (
                 <View style={styles.tagsWrap}>
-                  <View style={styles.tagInputRow}>
-                    <TextField
-                      value={tagInputs[section.key] ?? ''}
-                      onChangeText={(text) => handleTagChange(section, text)}
-                      placeholder={section.placeholder ?? 'Add ingredient'}
-                      autoCapitalize="none"
-                      returnKeyType="done"
-                      onSubmitEditing={() => handleAddTag(section)}
-                      containerStyle={styles.tagInputField}
-                    />
-                  </View>
-                  <View style={styles.tags}>
-                    {(selection[section.key] ?? []).map((tag) => (
-                      <Pressable
-                        key={tag}
-                        style={styles.tag}
-                        onPress={() => handleRemoveTag(section, tag)}
-                      >
-                        <Text style={styles.tagLabel}>{tag}</Text>
-                        <X color={theme.colors.primaryDark} size={14} strokeWidth={2.5} />
-                      </Pressable>
-                    ))}
-                  </View>
+                  <InlineTagAddField
+                    inputRef={(value) => {
+                      tagInputRefs.current[section.key] = value;
+                    }}
+                    value={tagInputs[section.key] ?? ''}
+                    onChangeText={(text) => handleTagChange(section, text)}
+                    placeholder={section.placeholder ?? 'Add ingredient'}
+                    onAdd={() => handleAddTag(section)}
+                    onFocus={() => {
+                      setFocusedTagSectionKey(section.key);
+                      const inputRef = {
+                        get current() {
+                          return tagInputRefs.current[section.key] ?? null;
+                        },
+                      };
+                      scrollToFocusedInput(inputRef, 12);
+                    }}
+                    onBlur={() =>
+                      setFocusedTagSectionKey((current) =>
+                        current === section.key ? null : current,
+                      )
+                    }
+                  />
+                  {!isKeyboardOpen ? (
+                    <View style={styles.tags}>
+                      {(selection[section.key] ?? []).map((tag) => (
+                        <Pressable
+                          key={tag}
+                          style={styles.tag}
+                          onPress={() => handleRemoveTag(section, tag)}
+                        >
+                          <View style={styles.tagLeft}>
+                            <View style={styles.tagCheck}>
+                              <Check color={theme.colors.primaryDark} size={14} strokeWidth={2.4} />
+                            </View>
+                            <Text style={styles.tagLabel}>{tag}</Text>
+                          </View>
+                          <View style={styles.tagRemove}>
+                            <X color={theme.colors.primaryDark} size={14} strokeWidth={2.5} />
+                          </View>
+                        </Pressable>
+                      ))}
+                    </View>
+                  ) : null}
                 </View>
               ) : null}
             </View>
@@ -297,9 +356,26 @@ export function FilterSheet({
         })}
       </ScrollView>
 
-      <View style={styles.footer}>
-        <Button title="Apply" variant="primary" onPress={onApply} />
-      </View>
+      {!isKeyboardOpen ? (
+        <View style={styles.footerBleed}>
+          <BottomActionBar
+            items={[
+              {
+                key: 'clear',
+                label: 'Clear filters',
+                icon: <XCircle color={actionColor} size={TAB_BAR.ICON_SIZE} strokeWidth={2.25} />,
+                onPress: onClear,
+              },
+              {
+                key: 'apply',
+                label: 'Apply',
+                icon: <Check color={actionColor} size={TAB_BAR.ICON_SIZE} strokeWidth={2.25} />,
+                onPress: onApply,
+              },
+            ]}
+          />
+        </View>
+      ) : null}
 
       <PickerSheet
         visible={!!activePicker}
@@ -325,6 +401,7 @@ const createStyles = (theme: Theme) =>
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'space-between',
+      marginTop: theme.spacing.s2,
       marginBottom: theme.spacing.s2,
     },
     headerSide: {
@@ -335,18 +412,14 @@ const createStyles = (theme: Theme) =>
       fontSize: 26,
       fontWeight: '700',
     },
-    clearButton: {
-      minWidth: 48,
-      alignItems: 'center',
-      paddingVertical: 4,
-      paddingHorizontal: 6,
-      borderRadius: theme.radius.sm,
-      gap: 2,
+    sheet: {
+      paddingBottom: 0,
+      borderBottomWidth: 0,
+      borderBottomLeftRadius: 0,
+      borderBottomRightRadius: 0,
     },
-    clearLabel: {
-      color: theme.colors.primaryDark,
-      fontSize: 13,
-      fontWeight: '800',
+    sheetInner: {
+      transform: [{ translateY: 0 }],
     },
     sections: {
       gap: theme.spacing.s4,
@@ -442,37 +515,83 @@ const createStyles = (theme: Theme) =>
     tagsWrap: {
       gap: theme.spacing.s2,
     },
-    tagInputRow: {
-      flexDirection: 'row',
-      alignItems: 'stretch',
-      width: '100%',
-    },
-    tagInputField: {
-      flex: 1,
-    },
     tags: {
-      flexDirection: 'row',
-      flexWrap: 'wrap',
       gap: theme.spacing.s2,
     },
     tag: {
       flexDirection: 'row',
       alignItems: 'center',
-      gap: theme.spacing.s1,
-      paddingVertical: 8,
-      paddingHorizontal: 12,
-      borderRadius: theme.radius.pill,
-      borderWidth: 2,
-      borderColor: theme.colors.primaryDark,
+      justifyContent: 'space-between',
+      borderWidth: 1,
+      borderColor: theme.colors.borderNeutral,
+      backgroundColor: theme.colors.bgLight,
+      borderRadius: theme.radius.sm,
+      paddingHorizontal: theme.spacing.s3,
+      paddingVertical: 10,
+    },
+    tagLeft: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: theme.spacing.s2,
+      flex: 1,
+    },
+    tagCheck: {
+      height: 22,
+      width: 22,
+      borderRadius: 11,
       backgroundColor: theme.colors.primaryLight,
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderWidth: 1,
+      borderColor: theme.colors.primaryDark,
     },
     tagLabel: {
-      color: theme.colors.primaryDark,
-      fontSize: 13,
-      fontWeight: '800',
+      color: theme.colors.text,
+      fontSize: 14,
+      fontWeight: '600',
     },
-    footer: {
-      paddingTop: theme.spacing.s3,
-      paddingBottom: theme.spacing.s4,
+    tagRemove: {
+      height: 22,
+      width: 22,
+      borderRadius: 11,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: theme.colors.primaryLight,
+    },
+    footerBleed: {
+      marginHorizontal: -theme.spacing.s4,
+      marginBottom: 0,
+      marginTop: 0,
     },
   });
+
+type InlineTagAddFieldProps = {
+  value: string;
+  onChangeText: (value: string) => void;
+  onAdd: () => void;
+  placeholder: string;
+  onFocus?: () => void;
+  onBlur?: () => void;
+};
+
+function InlineTagAddField({
+  value,
+  onChangeText,
+  onAdd,
+  placeholder,
+  onFocus,
+  onBlur,
+}: InlineTagAddFieldProps) {
+  return (
+    <InlineAddField
+      value={value}
+      onChangeText={onChangeText}
+      placeholder={placeholder}
+      onAdd={onAdd}
+      onFocus={onFocus}
+      onBlur={onBlur}
+      autoCapitalize="none"
+      returnKeyType="go"
+    />
+  );
+}

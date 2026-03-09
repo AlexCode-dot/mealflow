@@ -1,10 +1,22 @@
-import { useMemo, useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useMemo, useRef, useState } from 'react';
+import {
+  Keyboard,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+  useWindowDimensions,
+} from 'react-native';
 import { Boxes, Scale, Trash2 } from 'lucide-react-native';
 import { PickerSelect, PickerSheetOverlay } from '@/src/shared/ui';
 import { ErrorText } from '@/src/shared/ui/ErrorText';
 import { FormSheet } from '@/src/shared/ui/FormSheet';
 import { TextField } from '@/src/shared/ui/TextField';
+import { useKeyboardInset } from '@/src/shared/hooks/useKeyboardInset';
+import { useKeyboardOpen } from '@/src/shared/hooks/useKeyboardOpen';
+import { useScrollToFocusedInput } from '@/src/shared/hooks/useScrollToFocusedInput';
 import { type Theme, useTheme, useThemedStyles } from '@/src/shared/theme';
 import { RecipeAmountField } from '@/src/features/recipes/ui/RecipeAmountField';
 import { RecipeActionBar } from '@/src/features/recipes/ui/RecipeActionBar';
@@ -54,7 +66,14 @@ export function IngredientEditorSheet({
 }: Props) {
   const theme = useTheme();
   const styles = useThemedStyles(createStyles);
+  const { height: screenHeight } = useWindowDimensions();
+  const scrollRef = useRef<ScrollView | null>(null);
+  const nameInputRef = useRef<TextInput | null>(null);
+  const amountInputRef = useRef<TextInput | null>(null);
   const [pickerOpen, setPickerOpen] = useState<'unit' | null>(null);
+  const isKeyboardOpen = useKeyboardOpen();
+  const keyboardInset = useKeyboardInset();
+  const scrollToFocusedInput = useScrollToFocusedInput(scrollRef, 12);
   const unitLabel = useMemo(() => {
     const selected = UNITS.find((u) => u.key === unit);
     return selected?.label ?? '';
@@ -86,6 +105,8 @@ export function IngredientEditorSheet({
       visible={visible}
       title={title}
       onClose={onCancel}
+      onBackdropPress={isKeyboardOpen ? Keyboard.dismiss : onCancel}
+      dismissKeyboardOnSheetTap
       rightAction={
         onDelete ? (
           <Pressable onPress={onDelete} style={styles.deleteAction}>
@@ -98,52 +119,75 @@ export function IngredientEditorSheet({
       footerFullBleed
       overlay={overlay}
     >
-      <View style={styles.section}>
-        <Text style={styles.label}>Ingredient name</Text>
-        <TextField
-          value={name}
-          onChangeText={onChangeName}
-          placeholder="Name..."
-          autoCapitalize="words"
-          maxLength={80}
-        />
-        {nameError ? <ErrorText>{nameError}</ErrorText> : null}
-      </View>
-
-      <View style={styles.row}>
-        <View style={styles.rowItem}>
-          <Text style={styles.label}>Unit</Text>
-          <RecipeSelectField
-            icon={<Boxes color={theme.colors.textMuted} size={18} strokeWidth={2.5} />}
-            value={unitLabel}
-            placeholder="Select unit"
-            onPress={() => setPickerOpen('unit')}
+      <ScrollView
+        ref={scrollRef}
+        style={[styles.scroll, { maxHeight: Math.min(420, screenHeight * 0.5) }]}
+        contentContainerStyle={[
+          styles.scrollContent,
+          { paddingBottom: theme.spacing.s3 + (keyboardInset > 0 ? keyboardInset : 0) },
+        ]}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+      >
+        <View style={styles.section}>
+          <Text style={styles.label}>Ingredient name</Text>
+          <TextField
+            inputRef={nameInputRef}
+            value={name}
+            onChangeText={onChangeName}
+            placeholder="Name..."
+            autoCapitalize="words"
+            maxLength={80}
+            onFocus={() => {
+              scrollToFocusedInput(nameInputRef, 24);
+            }}
+            returnKeyType="done"
+            onSubmitEditing={() => Keyboard.dismiss()}
           />
-          {unitError ? <ErrorText>{unitError}</ErrorText> : null}
+          {nameError ? <ErrorText>{nameError}</ErrorText> : null}
         </View>
-        <View style={styles.rowItem}>
-          <Text style={styles.label}>Amount</Text>
-          <RecipeAmountField
-            icon={<Scale color={theme.colors.textMuted} size={18} strokeWidth={2.5} />}
-            prefix={amountPrefix}
-            value={amount}
-            onChangeText={handleAmountChange}
-          />
-          {amountError ? <ErrorText>{amountError}</ErrorText> : null}
-        </View>
-      </View>
 
-      <View style={styles.preview}>
-        <View style={styles.previewHeader}>
-          <Text style={styles.previewTitle}>Preview</Text>
-          <View style={styles.previewDivider} />
+        <View style={styles.row}>
+          <View style={styles.rowItem}>
+            <Text style={styles.label}>Unit</Text>
+            <RecipeSelectField
+              icon={<Boxes color={theme.colors.textMuted} size={18} strokeWidth={2.5} />}
+              value={unitLabel}
+              placeholder="Select unit"
+              onPress={() => setPickerOpen('unit')}
+            />
+            {unitError ? <ErrorText>{unitError}</ErrorText> : null}
+          </View>
+          <View style={styles.rowItem}>
+            <Text style={styles.label}>Amount</Text>
+            <RecipeAmountField
+              inputRef={amountInputRef}
+              icon={<Scale color={theme.colors.textMuted} size={18} strokeWidth={2.5} />}
+              prefix={amountPrefix}
+              value={amount}
+              onChangeText={handleAmountChange}
+              onFocus={() => {
+                scrollToFocusedInput(amountInputRef, 40);
+              }}
+              returnKeyType="done"
+              onSubmitEditing={() => Keyboard.dismiss()}
+            />
+            {amountError ? <ErrorText>{amountError}</ErrorText> : null}
+          </View>
         </View>
-        <RecipeIngredientRow
-          name={name || 'Ingredient'}
-          amount={amount ? `${amount}${unit ? ` ${unit}` : ''}` : ''}
-          showHandle
-        />
-      </View>
+
+        <View style={styles.preview}>
+          <View style={styles.previewHeader}>
+            <Text style={styles.previewTitle}>Preview</Text>
+            <View style={styles.previewDivider} />
+          </View>
+          <RecipeIngredientRow
+            name={name || 'Ingredient'}
+            amount={amount ? `${amount}${unit ? ` ${unit}` : ''}` : ''}
+            showHandle
+          />
+        </View>
+      </ScrollView>
     </FormSheet>
   );
 }
@@ -195,6 +239,12 @@ const createStyles = (theme: Theme) =>
       ...StyleSheet.absoluteFillObject,
       justifyContent: 'flex-end',
       backgroundColor: 'rgba(0,0,0,0.35)',
+    },
+    scroll: {
+      flexGrow: 0,
+    },
+    scrollContent: {
+      gap: theme.spacing.s3,
     },
   });
 

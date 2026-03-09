@@ -1,8 +1,21 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import {
+  Keyboard,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+  useWindowDimensions,
+} from 'react-native';
+import { useRef } from 'react';
 import { Trash2 } from 'lucide-react-native';
 import { FormSheet } from '@/src/shared/ui/FormSheet';
 import { TextField } from '@/src/shared/ui/TextField';
 import { ErrorText } from '@/src/shared/ui/ErrorText';
+import { useKeyboardInset } from '@/src/shared/hooks/useKeyboardInset';
+import { useKeyboardOpen } from '@/src/shared/hooks/useKeyboardOpen';
+import { useScrollToFocusedInput } from '@/src/shared/hooks/useScrollToFocusedInput';
 import { type Theme, useTheme, useThemedStyles } from '@/src/shared/theme';
 import { RecipeStepRow } from '@/src/features/recipes/ui/RecipeStepRow';
 import { RecipeActionBar } from '@/src/features/recipes/ui/RecipeActionBar';
@@ -30,11 +43,20 @@ export function StepEditorSheet({
 }: Props) {
   const theme = useTheme();
   const styles = useThemedStyles(createStyles);
+  const { height: screenHeight } = useWindowDimensions();
+  const scrollRef = useRef<ScrollView | null>(null);
+  const descriptionInputRef = useRef<TextInput | null>(null);
+  const isKeyboardOpen = useKeyboardOpen();
+  const keyboardInset = useKeyboardInset();
+  const scrollToFocusedInput = useScrollToFocusedInput(scrollRef, 12);
+
   return (
     <FormSheet
       visible={visible}
       title={title}
       onClose={onCancel}
+      onBackdropPress={isKeyboardOpen ? Keyboard.dismiss : onCancel}
+      dismissKeyboardOnSheetTap
       rightAction={
         onDelete ? (
           <Pressable onPress={onDelete} style={styles.deleteAction}>
@@ -46,29 +68,43 @@ export function StepEditorSheet({
       footer={<RecipeActionBar onCancel={onCancel} onSave={onSave} saveLabel="Save" />}
       footerFullBleed
     >
-      <View style={styles.section}>
-        <Text style={styles.label}>Step description</Text>
-        <TextField
-          value={description}
-          onChangeText={onChangeDescription}
-          placeholder="Description..."
-          autoCapitalize="sentences"
-          multiline
-          numberOfLines={4}
-          textAlignVertical="top"
-          inputStyle={styles.multiline}
-          maxLength={500}
-        />
-        {error ? <ErrorText>{error}</ErrorText> : null}
-      </View>
-
-      <View style={styles.preview}>
-        <View style={styles.previewHeader}>
-          <Text style={styles.previewTitle}>Preview</Text>
-          <View style={styles.previewDivider} />
+      <ScrollView
+        ref={scrollRef}
+        style={[styles.scroll, { maxHeight: Math.min(420, screenHeight * 0.5) }]}
+        contentContainerStyle={[
+          styles.scrollContent,
+          { paddingBottom: theme.spacing.s3 + (keyboardInset > 0 ? keyboardInset : 0) },
+        ]}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+      >
+        <View style={styles.section}>
+          <Text style={styles.label}>Step description</Text>
+          <TextField
+            inputRef={descriptionInputRef}
+            value={description}
+            onChangeText={onChangeDescription}
+            placeholder="Description..."
+            autoCapitalize="sentences"
+            multiline
+            numberOfLines={4}
+            textAlignVertical="top"
+            inputStyle={styles.multiline}
+            onFocus={() => scrollToFocusedInput(descriptionInputRef, 40)}
+            returnKeyType="done"
+            onSubmitEditing={() => Keyboard.dismiss()}
+            maxLength={500}
+          />
+          {error ? <ErrorText>{error}</ErrorText> : null}
         </View>
-        <RecipeStepRow index={1} text={description || 'Step description'} showHandle />
-      </View>
+        <View style={styles.preview}>
+          <View style={styles.previewHeader}>
+            <Text style={styles.previewTitle}>Preview</Text>
+            <View style={styles.previewDivider} />
+          </View>
+          <RecipeStepRow index={1} text={description || 'Step description'} showHandle />
+        </View>
+      </ScrollView>
     </FormSheet>
   );
 }
@@ -110,5 +146,11 @@ const createStyles = (theme: Theme) =>
       color: theme.colors.textMuted,
       fontSize: 11,
       fontWeight: '600',
+    },
+    scroll: {
+      flexGrow: 0,
+    },
+    scrollContent: {
+      gap: theme.spacing.s3,
     },
   });

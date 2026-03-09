@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Animated, StyleSheet, View } from 'react-native';
+import type { TextInput } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import DraggableFlatList from 'react-native-draggable-flatlist';
 import {
@@ -10,6 +11,7 @@ import {
   resolveBottomActionBarColor,
   ConfirmSheet,
 } from '@/src/shared/ui';
+import { useKeyboardOpen } from '@/src/shared/hooks/useKeyboardOpen';
 import { type Theme, useTheme, useThemedStyles } from '@/src/shared/theme';
 import {
   useCreateRecipe,
@@ -46,6 +48,7 @@ export function NewRecipeScreen() {
   const { state, form, data, actions } = view;
   const editorState = useRecipeEditorUiState();
   const [showRemoveImage, setShowRemoveImage] = useState(false);
+  const isKeyboardOpen = useKeyboardOpen();
   const { pickImage, isUploading } = useRecipeImagePicker({
     setImageUrl: form.setImageUrl,
     setImageFileId: form.setImageFileId,
@@ -61,6 +64,9 @@ export function NewRecipeScreen() {
     steps: stepRows,
     setSteps: data.setSteps,
   });
+  const recipeScrollRef = useRef<Animated.ScrollView | null>(null);
+  const titleInputRef = useRef<TextInput | null>(null);
+  const descriptionInputRef = useRef<TextInput | null>(null);
   const { items: stepItems, onDragEnd: onStepsDragEnd } = useStepReorderState({
     steps: stepRows,
     setSteps: data.setSteps,
@@ -96,6 +102,23 @@ export function NewRecipeScreen() {
   const heroHeight = 300;
   const titleError = form.touched.title ? form.errors.title : null;
   const descriptionError = form.touched.description ? form.errors.description : null;
+  const scrollToFocusedField = useCallback(
+    (inputRef: React.RefObject<TextInput | null>, keyboardOffset: number) => {
+      requestAnimationFrame(() => {
+        const node =
+          // Animated.ScrollView can expose getNode() depending on RN internals.
+          (recipeScrollRef.current as any)?.getNode?.() ?? (recipeScrollRef.current as any);
+        const responder = node?.getScrollResponder?.();
+        if (!responder || !inputRef.current) return;
+        responder.scrollResponderScrollNativeHandleToKeyboard(
+          inputRef.current,
+          keyboardOffset,
+          true,
+        );
+      });
+    },
+    [],
+  );
 
   const { renderIngredientItem, renderStepItem } = createRecipeEditorRenderers({
     onEditIngredient: ingredientEditor.openEdit,
@@ -155,6 +178,7 @@ export function NewRecipeScreen() {
     >
       <View style={styles.root}>
         <RecipeSheetLayout
+          scrollRef={recipeScrollRef}
           hero={
             <RecipeHero
               imageUrl={form.imageUrl}
@@ -164,6 +188,7 @@ export function NewRecipeScreen() {
             />
           }
           heroHeight={heroHeight}
+          sheetOverlap={63}
           heroHasImage={Boolean(form.imageUrl)}
         >
           <RecipeEditorShell tab={editorState.tab} onTabChange={editorState.setTab}>
@@ -172,10 +197,18 @@ export function NewRecipeScreen() {
               <RecipeEditorBasics
                 title={form.title}
                 onTitleChange={(v) => form.setTitle(v)}
+                titleInputRef={titleInputRef}
+                onTitleFocus={() => {
+                  scrollToFocusedField(titleInputRef, 8);
+                }}
                 onTitleBlur={() => form.setTouched((t) => ({ ...t, title: true }))}
                 titleError={titleError}
                 description={form.description}
                 onDescriptionChange={(v) => form.setDescription(v)}
+                descriptionInputRef={descriptionInputRef}
+                onDescriptionFocus={() => {
+                  scrollToFocusedField(descriptionInputRef, 96);
+                }}
                 onDescriptionBlur={() => form.setTouched((t) => ({ ...t, description: true }))}
                 descriptionError={descriptionError}
                 time={form.time}
@@ -249,7 +282,7 @@ export function NewRecipeScreen() {
           </RecipeEditorShell>
         </RecipeSheetLayout>
 
-        {stickyAdd ? (
+        {stickyAdd && !isKeyboardOpen ? (
           <View style={styles.stickyAdd}>
             <RecipeAddButton
               label={stickyAdd.label}
