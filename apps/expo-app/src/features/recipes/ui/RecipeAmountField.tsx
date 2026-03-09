@@ -1,6 +1,15 @@
 import type { ReactNode } from 'react';
-import { StyleSheet, Text, TextInput, View } from 'react-native';
+import {
+  Platform,
+  StyleSheet,
+  Text,
+  TextInput,
+  type RefObject,
+  type TextInputProps,
+  View,
+} from 'react-native';
 import { type Theme, useThemedStyles } from '@/src/shared/theme';
+import { KeyboardDoneAccessory } from '@/src/shared/ui/KeyboardDoneAccessory/KeyboardDoneAccessory';
 
 type Props = {
   icon?: ReactNode;
@@ -9,6 +18,11 @@ type Props = {
   placeholder?: string;
   onChangeText: (value: string) => void;
   keyboardType?: 'decimal-pad' | 'number-pad';
+  onFocus?: TextInputProps['onFocus'];
+  onBlur?: TextInputProps['onBlur'];
+  returnKeyType?: TextInputProps['returnKeyType'];
+  onSubmitEditing?: TextInputProps['onSubmitEditing'];
+  inputRef?: RefObject<TextInput | null>;
 };
 
 export function RecipeAmountField({
@@ -18,25 +32,41 @@ export function RecipeAmountField({
   placeholder = '0',
   onChangeText,
   keyboardType = 'decimal-pad',
+  onFocus,
+  onBlur,
+  returnKeyType,
+  onSubmitEditing,
+  inputRef,
 }: Props) {
   const styles = useThemedStyles(createStyles);
   const hasValue = value !== '';
+  const accessoryId = Platform.OS === 'ios' ? 'recipe-amount-field-accessory' : undefined;
 
   return (
-    <View style={styles.field}>
-      {icon ? <View style={styles.iconWrap}>{icon}</View> : null}
-      <View style={styles.textRow}>
-        {prefix ? <Text style={styles.prefix}>{prefix}</Text> : null}
-        {prefix ? <View style={styles.divider} /> : null}
-        <TextInput
-          value={value}
-          onChangeText={onChangeText}
-          placeholder={placeholder}
-          keyboardType={keyboardType}
-          style={[styles.input, !hasValue ? styles.placeholder : null]}
-        />
+    <>
+      <View style={styles.field}>
+        {icon ? <View style={styles.iconWrap}>{icon}</View> : null}
+        <View style={styles.textRow}>
+          {prefix ? <Text style={styles.prefix}>{prefix}</Text> : null}
+          {prefix ? <View style={styles.divider} /> : null}
+          <TextInput
+            ref={inputRef}
+            value={value}
+            onChangeText={onChangeText}
+            placeholder={placeholder}
+            keyboardType={keyboardType}
+            onFocus={onFocus}
+            onBlur={onBlur}
+            returnKeyType={returnKeyType}
+            onSubmitEditing={onSubmitEditing}
+            submitBehavior={returnKeyType === 'done' ? 'blurAndSubmit' : undefined}
+            inputAccessoryViewID={accessoryId}
+            style={[styles.input, !hasValue ? styles.placeholder : null]}
+          />
+        </View>
       </View>
-    </View>
+      {accessoryId ? <KeyboardDoneAccessory nativeID={accessoryId} /> : null}
+    </>
   );
 }
 

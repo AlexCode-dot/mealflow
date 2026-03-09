@@ -1,28 +1,59 @@
 import type { ReactNode } from 'react';
-import { Modal, Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
+import {
+  Keyboard,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  Pressable,
+  StyleSheet,
+  View,
+  type StyleProp,
+  type ViewStyle,
+} from 'react-native';
 import { type Theme, useThemedStyles } from '@/src/shared/theme';
+import { useKeyboardOpen } from '@/src/shared/hooks/useKeyboardOpen';
 import { WEB, isWeb } from '@/src/shared/ui/webStyles';
 
 type Props = {
   visible: boolean;
   onClose: () => void;
+  onBackdropPress?: () => void;
+  dismissKeyboardOnBackdropTap?: boolean;
+  avoidKeyboard?: boolean;
   children: ReactNode;
   sheetStyle?: StyleProp<ViewStyle>;
   sheetInnerStyle?: StyleProp<ViewStyle>;
   overlay?: ReactNode;
   webFullBleed?: boolean;
+  keyboardVerticalOffset?: number;
+  keyboardBehavior?: 'height' | 'position' | 'padding';
 };
 
 export function ModalSheet({
   visible,
   onClose,
+  onBackdropPress,
+  dismissKeyboardOnBackdropTap = false,
+  avoidKeyboard = true,
   children,
   sheetStyle,
   sheetInnerStyle,
   overlay,
   webFullBleed = false,
+  keyboardVerticalOffset = 0,
+  keyboardBehavior = 'position',
 }: Props) {
   const styles = useThemedStyles(createStyles);
+  const isKeyboardOpen = useKeyboardOpen();
+
+  const handleBackdropPress = () => {
+    if (dismissKeyboardOnBackdropTap && isKeyboardOpen) {
+      Keyboard.dismiss();
+      return;
+    }
+    (onBackdropPress ?? onClose)();
+  };
+
   return (
     <Modal
       visible={visible}
@@ -39,21 +70,28 @@ export function ModalSheet({
           isWeb && webFullBleed && styles.backdropWebFullBleed,
         ]}
       >
-        <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
+        <Pressable style={StyleSheet.absoluteFill} onPress={handleBackdropPress} />
         {overlay ? <View style={styles.overlay}>{overlay}</View> : null}
-        <View
-          style={[
-            styles.sheet,
-            isWeb && styles.sheetWeb,
-            isWeb && webFullBleed && styles.sheetWebFullBleed,
-            sheetStyle,
-          ]}
+        <KeyboardAvoidingView
+          enabled={!isWeb && avoidKeyboard}
+          behavior={Platform.OS === 'ios' ? keyboardBehavior : undefined}
+          keyboardVerticalOffset={keyboardVerticalOffset}
+          style={styles.keyboardAvoider}
         >
-          <View style={[styles.sheetInner, sheetInnerStyle]}>
-            <View style={styles.handle} />
-            {children}
+          <View
+            style={[
+              styles.sheet,
+              isWeb && styles.sheetWeb,
+              isWeb && webFullBleed && styles.sheetWebFullBleed,
+              sheetStyle,
+            ]}
+          >
+            <View style={[styles.sheetInner, sheetInnerStyle]}>
+              <View style={styles.handle} />
+              {children}
+            </View>
           </View>
-        </View>
+        </KeyboardAvoidingView>
       </View>
     </Modal>
   );
@@ -108,5 +146,9 @@ const createStyles = (theme: Theme) =>
       ...StyleSheet.absoluteFillObject,
       justifyContent: 'flex-end',
       zIndex: 1,
+    },
+    keyboardAvoider: {
+      width: '100%',
+      justifyContent: 'flex-end',
     },
   });

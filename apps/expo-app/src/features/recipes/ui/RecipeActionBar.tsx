@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
+import { StyleSheet, View } from 'react-native';
 import { Download, XCircle } from 'lucide-react-native';
-import { useTheme } from '@/src/shared/theme';
+import { type Theme, useTheme, useThemedStyles } from '@/src/shared/theme';
 import { TAB_BAR } from '@/src/shared/ui/layout/tabBar';
 import { BottomActionBar, resolveBottomActionBarColor } from '@/src/shared/ui/BottomActionBar';
 
@@ -26,6 +27,7 @@ type Props =
 
 export function RecipeActionBar(props: Props) {
   const theme = useTheme();
+  const styles = useThemedStyles(createStyles);
   const actionColor = resolveBottomActionBarColor(theme);
   const items =
     'items' in props && props.items
@@ -46,5 +48,17 @@ export function RecipeActionBar(props: Props) {
           },
         ];
 
-  return <BottomActionBar items={items} />;
+  return (
+    <View>
+      <View style={styles.spacer} />
+      <BottomActionBar items={items} />
+    </View>
+  );
 }
+
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
+    spacer: {
+      height: theme.spacing.s3,
+    },
+  });

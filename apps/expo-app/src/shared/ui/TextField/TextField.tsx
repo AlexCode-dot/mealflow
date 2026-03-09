@@ -1,14 +1,17 @@
 import {
+  Platform,
   StyleSheet,
   Text,
   TextInput,
   View,
+  type RefObject,
   type StyleProp,
   type TextInputProps,
   type TextStyle,
   type ViewStyle,
 } from 'react-native';
 import { type Theme, useThemedStyles } from '@/src/shared/theme';
+import { KeyboardDoneAccessory } from '@/src/shared/ui/KeyboardDoneAccessory/KeyboardDoneAccessory';
 
 type Props = {
   label?: string;
@@ -23,7 +26,9 @@ type Props = {
   numberOfLines?: number;
   textAlignVertical?: TextInputProps['textAlignVertical'];
   maxLength?: TextInputProps['maxLength'];
+  onFocus?: TextInputProps['onFocus'];
   onBlur?: () => void;
+  inputRef?: RefObject<TextInput | null>;
   containerStyle?: StyleProp<ViewStyle>;
 
   invalid?: boolean;
@@ -45,7 +50,9 @@ export function TextField({
   numberOfLines,
   textAlignVertical,
   maxLength,
+  onFocus,
   onBlur,
+  inputRef,
   invalid = false,
   returnKeyType,
   onSubmitEditing,
@@ -55,31 +62,42 @@ export function TextField({
   const styles = useThemedStyles(createStyles);
   const submitBehavior: TextInputProps['submitBehavior'] =
     returnKeyType === 'done' ? 'blurAndSubmit' : 'submit';
+  const accessoryKey = (label ?? placeholder ?? 'input').toLowerCase().replace(/[^a-z0-9]+/g, '-');
+  const needsDoneAccessory =
+    Platform.OS === 'ios' &&
+    (keyboardType === 'numeric' || keyboardType === 'number-pad' || keyboardType === 'decimal-pad');
+  const accessoryId = needsDoneAccessory ? `text-field-accessory-${accessoryKey}` : undefined;
 
   return (
-    <View style={[styles.root, containerStyle]}>
-      {label ? <Text style={styles.label}>{label}</Text> : null}
+    <>
+      <View style={[styles.root, containerStyle]}>
+        {label ? <Text style={styles.label}>{label}</Text> : null}
 
-      <TextInput
-        value={value}
-        onChangeText={onChangeText}
-        placeholder={placeholder}
-        secureTextEntry={secureTextEntry}
-        autoCapitalize={autoCapitalize}
-        keyboardType={keyboardType}
-        multiline={multiline}
-        numberOfLines={numberOfLines}
-        textAlignVertical={textAlignVertical}
-        maxLength={maxLength}
-        onBlur={onBlur}
-        returnKeyType={returnKeyType}
-        onSubmitEditing={onSubmitEditing}
-        submitBehavior={returnKeyType ? submitBehavior : undefined}
-        accessibilityLabel={label ?? placeholder}
-        accessibilityHint={invalid ? 'Invalid input' : undefined}
-        style={[styles.input, invalid ? styles.inputInvalid : null, inputStyle]}
-      />
-    </View>
+        <TextInput
+          ref={inputRef}
+          value={value}
+          onChangeText={onChangeText}
+          placeholder={placeholder}
+          secureTextEntry={secureTextEntry}
+          autoCapitalize={autoCapitalize}
+          keyboardType={keyboardType}
+          multiline={multiline}
+          numberOfLines={numberOfLines}
+          textAlignVertical={textAlignVertical}
+          maxLength={maxLength}
+          onFocus={onFocus}
+          onBlur={onBlur}
+          returnKeyType={returnKeyType}
+          onSubmitEditing={onSubmitEditing}
+          submitBehavior={returnKeyType ? submitBehavior : undefined}
+          inputAccessoryViewID={accessoryId}
+          accessibilityLabel={label ?? placeholder}
+          accessibilityHint={invalid ? 'Invalid input' : undefined}
+          style={[styles.input, invalid ? styles.inputInvalid : null, inputStyle]}
+        />
+      </View>
+      {accessoryId ? <KeyboardDoneAccessory nativeID={accessoryId} /> : null}
+    </>
   );
 }
 

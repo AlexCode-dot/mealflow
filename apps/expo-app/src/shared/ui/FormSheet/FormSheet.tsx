@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Keyboard, Pressable, StyleSheet, Text, View } from 'react-native';
 import { ModalSheet } from '@/src/shared/ui/ModalSheet';
 import { type Theme, useThemedStyles } from '@/src/shared/theme';
 
@@ -7,22 +7,34 @@ type Props = {
   visible: boolean;
   title: string;
   onClose: () => void;
+  onBackdropPress?: () => void;
   rightAction?: ReactNode;
   children: ReactNode;
   footer?: ReactNode;
   footerFullBleed?: boolean;
   overlay?: ReactNode;
+  avoidKeyboard?: boolean;
+  keyboardVerticalOffset?: number;
+  keyboardBehavior?: 'height' | 'position' | 'padding';
+  dismissKeyboardOnSheetTap?: boolean;
+  dismissKeyboardOnBackdropTap?: boolean;
 };
 
 export function FormSheet({
   visible,
   title,
   onClose,
+  onBackdropPress,
   rightAction,
   children,
   footer,
   footerFullBleed = false,
   overlay,
+  avoidKeyboard = false,
+  keyboardVerticalOffset,
+  keyboardBehavior,
+  dismissKeyboardOnSheetTap = false,
+  dismissKeyboardOnBackdropTap = false,
 }: Props) {
   const styles = useThemedStyles(createStyles);
   const sheetStyle = footerFullBleed
@@ -39,11 +51,23 @@ export function FormSheet({
     <ModalSheet
       visible={visible}
       onClose={onClose}
+      onBackdropPress={onBackdropPress}
       sheetStyle={sheetStyle}
       sheetInnerStyle={sheetInnerStyle}
       overlay={overlay}
+      avoidKeyboard={avoidKeyboard}
+      keyboardVerticalOffset={keyboardVerticalOffset}
+      keyboardBehavior={keyboardBehavior}
+      dismissKeyboardOnBackdropTap={dismissKeyboardOnBackdropTap}
     >
       <View style={styles.container}>
+        {dismissKeyboardOnSheetTap ? (
+          <Pressable
+            style={styles.keyboardDismissArea}
+            onPress={Keyboard.dismiss}
+            accessible={false}
+          />
+        ) : null}
         <View style={styles.header}>
           <View style={styles.headerSide} />
           <Text style={styles.title}>{title}</Text>
@@ -97,5 +121,8 @@ const createStyles = (theme: Theme) =>
     },
     container: {
       position: 'relative',
+    },
+    keyboardDismissArea: {
+      ...StyleSheet.absoluteFillObject,
     },
   });

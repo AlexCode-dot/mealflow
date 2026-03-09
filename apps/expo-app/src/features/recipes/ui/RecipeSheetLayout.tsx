@@ -1,6 +1,13 @@
 import { useMemo, useRef, useState } from 'react';
-import type { ReactNode } from 'react';
-import { Animated, RefreshControl, StyleSheet, View, type LayoutChangeEvent } from 'react-native';
+import type { ReactNode, RefObject } from 'react';
+import {
+  Animated,
+  Platform,
+  RefreshControl,
+  StyleSheet,
+  View,
+  type LayoutChangeEvent,
+} from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { type Theme, useTheme, useThemedStyles } from '@/src/shared/theme';
 import { RECIPE_IMAGE_FADE_MODE } from '@/src/features/recipes/constants/recipeUiConfig';
@@ -9,6 +16,7 @@ type Props = {
   hero: ReactNode;
   heroHeight: number;
   children: ReactNode;
+  scrollRef?: RefObject<Animated.ScrollView | null>;
   sheetOverlap?: number;
   heroBleed?: number;
   heroHasImage?: boolean;
@@ -20,6 +28,7 @@ export function RecipeSheetLayout({
   hero,
   heroHeight,
   children,
+  scrollRef,
   sheetOverlap = 63,
   heroBleed = 0,
   heroHasImage = false,
@@ -48,9 +57,13 @@ export function RecipeSheetLayout({
 
   return (
     <Animated.ScrollView
+      ref={scrollRef}
       contentContainerStyle={[styles.scrollContent, { minHeight: containerHeight }]}
       style={styles.scroll}
       showsVerticalScrollIndicator={false}
+      keyboardShouldPersistTaps="handled"
+      keyboardDismissMode="interactive"
+      automaticallyAdjustKeyboardInsets={Platform.OS === 'ios'}
       onLayout={handleLayout}
       onScroll={Animated.event([{ nativeEvent: { contentOffset: { y: scrollY } } }], {
         useNativeDriver: true,
