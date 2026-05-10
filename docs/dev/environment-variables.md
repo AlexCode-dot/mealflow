@@ -75,6 +75,23 @@ Defined in `services/app-api/src/main/resources/application.properties`.
 | `IMAGEKIT_PUBLIC_KEY` | Yes (for uploads) | ImageKit public API key | none |
 | `IMAGEKIT_URL_ENDPOINT` | Yes (for uploads) | ImageKit URL endpoint (cdn) | none |
 | `IMAGEKIT_UPLOAD_FOLDER` | No | Base folder for uploads | `/mealflow/recipes` |
+| `ANTHROPIC_API_KEY` | Yes (for recipe extraction) | Anthropic API key used by recipe extraction | none |
+| `ANTHROPIC_BASE_URL` | No | Anthropic API base URL | `https://api.anthropic.com` |
+| `ANTHROPIC_MODEL` | No | Anthropic model name | `claude-sonnet-4-6` |
+| `ANTHROPIC_API_VERSION` | No | Anthropic API version header | `2023-06-01` |
+| `ANTHROPIC_MAX_TOKENS` | No | Max output tokens per extraction | `2048` |
+| `ANTHROPIC_REQUEST_TIMEOUT_SECONDS` | No | Read timeout for Anthropic calls | `60` |
+| `APP_EXTRACTION_MAX_IMAGE_BYTES` | No | Max image size for extraction (bytes) | `10485760` |
+| `APP_EXTRACTION_MAX_VIDEO_BYTES` | No | Max video size for extraction (bytes) | `104857600` |
+| `APP_EXTRACTION_MAX_PER_DAY` | No | Max extractions per user per day | `10` |
+| `APP_EXTRACTION_MAX_FRAMES` | No | Max video keyframes sent to the LLM | `8` |
+| `APP_EXTRACTION_FRAME_INTERVAL_SECONDS` | No | Seconds between sampled keyframes | `3` |
+| `APP_EXTRACTION_FFMPEG_TIMEOUT_SECONDS` | No | ffmpeg max wall-clock seconds | `60` |
+| `APP_EXTRACTION_VIDEO_MAX_DURATION_SECONDS` | No | Cap on processed video duration | `300` |
+| `APP_EXTRACTION_FFMPEG_PATH` | No | Path to `ffmpeg` binary | `ffmpeg` |
+| `APP_EXTRACTION_FFPROBE_PATH` | No | Path to `ffprobe` binary | `ffprobe` |
+| `APP_EXTRACTION_CLEANUP_INTERVAL_SECONDS` | No | How often the abandoned-extraction sweeper runs | `600` |
+| `APP_EXTRACTION_MULTIPART_MAX_SIZE` | No | Multipart limit for upload endpoints | `110MB` |
 | `SENTRY_DSN` | Optional (currently unused) | Reserved for backend Sentry integration | none |
 | `SENTRY_ENVIRONMENT` | Optional (currently unused) | Reserved for backend Sentry integration | `development` |
 | `SENTRY_RELEASE` | Optional (currently unused) | Reserved for backend Sentry integration | none |

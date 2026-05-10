@@ -18,6 +18,7 @@ export const routes = {
   shoppingListDetail: (id: string) => `/shopping-list/${id}` as Href,
   settings: '/settings' as const,
   settingsLegal: '/settings/legal' as const,
+  settingsDeveloper: '/settings/developer' as const,
   settingsWithToast: (toast: string) =>
     ({
       pathname: '/settings',
@@ -31,6 +32,16 @@ export const routes = {
       params: { toast },
     }) as Href,
   recipeNew: '/recipes/new' as const,
+  recipeImport: '/recipes/import' as Href,
+  recipeImportReview: (jobId: string, videoUri?: string, videoDurationMs?: number) =>
+    ({
+      pathname: '/recipes/import/[jobId]',
+      params: {
+        jobId,
+        videoUri,
+        videoDurationMs: typeof videoDurationMs === 'number' ? String(videoDurationMs) : undefined,
+      },
+    }) as unknown as Href,
 
   // Dynamic
   recipe: (id: string) => `/recipes/${id}` as Href,

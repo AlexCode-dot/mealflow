@@ -24,3 +24,4 @@ export { RecipeSheetLayout } from './RecipeSheetLayout';
 export { RecipeStepRow } from './RecipeStepRow';
 export { StepEditorSheet } from './StepEditorSheet';
 export { createRecipeEditorRenderers } from './RecipeEditorRenderers';
+export { VideoThumbnailPickerSheet } from './VideoThumbnailPickerSheet';

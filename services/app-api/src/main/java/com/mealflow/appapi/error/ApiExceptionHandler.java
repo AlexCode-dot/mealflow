@@ -2,6 +2,9 @@ package com.mealflow.appapi.error;
 
 import com.mealflow.appapi.inspiration.service.InspirationNotFoundException;
 import com.mealflow.appapi.profile.service.ProfileValidationException;
+import com.mealflow.appapi.recipes.extraction.service.ExtractionNotFoundException;
+import com.mealflow.appapi.recipes.extraction.service.ExtractionStateException;
+import com.mealflow.appapi.recipes.extraction.service.ExtractionValidationException;
 import com.mealflow.appapi.recipes.image.ImageUploadValidationException;
 import com.mealflow.appapi.recipes.service.RecipeNotFoundException;
 import com.mealflow.appapi.recipes.service.RecipeValidationException;
@@ -89,6 +92,24 @@ public class ApiExceptionHandler {
         return problems.build(HttpStatus.BAD_REQUEST, ex.getMessage(), req);
     }
 
+    @ExceptionHandler(ExtractionNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ProblemDetail handleExtractionNotFound(ExtractionNotFoundException ex, HttpServletRequest req) {
+        return problems.build(HttpStatus.NOT_FOUND, ex.getMessage(), req);
+    }
+
+    @ExceptionHandler(ExtractionValidationException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ProblemDetail handleExtractionValidation(ExtractionValidationException ex, HttpServletRequest req) {
+        return problems.build(HttpStatus.BAD_REQUEST, ex.getMessage(), req);
+    }
+
+    @ExceptionHandler(ExtractionStateException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ProblemDetail handleExtractionState(ExtractionStateException ex, HttpServletRequest req) {
+        return problems.build(HttpStatus.CONFLICT, ex.getMessage(), req);
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ProblemDetail handleValidation(MethodArgumentNotValidException ex, HttpServletRequest req) {
@@ -130,7 +151,7 @@ public class ApiExceptionHandler {
     @ExceptionHandler(MaxUploadSizeExceededException.class)
     @ResponseStatus(HttpStatus.PAYLOAD_TOO_LARGE)
     public ProblemDetail handleMaxUploadSize(MaxUploadSizeExceededException ex, HttpServletRequest req) {
-        return problems.build(HttpStatus.PAYLOAD_TOO_LARGE, "Image is too large. Max size is 10MB.", req);
+        return problems.build(HttpStatus.PAYLOAD_TOO_LARGE, "Uploaded file is too large.", req);
     }
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)

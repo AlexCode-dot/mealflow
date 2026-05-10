@@ -31,14 +31,22 @@ public class ImageKitClient {
     }
 
     public ImageKitUploadResult upload(MultipartFile file, String fileName, String userId) {
+        try {
+            return uploadBytes(file.getBytes(), fileName, file.getContentType(), userId);
+        } catch (java.io.IOException ex) {
+            throw new ImageUploadValidationException("Could not read uploaded image.");
+        }
+    }
+
+    public ImageKitUploadResult uploadBytes(byte[] data, String fileName, String contentType, String userId) {
         ensureConfigured();
 
         MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
         HttpHeaders partHeaders = new HttpHeaders();
-        if (file.getContentType() != null) {
-            partHeaders.setContentType(MediaType.parseMediaType(file.getContentType()));
+        if (contentType != null && !contentType.isBlank()) {
+            partHeaders.setContentType(MediaType.parseMediaType(contentType));
         }
-        body.add("file", new HttpEntity<>(new NamedBytesResource(file, fileName), partHeaders));
+        body.add("file", new HttpEntity<>(new NamedBytesResource(data, fileName), partHeaders));
         body.add("fileName", fileName);
         body.add("useUniqueFileName", "true");
         body.add("folder", properties.getUploadFolder());
@@ -106,22 +114,14 @@ public class ImageKitClient {
     private static class NamedBytesResource extends ByteArrayResource {
         private final String filename;
 
-        private NamedBytesResource(MultipartFile file, String filename) {
-            super(toBytes(file));
+        private NamedBytesResource(byte[] data, String filename) {
+            super(data);
             this.filename = filename;
         }
 
         @Override
         public String getFilename() {
             return filename;
-        }
-
-        private static byte[] toBytes(MultipartFile file) {
-            try {
-                return file.getBytes();
-            } catch (Exception ex) {
-                throw new ImageUploadValidationException("Could not read uploaded image.");
-            }
         }
     }
 

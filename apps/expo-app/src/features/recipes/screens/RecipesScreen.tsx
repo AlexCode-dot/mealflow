@@ -58,13 +58,20 @@ export function RecipesScreen() {
         mode === 'saved' ? (
           <EmptyState
             title="No recipes yet"
-            description="Tap the + button or use the button below to create your first recipe."
+            description="Tap the + button to create one, or import a recipe from a photo or video."
             action={
-              <Button
-                title="Create your first recipe"
-                variant="primary"
-                onPress={() => router.push(routes.recipeNew)}
-              />
+              <View style={styles.emptyActions}>
+                <Button
+                  title="Create your first recipe"
+                  variant="primary"
+                  onPress={() => router.push(routes.recipeNew)}
+                />
+                <Button
+                  title="Import from photo or video"
+                  variant="secondary"
+                  onPress={() => router.push(routes.recipeImport)}
+                />
+              </View>
             }
           />
         ) : (
@@ -101,6 +108,9 @@ export function RecipesScreen() {
             query={filters.query}
             onQueryChange={filters.setQuery}
             onFilterPress={() => filters.setFiltersOpen(true)}
+            onImportPress={
+              state.tab === 'saved' ? () => router.push(routes.recipeImport) : undefined
+            }
             activeFilterCount={filters.activeFilterCount}
           />
 
@@ -116,6 +126,7 @@ export function RecipesScreen() {
       filters,
       state.hasDiscoveryFilters,
       state.tab,
+      styles.emptyActions,
       styles.headerBlock,
       styles.muted,
     ],
@@ -286,5 +297,8 @@ const createStyles = (theme: Theme) =>
       left: theme.spacing.s3,
       right: theme.spacing.s3,
       zIndex: 5,
+    },
+    emptyActions: {
+      gap: theme.spacing.s2,
     },
   });

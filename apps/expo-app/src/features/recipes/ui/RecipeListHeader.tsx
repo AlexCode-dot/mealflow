@@ -1,5 +1,5 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { SlidersHorizontal } from 'lucide-react-native';
+import { SlidersHorizontal, Sparkles } from 'lucide-react-native';
 import { SearchField, UnderlineTabs } from '@/src/shared/ui';
 import { type Theme, useTheme, useThemedStyles } from '@/src/shared/theme';
 
@@ -15,6 +15,7 @@ type Props = {
   query: string;
   onQueryChange: (value: string) => void;
   onFilterPress: () => void;
+  onImportPress?: () => void;
   activeFilterCount: number;
   hint?: string;
 };
@@ -26,6 +27,7 @@ export function RecipeListHeader({
   query,
   onQueryChange,
   onFilterPress,
+  onImportPress,
   activeFilterCount,
   hint,
 }: Props) {
@@ -45,10 +47,21 @@ export function RecipeListHeader({
           />
         </View>
 
+        {onImportPress ? (
+          <Pressable
+            onPress={onImportPress}
+            hitSlop={theme.spacing.s2}
+            accessibilityLabel="Import recipe from photo or video"
+            style={({ pressed }) => [styles.iconBtn, pressed ? styles.pressed : null]}
+          >
+            <Sparkles color={theme.colors.primaryDark} size={22} strokeWidth={2.5} />
+          </Pressable>
+        ) : null}
+
         <Pressable
           onPress={onFilterPress}
           hitSlop={theme.spacing.s2}
-          style={({ pressed }) => [styles.filterBtn, pressed ? styles.pressed : null]}
+          style={({ pressed }) => [styles.iconBtn, pressed ? styles.pressed : null]}
         >
           <SlidersHorizontal color={theme.colors.primaryDark} size={22} strokeWidth={2.5} />
           {activeFilterCount > 0 ? (
@@ -77,8 +90,8 @@ const createStyles = (theme: Theme) =>
     searchField: {
       flex: 1,
     },
-    filterBtn: {
-      width: 64,
+    iconBtn: {
+      width: 52,
       height: 52,
       borderRadius: theme.radius.md,
       backgroundColor: theme.colors.bgLight,

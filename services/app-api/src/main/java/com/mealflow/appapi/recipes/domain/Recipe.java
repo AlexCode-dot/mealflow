@@ -30,6 +30,8 @@ public class Recipe {
 
     private boolean fromExternal = false;
 
+    private String language;
+
     private Instant createdAt;
     private Instant updatedAt;
 
@@ -47,6 +49,7 @@ public class Recipe {
             Integer portions,
             String category,
             boolean fromExternal,
+            String language,
             Instant createdAt,
             Instant updatedAt) {
 
@@ -61,6 +64,7 @@ public class Recipe {
         this.portions = portions;
         this.category = category;
         this.fromExternal = fromExternal;
+        this.language = language;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
     }
@@ -76,6 +80,7 @@ public class Recipe {
             Integer portions,
             String category,
             Boolean fromExternal,
+            String language,
             Instant now) {
         if (title != null) {
             this.title = title.trim();
@@ -106,6 +111,9 @@ public class Recipe {
         }
         if (fromExternal != null) {
             this.fromExternal = fromExternal;
+        }
+        if (language != null) {
+            this.language = language;
         }
         this.updatedAt = now;
     }
@@ -202,6 +210,14 @@ public class Recipe {
 
     public void setFromExternal(boolean fromExternal) {
         this.fromExternal = fromExternal;
+    }
+
+    public String getLanguage() {
+        return language;
+    }
+
+    public void setLanguage(String language) {
+        this.language = language;
     }
 
     public Instant getCreatedAt() {

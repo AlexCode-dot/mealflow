@@ -15,5 +15,6 @@ public record RecipeResponse(
         Integer portions,
         String category,
         boolean fromExternal,
+        String language,
         Instant createdAt,
         Instant updatedAt) {}

@@ -81,6 +81,7 @@ public class RecipeMapper {
                 r.getPortions(),
                 r.getCategory(),
                 r.isFromExternal(),
+                r.getLanguage(),
                 r.getCreatedAt(),
                 r.getUpdatedAt());
     }

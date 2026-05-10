@@ -73,6 +73,34 @@ public class RecipeService {
             Integer portions,
             String category,
             boolean fromExternal) {
+        return create(
+                userId,
+                title,
+                description,
+                imageUrl,
+                imageFileId,
+                ingredients,
+                steps,
+                cookingTimeMinutes,
+                portions,
+                category,
+                fromExternal,
+                null);
+    }
+
+    public Recipe create(
+            String userId,
+            String title,
+            String description,
+            String imageUrl,
+            String imageFileId,
+            List<Ingredient> ingredients,
+            List<String> steps,
+            Integer cookingTimeMinutes,
+            Integer portions,
+            String category,
+            boolean fromExternal,
+            String language) {
 
         Instant now = clock.instant();
         ImageResolution image = resolveImageForCreate(userId, imageUrl, imageFileId, fromExternal);
@@ -89,6 +117,7 @@ public class RecipeService {
                 portions,
                 category,
                 fromExternal,
+                language,
                 now,
                 now);
 
@@ -108,6 +137,36 @@ public class RecipeService {
             Integer portions,
             String category,
             Boolean fromExternal) {
+        return patch(
+                userId,
+                recipeId,
+                title,
+                description,
+                imageUrl,
+                imageFileId,
+                ingredients,
+                steps,
+                cookingTimeMinutes,
+                portions,
+                category,
+                fromExternal,
+                null);
+    }
+
+    public Recipe patch(
+            String userId,
+            String recipeId,
+            String title,
+            String description,
+            String imageUrl,
+            String imageFileId,
+            List<Ingredient> ingredients,
+            List<String> steps,
+            Integer cookingTimeMinutes,
+            Integer portions,
+            String category,
+            Boolean fromExternal,
+            String language) {
 
         // Domain rule for PATCH: if title is provided, it must not be blank after trimming.
         // (DTO @Size allows "   ", so we guard here.)
@@ -129,6 +188,7 @@ public class RecipeService {
                 portions,
                 category,
                 fromExternal,
+                language,
                 clock.instant());
         if (imageFileId != null
                 && oldImageFileId != null
