@@ -108,9 +108,6 @@ export function RecipesScreen() {
             query={filters.query}
             onQueryChange={filters.setQuery}
             onFilterPress={() => filters.setFiltersOpen(true)}
-            onImportPress={
-              state.tab === 'saved' ? () => router.push(routes.recipeImport) : undefined
-            }
             activeFilterCount={filters.activeFilterCount}
           />
 

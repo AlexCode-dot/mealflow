@@ -17,6 +17,7 @@ import {
 } from '@/src/shared/ui/BottomActionBar';
 import type { BottomActionBarItem } from '@/src/shared/ui/BottomActionBar';
 import { useBottomBarState } from '@/src/shared/ui/BottomBar';
+import { useAddRecipeSheet } from '@/src/features/recipes/ui/AddRecipeSheet';
 import { WEB, isWeb } from '@/src/shared/ui/webStyles';
 
 type TabRoute = {
@@ -77,6 +78,7 @@ export function AppTabBar({ state, descriptors, navigation }: BottomTabBarProps)
   const notchHeight = TAB_BAR.NOTCH_DEPTH + TAB_BAR.PADDING_TOP;
   const [layoutWidth, setLayoutWidth] = useState(0);
   const { actions, mode, centerAction } = useBottomBarState();
+  const { open: openAddRecipeSheet } = useAddRecipeSheet();
   const activeRouteName = state.routes[state.index]?.name;
   const showAddRecipe = activeRouteName === 'recipes';
 
@@ -210,7 +212,7 @@ export function AppTabBar({ state, descriptors, navigation }: BottomTabBarProps)
             <Pressable
               accessibilityRole="button"
               accessibilityLabel="Add recipe"
-              onPress={() => router.push(routes.recipeNew)}
+              onPress={openAddRecipeSheet}
               hitSlop={10}
               style={styles.addButton}
             >

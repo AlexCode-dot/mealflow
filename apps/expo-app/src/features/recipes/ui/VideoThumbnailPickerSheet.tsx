@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Image, PanResponder, StyleSheet, Text, View } from 'react-native';
+import { Animated, Easing, PanResponder, Pressable, StyleSheet, Text, View } from 'react-native';
 import * as VideoThumbnails from 'expo-video-thumbnails';
-import { Button, ModalSheet } from '@/src/shared/ui';
+import { Film } from 'lucide-react-native';
+import { Button } from '@/src/shared/ui/Button';
+import { ModalSheet } from '@/src/shared/ui/ModalSheet';
 import { type Theme, useTheme, useThemedStyles } from '@/src/shared/theme';
 
 type Props = {
@@ -33,10 +35,13 @@ export function VideoThumbnailPickerSheet({
   const [previewUri, setPreviewUri] = useState<string | null>(null);
   const [isExtractingPreview, setIsExtractingPreview] = useState(false);
   const [extractError, setExtractError] = useState<string | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
   const trackWidthRef = useRef(0);
   const trackPageXRef = useRef(0);
   const trackRef = useRef<View | null>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const previewOpacity = useRef(new Animated.Value(0)).current;
+  const extractPulse = useRef(new Animated.Value(0)).current;
 
   const measureTrack = useCallback(() => {
     if (!trackRef.current) return;
@@ -69,8 +74,6 @@ export function VideoThumbnailPickerSheet({
         });
         setPreviewUri(result.uri);
       } catch (err) {
-        // Surface the underlying error so we can debug — iOS Simulator + asset URIs are
-        // a notorious source of issues here.
         const message = err instanceof Error ? err.message : String(err);
         console.warn('[VideoThumbnailPicker] frame extraction failed', {
           uri: normalizedUri,
@@ -94,8 +97,9 @@ export function VideoThumbnailPickerSheet({
     } else if (!visible) {
       setPreviewUri(null);
       setExtractError(null);
+      previewOpacity.setValue(0);
     }
-  }, [visible, videoUri, totalMs, generatePreview]);
+  }, [visible, videoUri, totalMs, generatePreview, previewOpacity]);
 
   // Debounce preview re-extraction while user is sliding.
   useEffect(() => {
@@ -108,6 +112,50 @@ export function VideoThumbnailPickerSheet({
       if (debounceRef.current) clearTimeout(debounceRef.current);
     };
   }, [progress, totalMs, generatePreview, visible]);
+
+  // Cross-fade preview on URI change.
+  useEffect(() => {
+    if (!previewUri) {
+      previewOpacity.setValue(0);
+      return;
+    }
+    Animated.timing(previewOpacity, {
+      toValue: 1,
+      duration: 220,
+      easing: Easing.out(Easing.quad),
+      useNativeDriver: true,
+    }).start();
+  }, [previewUri, previewOpacity]);
+
+  // Soft pulse while a frame is being extracted (replaces corner spinner).
+  useEffect(() => {
+    if (!isExtractingPreview) {
+      Animated.timing(extractPulse, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: true,
+      }).start();
+      return;
+    }
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(extractPulse, {
+          toValue: 1,
+          duration: 700,
+          easing: Easing.inOut(Easing.quad),
+          useNativeDriver: true,
+        }),
+        Animated.timing(extractPulse, {
+          toValue: 0,
+          duration: 700,
+          easing: Easing.inOut(Easing.quad),
+          useNativeDriver: true,
+        }),
+      ]),
+    );
+    loop.start();
+    return () => loop.stop();
+  }, [isExtractingPreview, extractPulse]);
 
   const setProgressFromPageX = useCallback((pageX: number) => {
     if (trackWidthRef.current <= 0) return;
@@ -123,11 +171,14 @@ export function VideoThumbnailPickerSheet({
       onPanResponderTerminationRequest: () => false,
       onPanResponderGrant: (evt) => {
         measureTrack();
+        setIsDragging(true);
         setProgressFromPageX(evt.nativeEvent.pageX);
       },
       onPanResponderMove: (evt) => {
         setProgressFromPageX(evt.nativeEvent.pageX);
       },
+      onPanResponderRelease: () => setIsDragging(false),
+      onPanResponderTerminate: () => setIsDragging(false),
     }),
   ).current;
 
@@ -143,33 +194,50 @@ export function VideoThumbnailPickerSheet({
     return `${m}:${s.toString().padStart(2, '0')}`;
   };
 
+  const pulseOverlayOpacity = extractPulse.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, 0.18],
+  });
+
   return (
     <ModalSheet visible={visible} onClose={onCancel} avoidKeyboard={false}>
       <View style={styles.root}>
-        <Text style={styles.title}>Pick a thumbnail</Text>
-        <Text style={styles.subtitle}>Drag the slider to find the frame you want.</Text>
+        <View style={styles.header}>
+          <View style={styles.headerIcon}>
+            <Film color={theme.colors.primaryDark} size={16} strokeWidth={2.5} />
+          </View>
+          <View style={styles.headerText}>
+            <Text style={styles.title}>Pick a thumbnail</Text>
+            <Text style={styles.subtitle}>Drag to find the frame you want.</Text>
+          </View>
+        </View>
 
         <View style={styles.previewBox}>
           {previewUri ? (
-            <Image source={{ uri: previewUri }} style={styles.preview} resizeMode="cover" />
+            <Animated.Image
+              source={{ uri: previewUri }}
+              style={[styles.preview, { opacity: previewOpacity }]}
+              resizeMode="cover"
+            />
           ) : (
             <View style={styles.previewPlaceholder}>
-              <ActivityIndicator color={theme.colors.primaryDark} />
+              <Film color={theme.colors.textMuted} size={28} strokeWidth={2} />
             </View>
           )}
-          {isExtractingPreview && previewUri ? (
-            <View style={styles.previewSpinner}>
-              <ActivityIndicator color={theme.colors.primaryDark} />
-            </View>
-          ) : null}
+
+          <Animated.View
+            pointerEvents="none"
+            style={[styles.pulseOverlay, { opacity: pulseOverlayOpacity }]}
+          />
+
+          <View style={styles.timestampChip} pointerEvents="none">
+            <Text style={styles.timestampText}>
+              {formatSeconds(progress * totalMs)} / {formatSeconds(totalMs)}
+            </Text>
+          </View>
         </View>
 
         {extractError ? <Text style={styles.error}>{extractError}</Text> : null}
-
-        <View style={styles.timeRow}>
-          <Text style={styles.timeText}>{formatSeconds(progress * totalMs)}</Text>
-          <Text style={styles.timeText}>{formatSeconds(totalMs)}</Text>
-        </View>
 
         <View style={styles.trackHitArea} {...panResponder.panHandlers}>
           <View
@@ -180,13 +248,31 @@ export function VideoThumbnailPickerSheet({
             pointerEvents="none"
           >
             <View style={[styles.fill, { width: `${progress * 100}%` }]} />
-            <View style={[styles.thumb, { left: `${progress * 100}%` }]} />
+            <View
+              style={[
+                styles.thumb,
+                isDragging ? styles.thumbActive : null,
+                { left: `${progress * 100}%` },
+              ]}
+            />
           </View>
         </View>
 
         <View style={styles.actions}>
-          <Button title="Cancel" variant="secondary" onPress={onCancel} />
-          <Button title="Use this frame" variant="primary" onPress={onConfirm} />
+          <Button
+            title="Use this frame"
+            variant="primary"
+            onPress={onConfirm}
+            containerStyle={styles.confirmBtn}
+          />
+          <Pressable
+            onPress={onCancel}
+            style={({ pressed }) => [styles.cancelLink, pressed ? styles.cancelLinkPressed : null]}
+            hitSlop={theme.spacing.s2}
+            accessibilityRole="button"
+          >
+            <Text style={styles.cancelText}>Cancel</Text>
+          </Pressable>
         </View>
       </View>
     </ModalSheet>
@@ -196,8 +282,27 @@ export function VideoThumbnailPickerSheet({
 const createStyles = (theme: Theme) =>
   StyleSheet.create({
     root: {
-      padding: theme.spacing.s4,
+      gap: theme.spacing.s4,
+    },
+    header: {
+      flexDirection: 'row',
+      alignItems: 'center',
       gap: theme.spacing.s3,
+      paddingHorizontal: theme.spacing.s1,
+    },
+    headerIcon: {
+      width: 32,
+      height: 32,
+      borderRadius: 16,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: theme.colors.bgLight,
+      borderWidth: 1,
+      borderColor: theme.colors.borderNeutral,
+    },
+    headerText: {
+      flex: 1,
+      gap: 1,
     },
     title: {
       color: theme.colors.text,
@@ -207,6 +312,7 @@ const createStyles = (theme: Theme) =>
     subtitle: {
       color: theme.colors.textMuted,
       fontSize: 13,
+      fontWeight: '600',
     },
     previewBox: {
       width: '100%',
@@ -214,6 +320,8 @@ const createStyles = (theme: Theme) =>
       borderRadius: theme.radius.md,
       overflow: 'hidden',
       backgroundColor: theme.colors.bgLight,
+      borderWidth: 1,
+      borderColor: theme.colors.borderNeutral,
     },
     preview: {
       width: '100%',
@@ -224,39 +332,38 @@ const createStyles = (theme: Theme) =>
       alignItems: 'center',
       justifyContent: 'center',
     },
-    previewSpinner: {
+    pulseOverlay: {
+      ...StyleSheet.absoluteFillObject,
+      backgroundColor: theme.colors.primaryDark,
+    },
+    timestampChip: {
       position: 'absolute',
-      top: theme.spacing.s2,
+      bottom: theme.spacing.s2,
       right: theme.spacing.s2,
-      backgroundColor: 'rgba(255,255,255,0.7)',
-      borderRadius: 20,
-      padding: 6,
+      paddingHorizontal: theme.spacing.s2,
+      paddingVertical: 4,
+      borderRadius: theme.radius.pill,
+      backgroundColor: 'rgba(0,0,0,0.65)',
+    },
+    timestampText: {
+      color: '#FFFFFF',
+      fontSize: 12,
+      fontWeight: '800',
+      fontVariant: ['tabular-nums'],
     },
     error: {
       color: theme.colors.error,
       fontSize: 13,
-    },
-    timeRow: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-    },
-    timeText: {
-      color: theme.colors.textMuted,
-      fontSize: 12,
-      fontVariant: ['tabular-nums'],
+      paddingHorizontal: theme.spacing.s1,
     },
     trackHitArea: {
-      // Generous vertical hit area so a finger that drifts off the visible track
-      // still keeps the gesture alive.
-      paddingVertical: 16,
+      paddingVertical: 18,
       justifyContent: 'center',
     },
     track: {
-      height: 28,
-      borderRadius: 14,
-      backgroundColor: theme.colors.bgLight,
-      borderWidth: 1,
-      borderColor: theme.colors.borderNeutral,
+      height: 6,
+      borderRadius: 3,
+      backgroundColor: theme.colors.borderNeutral,
       justifyContent: 'center',
     },
     fill: {
@@ -264,23 +371,51 @@ const createStyles = (theme: Theme) =>
       left: 0,
       top: 0,
       bottom: 0,
-      backgroundColor: theme.colors.primaryLight,
-      borderRadius: 14,
+      backgroundColor: theme.colors.primaryDark,
+      borderRadius: 3,
     },
     thumb: {
       position: 'absolute',
-      width: 24,
-      height: 24,
-      borderRadius: 12,
-      backgroundColor: theme.colors.primaryDark,
-      borderWidth: 2,
-      borderColor: theme.colors.bg,
-      transform: [{ translateX: -12 }],
-      top: 2,
+      width: 26,
+      height: 26,
+      borderRadius: 13,
+      backgroundColor: theme.colors.bg,
+      borderWidth: 3,
+      borderColor: theme.colors.primaryDark,
+      transform: [{ translateX: -13 }],
+      top: -10,
+      shadowColor: '#000',
+      shadowOpacity: 0.18,
+      shadowRadius: 6,
+      shadowOffset: { width: 0, height: 2 },
+      elevation: 4,
+    },
+    thumbActive: {
+      width: 30,
+      height: 30,
+      borderRadius: 15,
+      transform: [{ translateX: -15 }],
+      top: -12,
+      shadowOpacity: 0.28,
+      shadowRadius: 10,
     },
     actions: {
-      flexDirection: 'row',
       gap: theme.spacing.s2,
-      justifyContent: 'flex-end',
+      alignItems: 'center',
+    },
+    confirmBtn: {
+      width: '100%',
+    },
+    cancelLink: {
+      paddingVertical: theme.spacing.s2,
+      paddingHorizontal: theme.spacing.s3,
+    },
+    cancelLinkPressed: {
+      opacity: 0.6,
+    },
+    cancelText: {
+      color: theme.colors.textMuted,
+      fontSize: 14,
+      fontWeight: '700',
     },
   });

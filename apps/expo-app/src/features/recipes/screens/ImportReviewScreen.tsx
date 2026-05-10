@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, Animated, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Animated, Pressable, StyleSheet, Text, View } from 'react-native';
 import type { TextInput } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import DraggableFlatList from 'react-native-draggable-flatlist';
@@ -36,7 +36,7 @@ import {
   VideoThumbnailPickerSheet,
 } from '@/src/features/recipes/ui';
 import { recipesApi } from '@/src/features/recipes/api/recipesApi';
-import { Plus, Download, XCircle } from 'lucide-react-native';
+import { ChevronRight, Download, Film, Info, Plus, XCircle } from 'lucide-react-native';
 import { TAB_BAR } from '@/src/shared/ui/layout/tabBar';
 import { routes } from '@/src/core/navigation/routes';
 
@@ -265,28 +265,50 @@ export function ImportReviewScreen() {
           heroHasImage={Boolean(heroImageUrl)}
         >
           {review.state.uncertainFields.length > 0 ? (
-            <View style={styles.banner}>
-              <Text style={styles.bannerTitle}>Verify before saving</Text>
-              <Text style={styles.bannerBody}>
-                We weren&apos;t sure about: {review.state.uncertainFields.join(', ')}
+            <View style={styles.reviewHint}>
+              <Info color={theme.colors.primaryDark} size={14} strokeWidth={2.5} />
+              <Text style={styles.reviewHintText} numberOfLines={1}>
+                Review the details before saving.
               </Text>
             </View>
           ) : null}
 
           {canPickFromVideo ? (
             <View style={styles.framePickerBlock}>
-              <Button
-                title={
-                  isUploadingFrame
-                    ? 'Uploading frame…'
-                    : heroImageUrl
-                      ? 'Pick a different frame from video'
-                      : 'Pick a frame from video'
-                }
-                variant="secondary"
+              <Pressable
                 onPress={() => setFramePickerOpen(true)}
                 disabled={isUploadingFrame}
-              />
+                style={({ pressed }) => [
+                  styles.framePickerCard,
+                  pressed ? styles.framePickerCardPressed : null,
+                  isUploadingFrame ? styles.framePickerCardDisabled : null,
+                ]}
+                accessibilityRole="button"
+                accessibilityLabel={
+                  heroImageUrl ? 'Change cover frame' : 'Pick a frame from your video'
+                }
+              >
+                <View style={styles.framePickerIcon}>
+                  {isUploadingFrame ? (
+                    <ActivityIndicator color={theme.colors.primaryDark} size="small" />
+                  ) : (
+                    <Film color={theme.colors.primaryDark} size={18} strokeWidth={2.25} />
+                  )}
+                </View>
+                <View style={styles.framePickerTextBlock}>
+                  <Text style={styles.framePickerLabel}>
+                    {isUploadingFrame
+                      ? 'Uploading frame…'
+                      : heroImageUrl
+                        ? 'Change cover frame'
+                        : 'Use a frame as cover'}
+                  </Text>
+                  <Text style={styles.framePickerHint}>From your video</Text>
+                </View>
+                {!isUploadingFrame ? (
+                  <ChevronRight color={theme.colors.primaryDark} size={20} strokeWidth={2.5} />
+                ) : null}
+              </Pressable>
               {framePickerError ? (
                 <Text style={styles.framePickerError}>{framePickerError}</Text>
               ) : null}
@@ -478,31 +500,70 @@ const createStyles = (theme: Theme) =>
       color: theme.colors.textMuted,
       fontSize: 14,
     },
-    banner: {
-      backgroundColor: theme.colors.bgLight,
-      borderWidth: 1,
-      borderColor: theme.colors.borderNeutral,
-      borderRadius: theme.radius.md,
-      padding: theme.spacing.s3,
-      gap: theme.spacing.s1,
-      marginBottom: theme.spacing.s3,
+    reviewHint: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: theme.spacing.s2,
+      paddingVertical: theme.spacing.s2,
+      marginHorizontal: theme.spacing.s4,
+      marginBottom: theme.spacing.s2,
     },
-    bannerTitle: {
-      color: theme.colors.text,
-      fontSize: 14,
-      fontWeight: '800',
-    },
-    bannerBody: {
+    reviewHintText: {
       color: theme.colors.textMuted,
       fontSize: 13,
-      lineHeight: 18,
+      fontWeight: '700',
     },
     listSeparator: {
       height: theme.spacing.s2,
     },
     framePickerBlock: {
       gap: theme.spacing.s2,
-      marginBottom: theme.spacing.s3,
+      marginHorizontal: theme.spacing.s4,
+      marginBottom: theme.spacing.s4,
+    },
+    framePickerCard: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: theme.spacing.s3,
+      paddingVertical: theme.spacing.s2,
+      paddingLeft: theme.spacing.s2,
+      paddingRight: theme.spacing.s3,
+      borderRadius: theme.radius.md,
+      backgroundColor: theme.colors.bgLight,
+      borderWidth: 1,
+      borderColor: theme.colors.borderNeutral,
+    },
+    framePickerCardPressed: {
+      opacity: 0.85,
+      transform: [{ scale: 0.995 }],
+    },
+    framePickerCardDisabled: {
+      opacity: 0.7,
+    },
+    framePickerIcon: {
+      width: 36,
+      height: 36,
+      borderRadius: theme.radius.sm,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: theme.colors.primaryLight,
+    },
+    framePickerTextBlock: {
+      flex: 1,
+      gap: 1,
+    },
+    framePickerLabel: {
+      color: theme.colors.text,
+      fontSize: 14,
+      fontWeight: '800',
+    },
+    framePickerHint: {
+      color: theme.colors.textMuted,
+      fontSize: 11,
+      fontWeight: '700',
+      textTransform: 'uppercase',
+      letterSpacing: 0.4,
     },
     framePickerError: {
       color: theme.colors.error,
