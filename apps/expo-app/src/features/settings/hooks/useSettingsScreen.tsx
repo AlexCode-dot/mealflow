@@ -44,6 +44,7 @@ type SettingsActions = {
   closeThemePicker: () => void;
   setTheme: (value: string) => void;
   openLegal: () => void;
+  openDeveloperAccess: () => void;
   openDeleteConfirm: () => void;
   closeDeleteConfirm: () => void;
   confirmDelete: () => void;
@@ -166,6 +167,9 @@ export function useSettingsScreen(): SettingsView {
   const openLegal = useCallback(() => {
     router.push(routes.settingsLegal);
   }, []);
+  const openDeveloperAccess = useCallback(() => {
+    router.push(routes.settingsDeveloper);
+  }, []);
   const openDeleteConfirm = useCallback(() => setDeleteOpen(true), []);
   const closeDeleteConfirm = useCallback(() => setDeleteOpen(false), []);
 
@@ -238,6 +242,7 @@ export function useSettingsScreen(): SettingsView {
       closeThemePicker,
       setTheme,
       openLegal,
+      openDeveloperAccess,
       openDeleteConfirm,
       closeDeleteConfirm,
       confirmDelete,
@@ -249,6 +254,7 @@ export function useSettingsScreen(): SettingsView {
       handleRefresh,
       load,
       openLegal,
+      openDeveloperAccess,
       openDeleteConfirm,
       openProfileEdit,
       logout,

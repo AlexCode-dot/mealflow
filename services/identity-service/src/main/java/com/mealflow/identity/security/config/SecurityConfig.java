@@ -45,6 +45,8 @@ public class SecurityConfig {
                         .permitAll()
                         .requestMatchers("/healthz")
                         .permitAll()
+                        .requestMatchers("/auth/integrations", "/auth/integrations/**")
+                        .authenticated()
                         .requestMatchers("/auth/**", "/.well-known/jwks.json")
                         .permitAll()
                         .requestMatchers(HttpMethod.DELETE, "/account")

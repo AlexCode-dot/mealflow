@@ -81,8 +81,7 @@ public class AuthController {
 
     @PostMapping("/resend-verification")
     @ResponseStatus(HttpStatus.ACCEPTED)
-    public void resendVerification(
-            @Valid @RequestBody ResendVerificationRequest body, HttpServletRequest request) {
+    public void resendVerification(@Valid @RequestBody ResendVerificationRequest body, HttpServletRequest request) {
         authService.resendVerification(body.email());
         // No userId attribution here — the user may not exist, and we don't
         // want to confirm/deny that. IP+UA is enough for abuse detection.
@@ -148,14 +147,7 @@ public class AuthController {
             // presented twice. Either a token leaked, or the client got into
             // a bad retry loop. Surfaced separately from regular invalid
             // refreshes so the admin panel can flag it loudly.
-            auditService.log(
-                    AuditEventType.TOKEN_REUSE_DETECTED,
-                    null,
-                    null,
-                    null,
-                    null,
-                    request,
-                    Map.of());
+            auditService.log(AuditEventType.TOKEN_REUSE_DETECTED, null, null, null, null, request, Map.of());
             throw e;
         } catch (InvalidRefreshTokenException e) {
             // Regular invalid-refresh (expired/unknown) isn't logged — too

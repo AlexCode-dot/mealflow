@@ -6,6 +6,7 @@ import * as Clipboard from 'expo-clipboard';
 import {
   ChevronRight,
   FileText,
+  KeyRound,
   LogOut,
   Mail,
   Palette,
@@ -143,6 +144,19 @@ export function SettingsScreen() {
               onPress={() => openEmail(support?.email)}
               icon={<Mail size={22} color={theme.colors.textMuted} strokeWidth={2.3} />}
               iconBg={theme.colors.bgLight}
+              styles={styles}
+            />
+          </View>
+
+          <SectionHeader title="Developer" styles={styles} />
+          <View style={styles.sectionGroup}>
+            <SettingsRow
+              title="Developer access"
+              subtitle="Generate API tokens for third-party apps"
+              onPress={actions.openDeveloperAccess}
+              icon={<KeyRound size={22} color={theme.colors.textMuted} strokeWidth={2.3} />}
+              iconBg={theme.colors.bgLight}
+              right={<ChevronRight size={22} color={theme.colors.textMuted} strokeWidth={2.4} />}
               styles={styles}
             />
           </View>
