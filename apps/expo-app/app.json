@@ -49,7 +49,9 @@
           "photosPermission": "Allow MealFlow to access your photos so you can add recipe images."
         }
       ],
-      "expo-secure-store"
+      "expo-secure-store",
+      "expo-font",
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true,
