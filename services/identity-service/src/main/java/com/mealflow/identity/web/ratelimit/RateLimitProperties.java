@@ -28,6 +28,12 @@ public class RateLimitProperties {
     private int jwksPerMinute = 120;
 
     @Min(1)
+    private int verifyEmailPerMinute = 20;
+
+    @Min(1)
+    private int resendVerificationPerMinute = 5;
+
+    @Min(1)
     private int bucketTtlMinutes = 15;
 
     @Min(100)
@@ -79,6 +85,22 @@ public class RateLimitProperties {
 
     public void setJwksPerMinute(int jwksPerMinute) {
         this.jwksPerMinute = jwksPerMinute;
+    }
+
+    public int getVerifyEmailPerMinute() {
+        return verifyEmailPerMinute;
+    }
+
+    public void setVerifyEmailPerMinute(int verifyEmailPerMinute) {
+        this.verifyEmailPerMinute = verifyEmailPerMinute;
+    }
+
+    public int getResendVerificationPerMinute() {
+        return resendVerificationPerMinute;
+    }
+
+    public void setResendVerificationPerMinute(int resendVerificationPerMinute) {
+        this.resendVerificationPerMinute = resendVerificationPerMinute;
     }
 
     public int getBucketTtlMinutes() {

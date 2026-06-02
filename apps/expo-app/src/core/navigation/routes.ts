@@ -4,6 +4,11 @@ export const routes = {
   // Auth (group segments are NOT part of the URL)
   login: '/login' as const,
   register: '/register' as const,
+  verifyEmail: (email: string) =>
+    ({
+      pathname: '/verify-email',
+      params: { email },
+    }) as unknown as Href,
 
   // Tabs
   overview: '/overview' as const,

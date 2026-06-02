@@ -13,8 +13,12 @@ export default function LoginScreen() {
   const { state, actions } = view;
 
   const onSubmit = async (email: string, password: string) => {
-    const ok = await actions.login(email, password);
-    if (ok) router.replace(routes.overview);
+    const outcome = await actions.login(email, password);
+    if (outcome.kind === 'success') {
+      router.replace(routes.overview);
+    } else if (outcome.kind === 'verification-required') {
+      router.replace(routes.verifyEmail(outcome.email));
+    }
   };
 
   return (

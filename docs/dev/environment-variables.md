@@ -42,6 +42,17 @@ Defined in `services/identity-service/src/main/resources/application.properties`
 | `RATE_LIMIT_REFRESH_PER_MINUTE` | No | Refresh requests/minute | `30` |
 | `RATE_LIMIT_LOGOUT_PER_MINUTE` | No | Logout requests/minute | `60` |
 | `RATE_LIMIT_JWKS_PER_MINUTE` | No | JWKS requests/minute | `120` |
+| `RATE_LIMIT_VERIFY_EMAIL_PER_MINUTE` | No | Verify-email requests/minute per IP | `20` |
+| `RATE_LIMIT_RESEND_VERIFICATION_PER_MINUTE` | No | Resend-verification requests/minute per IP | `5` |
+| `APP_VERIFICATION_CODE_TTL_MINUTES` | No | How long an email verification code stays valid | `10` |
+| `APP_VERIFICATION_MAX_ATTEMPTS_PER_CODE` | No | Wrong-guesses allowed per code before it's invalidated | `5` |
+| `APP_VERIFICATION_RESEND_COOLDOWN_SECONDS` | No | Minimum seconds between two resend requests for the same email | `60` |
+| `RESEND_API_KEY` | Yes (for verification emails) | Resend transactional email API key | none |
+| `RESEND_BASE_URL` | No | Resend API base URL | `https://api.resend.com` |
+| `RESEND_FROM_EMAIL` | No | The address verification emails are sent from | `onboarding@resend.dev` |
+| `RESEND_FROM_NAME` | No | Display name on the From header | `MealFlow` |
+| `RESEND_PRODUCT_NAME` | No | Product name used in the email subject/body | `MealFlow` |
+| `RESEND_REQUEST_TIMEOUT_SECONDS` | No | Read timeout for Resend API calls | `10` |
 | `SENTRY_DSN` | Optional (currently unused) | Reserved for backend Sentry integration | none |
 | `SENTRY_ENVIRONMENT` | Optional (currently unused) | Reserved for backend Sentry integration | `development` |
 | `SENTRY_RELEASE` | Optional (currently unused) | Reserved for backend Sentry integration | none |

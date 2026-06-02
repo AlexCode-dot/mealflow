@@ -74,11 +74,14 @@ export function toApiError(err: unknown): ApiError {
           ? Number.parseInt(retryValue, 10)
           : undefined;
 
+    const codeValue = isRecord(problem) ? (problem as UnknownRecord).code : undefined;
+
     return {
       kind: 'http',
       status: err.status,
       title: typeof problem.title === 'string' ? problem.title : undefined,
       detail: typeof problem.detail === 'string' ? problem.detail : undefined,
+      code: typeof codeValue === 'string' ? codeValue : undefined,
       fieldErrors: fieldErrorsFromObject,
       retryAfterSeconds: Number.isFinite(retryAfterSeconds) ? retryAfterSeconds : undefined,
       body: err.body,

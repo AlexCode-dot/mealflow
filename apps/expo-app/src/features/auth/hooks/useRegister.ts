@@ -1,7 +1,5 @@
 import { useCallback, useMemo, useState } from 'react';
 import { authApi } from '@/src/features/auth/api/authApi';
-import { tokenStore } from '@/src/core/auth/tokenStore';
-import { authEvents } from '@/src/core/auth/authEvents';
 import { toApiError } from '@/src/core/http/toApiError';
 import { mapAuthError } from '@/src/features/auth/errors/mapAuthError';
 import type { UiError } from '@/src/shared/errors/errorTypes';
@@ -13,7 +11,12 @@ export type RegisterState = {
 };
 
 export type RegisterActions = {
-  register: (email: string, password: string) => Promise<boolean>;
+  /**
+   * Register a new account. Resolves with the registered email when the backend has accepted
+   * the registration and sent the verification code — the caller should navigate to the verify
+   * screen with that email. Resolves with null on failure (with `state.error` populated).
+   */
+  register: (email: string, password: string) => Promise<string | null>;
   clearError: () => void;
 };
 
@@ -30,23 +33,20 @@ export const useRegister = (): RegisterView => {
   const clearError = useCallback(() => setError(null), []);
 
   const register = useCallback(
-    async (email: string, password: string) => {
+    async (email: string, password: string): Promise<string | null> => {
       setIsLoading(true);
       setError(null);
 
       try {
         const res = await authApi.register(email.trim(), password);
-        tokenStore.setAccessToken(res.accessToken);
-        await tokenStore.setRefreshToken(res.refreshToken);
-        authEvents.emit('loggedIn');
-        return true;
+        return res.email;
       } catch (e) {
         const uiErr = mapAuthError(toApiError(e));
         setError(uiErr);
         if (uiErr.kind === 'rate_limit' || uiErr.kind === 'network' || uiErr.kind === 'unknown') {
           showError(uiErr);
         }
-        return false;
+        return null;
       } finally {
         setIsLoading(false);
       }
@@ -54,27 +54,10 @@ export const useRegister = (): RegisterView => {
     [showError],
   );
 
-  const state = useMemo<RegisterState>(
-    () => ({
-      isLoading,
-      error,
-    }),
-    [isLoading, error],
-  );
-
+  const state = useMemo<RegisterState>(() => ({ isLoading, error }), [isLoading, error]);
   const actions = useMemo<RegisterActions>(
-    () => ({
-      register,
-      clearError,
-    }),
+    () => ({ register, clearError }),
     [register, clearError],
   );
-
-  return useMemo(
-    () => ({
-      state,
-      actions,
-    }),
-    [state, actions],
-  );
+  return useMemo(() => ({ state, actions }), [state, actions]);
 };

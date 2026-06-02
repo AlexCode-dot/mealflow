@@ -33,6 +33,7 @@ export { FilterSheet } from './FilterSheet';
 export { PickerSheet, PickerSheetContent, PickerSheetOverlay, PickerSelect } from './PickerSheet';
 export { FormSheet } from './FormSheet';
 export { ScrollableFormSheet } from './ScrollableFormSheet/ScrollableFormSheet';
+export { OtpInput } from './OtpInput';
 export { ConfirmSheet } from './ConfirmSheet';
 export { ToastBanner } from './ToastBanner';
 export { GlobalToastProvider, GlobalToastHost, useGlobalToast } from './GlobalToast';

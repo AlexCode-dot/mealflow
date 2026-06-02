@@ -7,13 +7,18 @@ import { mapAuthError } from '@/src/features/auth/errors/mapAuthError';
 import type { UiError } from '@/src/shared/errors/errorTypes';
 import { useGlobalToast } from '@/src/shared/ui';
 
+export type LoginOutcome =
+  | { kind: 'success' }
+  | { kind: 'verification-required'; email: string }
+  | { kind: 'error' };
+
 export type LoginState = {
   isLoading: boolean;
   error: UiError | null;
 };
 
 export type LoginActions = {
-  login: (email: string, password: string) => Promise<boolean>;
+  login: (email: string, password: string) => Promise<LoginOutcome>;
   clearError: () => void;
 };
 
@@ -30,7 +35,7 @@ export const useLogin = (): LoginView => {
   const clearError = useCallback(() => setError(null), []);
 
   const login = useCallback(
-    async (email: string, password: string) => {
+    async (email: string, password: string): Promise<LoginOutcome> => {
       setIsLoading(true);
       setError(null);
 
@@ -39,14 +44,18 @@ export const useLogin = (): LoginView => {
         tokenStore.setAccessToken(res.accessToken);
         await tokenStore.setRefreshToken(res.refreshToken);
         authEvents.emit('loggedIn');
-        return true;
+        return { kind: 'success' };
       } catch (e) {
-        const uiErr = mapAuthError(toApiError(e));
+        const apiErr = toApiError(e);
+        if (apiErr.kind === 'http' && apiErr.code === 'EMAIL_NOT_VERIFIED') {
+          return { kind: 'verification-required', email: email.trim() };
+        }
+        const uiErr = mapAuthError(apiErr);
         setError(uiErr);
         if (uiErr.kind === 'rate_limit' || uiErr.kind === 'network' || uiErr.kind === 'unknown') {
           showError(uiErr);
         }
-        return false;
+        return { kind: 'error' };
       } finally {
         setIsLoading(false);
       }
@@ -54,27 +63,7 @@ export const useLogin = (): LoginView => {
     [showError],
   );
 
-  const state = useMemo<LoginState>(
-    () => ({
-      isLoading,
-      error,
-    }),
-    [isLoading, error],
-  );
-
-  const actions = useMemo<LoginActions>(
-    () => ({
-      login,
-      clearError,
-    }),
-    [login, clearError],
-  );
-
-  return useMemo(
-    () => ({
-      state,
-      actions,
-    }),
-    [state, actions],
-  );
+  const state = useMemo<LoginState>(() => ({ isLoading, error }), [isLoading, error]);
+  const actions = useMemo<LoginActions>(() => ({ login, clearError }), [login, clearError]);
+  return useMemo(() => ({ state, actions }), [state, actions]);
 };

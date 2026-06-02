@@ -2,6 +2,8 @@ package com.mealflow.identity.auth;
 
 import com.mealflow.identity.auth.error.EmailAlreadyInUseException;
 import com.mealflow.identity.auth.error.InvalidCredentialsException;
+import com.mealflow.identity.auth.verification.EmailVerificationService;
+import com.mealflow.identity.auth.verification.error.EmailNotVerifiedException;
 import com.mealflow.identity.security.jwt.AccessTokenService;
 import com.mealflow.identity.token.service.IssuedRefreshToken;
 import com.mealflow.identity.token.service.RefreshTokenService;
@@ -19,6 +21,7 @@ public class AuthService {
     private final PasswordService passwordService;
     private final AccessTokenService accessTokenService;
     private final RefreshTokenService refreshTokenService;
+    private final EmailVerificationService emailVerificationService;
     private final Clock clock;
 
     public AuthService(
@@ -26,15 +29,22 @@ public class AuthService {
             PasswordService passwordService,
             AccessTokenService accessTokenService,
             RefreshTokenService refreshTokenService,
+            EmailVerificationService emailVerificationService,
             Clock clock) {
         this.userRepository = userRepository;
         this.passwordService = passwordService;
         this.accessTokenService = accessTokenService;
         this.refreshTokenService = refreshTokenService;
+        this.emailVerificationService = emailVerificationService;
         this.clock = clock;
     }
 
-    public AuthTokens register(String email, String password) {
+    /**
+     * Create a new account in an unverified state and send a verification code. The caller
+     * receives the email back (for the verify screen) but no auth tokens — those are only
+     * minted after the user proves they control the email.
+     */
+    public RegistrationResult register(String email, String password) {
         String normalizedEmail = normalizeEmail(email);
 
         if (userRepository.existsByEmail(normalizedEmail)) {
@@ -44,19 +54,16 @@ public class AuthService {
         Instant now = clock.instant();
         String passwordHash = passwordService.hash(password);
 
-        User user = new User(normalizedEmail, passwordHash, now, now);
+        User user = new User(normalizedEmail, passwordHash, false, null, now, now);
         User saved;
         try {
             saved = userRepository.save(user);
         } catch (DuplicateKeyException ex) {
-            // Covers race condition where another request created the same email after existsByEmail check.
             throw new EmailAlreadyInUseException("Email is already in use");
         }
 
-        String accessToken = accessTokenService.issue(saved.getId());
-        IssuedRefreshToken refresh = refreshTokenService.issueForUser(saved.getId());
-
-        return new AuthTokens(accessToken, refresh.rawToken());
+        emailVerificationService.issue(saved);
+        return new RegistrationResult(saved.getId(), saved.getEmail());
     }
 
     public AuthTokens login(String email, String password) {
@@ -70,27 +77,50 @@ public class AuthService {
             throw new InvalidCredentialsException("Invalid email or password");
         }
 
-        String accessToken = accessTokenService.issue(user.getId());
-        IssuedRefreshToken refresh = refreshTokenService.issueForUser(user.getId());
+        if (!user.isEmailVerified()) {
+            throw new EmailNotVerifiedException(user.getEmail());
+        }
 
-        return new AuthTokens(accessToken, refresh.rawToken());
+        return issueTokens(user.getId());
+    }
+
+    public AuthTokens verifyEmail(String email, String code) {
+        String normalizedEmail = normalizeEmail(email);
+        User user = emailVerificationService.verify(normalizedEmail, code);
+        return issueTokens(user.getId());
+    }
+
+    public void resendVerification(String email) {
+        emailVerificationService.resendFor(normalizeEmail(email));
     }
 
     public AuthTokens refresh(String refreshTokenRaw) {
         IssuedRefreshToken rotated = refreshTokenService.rotate(refreshTokenRaw);
-
         String accessToken = accessTokenService.issue(rotated.userId());
-
-        return new AuthTokens(accessToken, rotated.rawToken());
+        return new AuthTokens(rotated.userId(), accessToken, rotated.rawToken());
     }
 
     public void logout(String refreshTokenRaw) {
         refreshTokenService.revoke(refreshTokenRaw);
     }
 
+    private AuthTokens issueTokens(String userId) {
+        String accessToken = accessTokenService.issue(userId);
+        IssuedRefreshToken refresh = refreshTokenService.issueForUser(userId);
+        return new AuthTokens(userId, accessToken, refresh.rawToken());
+    }
+
     private static String normalizeEmail(String email) {
         return email == null ? "" : email.trim().toLowerCase();
     }
 
-    public record AuthTokens(String accessToken, String refreshToken) {}
+    /**
+     * Internal-only result of a successful auth flow. {@code userId} is here so
+     * the controller can attribute audit events to the right user without an
+     * extra repository lookup. It is NOT serialized to the wire — the HTTP
+     * response is built from a separate DTO.
+     */
+    public record AuthTokens(String userId, String accessToken, String refreshToken) {}
+
+    public record RegistrationResult(String userId, String email) {}
 }

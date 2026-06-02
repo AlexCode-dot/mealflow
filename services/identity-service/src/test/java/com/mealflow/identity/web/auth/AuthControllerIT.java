@@ -8,11 +8,13 @@ import com.jayway.jsonpath.JsonPath;
 import com.mealflow.identity.support.MongoTestContainerConfig;
 import com.mealflow.identity.support.TestRsaKeysConfig;
 import com.mealflow.identity.token.repository.RefreshTokenRepository;
+import com.mealflow.identity.user.domain.User;
 import com.mealflow.identity.user.repository.UserRepository;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.time.Instant;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,22 +56,21 @@ class AuthControllerIT extends MongoTestContainerConfig {
         String email = "test.user@mealflow.dev";
         String password = "VeryStrongPass123!";
 
-        // 1) REGISTER
+        // 1) REGISTER — now returns {email, verificationRequired}, no tokens.
         HttpResponse<String> reg = post("/auth/register", jsonRegister(email, password));
 
         assertThat(reg.statusCode(), is(201));
         assertThat(reg.headers().firstValue("content-type").orElse(""), containsString("application/json"));
+        assertThat(JsonPath.read(reg.body(), "$.email").toString(), is(email));
+        assertThat(JsonPath.read(reg.body(), "$.verificationRequired"), is(true));
 
-        Tokens registered = extractTokens(reg.body());
-        assertThat(registered.accessToken(), not(blankOrNullString()));
-        assertThat(registered.refreshToken(), not(blankOrNullString()));
+        // Simulate the user clicking the verification email — mark as verified directly in DB.
+        forceVerifyEmail(email);
 
-        // 2) LOGIN
+        // 2) LOGIN should now work.
         HttpResponse<String> login = post("/auth/login", jsonLogin(email, password));
-
         assertThat(login.statusCode(), is(200));
         Tokens loggedIn = extractTokens(login.body());
-        assertNotEquals(registered.refreshToken(), loggedIn.refreshToken());
 
         // 3) REFRESH (rotation)
         HttpResponse<String> refresh = post("/auth/refresh", jsonRefresh(loggedIn.refreshToken()));
@@ -114,12 +115,45 @@ class AuthControllerIT extends MongoTestContainerConfig {
         String password = "VeryStrongPass123!";
 
         assertThat(post("/auth/register", jsonRegister(email, password)).statusCode(), is(201));
+        forceVerifyEmail(email);
 
         HttpResponse<String> bad = post("/auth/login", jsonLogin(email, "WrongPassword123!"));
 
         assertThat(bad.statusCode(), is(401));
         assertThat(bad.headers().firstValue("content-type").orElse(""), containsString("application/problem+json"));
         assertThat(JsonPath.read(bad.body(), "$.path"), is("/auth/login"));
+    }
+
+    @Test
+    void login_shouldReturn403_whenEmailNotVerified() throws Exception {
+        String email = "unverified@mealflow.dev";
+        String password = "VeryStrongPass123!";
+
+        assertThat(post("/auth/register", jsonRegister(email, password)).statusCode(), is(201));
+
+        HttpResponse<String> blocked = post("/auth/login", jsonLogin(email, password));
+        assertThat(blocked.statusCode(), is(403));
+        assertThat(JsonPath.read(blocked.body(), "$.code").toString(), is("EMAIL_NOT_VERIFIED"));
+        assertThat(JsonPath.read(blocked.body(), "$.email").toString(), is(email));
+    }
+
+    @Test
+    void verifyEmail_withWrongCode_returns400_andDoesNotIssueTokens() throws Exception {
+        String email = "wrong-code@mealflow.dev";
+        String password = "VeryStrongPass123!";
+
+        assertThat(post("/auth/register", jsonRegister(email, password)).statusCode(), is(201));
+
+        HttpResponse<String> bad = post("/auth/verify-email", jsonVerify(email, "000000"));
+        assertThat(bad.statusCode(), is(400));
+        assertThat(JsonPath.read(bad.body(), "$.code").toString(), is("INVALID_VERIFICATION_CODE"));
+    }
+
+    @Test
+    void resendVerification_returns202_evenWhenEmailDoesNotExist() throws Exception {
+        // Don't reveal whether an email exists.
+        HttpResponse<String> response = post("/auth/resend-verification", "{\"email\":\"nobody@example.com\"}");
+        assertThat(response.statusCode(), is(202));
     }
 
     // -------------------------
@@ -150,6 +184,16 @@ class AuthControllerIT extends MongoTestContainerConfig {
 
     private static String jsonLogout(String refreshToken) {
         return "{\"refreshToken\":\"" + refreshToken + "\"}";
+    }
+
+    private static String jsonVerify(String email, String code) {
+        return "{\"email\":\"" + email + "\",\"code\":\"" + code + "\"}";
+    }
+
+    private void forceVerifyEmail(String email) {
+        User user = userRepository.findByEmail(email).orElseThrow();
+        user.markEmailVerified(Instant.now());
+        userRepository.save(user);
     }
 
     private static Tokens extractTokens(String body) {

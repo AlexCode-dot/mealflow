@@ -13,8 +13,8 @@ export default function RegisterScreen() {
   const { state, actions } = view;
 
   const onSubmit = async (email: string, password: string) => {
-    const ok = await actions.register(email, password);
-    if (ok) router.replace(routes.overview);
+    const registeredEmail = await actions.register(email, password);
+    if (registeredEmail) router.replace(routes.verifyEmail(registeredEmail));
   };
 
   return (

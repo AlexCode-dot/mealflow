@@ -2,6 +2,11 @@ package com.mealflow.identity.web;
 
 import com.mealflow.identity.auth.error.EmailAlreadyInUseException;
 import com.mealflow.identity.auth.error.InvalidCredentialsException;
+import com.mealflow.identity.auth.verification.error.EmailNotVerifiedException;
+import com.mealflow.identity.auth.verification.error.InvalidVerificationCodeException;
+import com.mealflow.identity.auth.verification.error.VerificationResendCooldownException;
+import com.mealflow.identity.integrations.error.IntegrationTokenNotFoundException;
+import com.mealflow.identity.integrations.error.InvalidScopeException;
 import com.mealflow.identity.token.error.InvalidRefreshTokenException;
 import com.mealflow.identity.token.error.RefreshTokenReplayException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -33,10 +38,48 @@ public class ApiExceptionHandler {
         return problem(HttpStatus.UNAUTHORIZED, ex.getMessage(), req, null);
     }
 
+    @ExceptionHandler(EmailNotVerifiedException.class)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public ProblemDetail handleEmailNotVerified(EmailNotVerifiedException ex, HttpServletRequest req) {
+        return problem(
+                HttpStatus.FORBIDDEN,
+                "Email not verified",
+                req,
+                Map.of("code", "EMAIL_NOT_VERIFIED", "email", ex.getEmail()));
+    }
+
+    @ExceptionHandler(InvalidVerificationCodeException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ProblemDetail handleInvalidVerificationCode(InvalidVerificationCodeException ex, HttpServletRequest req) {
+        return problem(HttpStatus.BAD_REQUEST, ex.getMessage(), req, Map.of("code", "INVALID_VERIFICATION_CODE"));
+    }
+
+    @ExceptionHandler(VerificationResendCooldownException.class)
+    @ResponseStatus(HttpStatus.TOO_MANY_REQUESTS)
+    public ProblemDetail handleResendCooldown(VerificationResendCooldownException ex, HttpServletRequest req) {
+        return problem(
+                HttpStatus.TOO_MANY_REQUESTS,
+                ex.getMessage(),
+                req,
+                Map.of("code", "VERIFICATION_RESEND_COOLDOWN", "retryAfterSeconds", ex.getRetryAfterSeconds()));
+    }
+
     @ExceptionHandler({InvalidRefreshTokenException.class, RefreshTokenReplayException.class})
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
     public ProblemDetail handleRefreshToken(RuntimeException ex, HttpServletRequest req) {
         return problem(HttpStatus.UNAUTHORIZED, ex.getMessage(), req, null);
+    }
+
+    @ExceptionHandler(IntegrationTokenNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ProblemDetail handleIntegrationTokenNotFound(IntegrationTokenNotFoundException ex, HttpServletRequest req) {
+        return problem(HttpStatus.NOT_FOUND, ex.getMessage(), req, null);
+    }
+
+    @ExceptionHandler(InvalidScopeException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ProblemDetail handleInvalidScope(InvalidScopeException ex, HttpServletRequest req) {
+        return problem(HttpStatus.BAD_REQUEST, ex.getMessage(), req, null);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
