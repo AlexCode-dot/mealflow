@@ -20,7 +20,7 @@ RUN apt-get update \
 
 COPY --from=build /workspace/target/*.jar /app/app.jar
 
-ENV SPRING_PROFILES_ACTIVE=dev
+ENV SPRING_PROFILES_ACTIVE=prod
 EXPOSE 8082
 
 ENTRYPOINT ["java", "-jar", "/app/app.jar"]
