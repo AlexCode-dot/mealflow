@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useFocusEffect, useIsFocused } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useTranslation } from 'react-i18next';
 import { profileApi } from '@/src/features/profile/api/profileApi';
 import { routes } from '@/src/core/navigation/routes';
 import { buildHref } from '@/src/core/navigation/buildHref';
@@ -16,6 +17,7 @@ import { identityAuthApi } from '@/src/core/auth/identityAuthApi';
 import { useGlobalToast } from '@/src/shared/ui';
 import { accountApi } from '@/src/features/settings/api/accountApi';
 import { DEFAULT_THEME_NAME, isThemeName, useThemeController } from '@/src/shared/theme';
+import { type Language, getStoredLanguage, useLocale } from '@/src/shared/i18n';
 
 type ThemeOption = {
   label: string;
@@ -30,9 +32,16 @@ type SettingsState = {
   error: UiError | null;
 };
 
+type LanguageOption = {
+  label: string;
+  value: Language;
+};
+
 type SettingsData = {
   theme: string;
   themeOptions: ThemeOption[];
+  language: Language;
+  languageOptions: LanguageOption[];
 };
 
 type SettingsActions = {
@@ -43,6 +52,9 @@ type SettingsActions = {
   openThemePicker: () => void;
   closeThemePicker: () => void;
   setTheme: (value: string) => void;
+  openLanguagePicker: () => void;
+  closeLanguagePicker: () => void;
+  setLanguage: (value: Language) => Promise<void>;
   openLegal: () => void;
   openDeveloperAccess: () => void;
   openDeleteConfirm: () => void;
@@ -56,6 +68,7 @@ type SettingsView = {
   actions: SettingsActions;
   modal: {
     themeOpen: boolean;
+    languageOpen: boolean;
     deleteOpen: boolean;
   };
   toast: {
@@ -92,14 +105,18 @@ export function useSettingsScreen(): SettingsView {
   const toastState = useToastState();
   const { showError } = useGlobalToast();
   const { setThemeName } = useThemeController();
+  const { t } = useTranslation();
+  const { setLanguage: applyLanguage } = useLocale();
   const [showToast, setShowToast] = useState(false);
   const [theme, setThemeValue] = useState(DEFAULT_THEME_NAME);
+  const [language, setLanguageValue] = useState<Language>('auto');
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState<UiError | null>(null);
   const [themeOpen, setThemeOpen] = useState(false);
+  const [languageOpen, setLanguageOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
 
   const load = useCallback(async () => {
@@ -119,7 +136,10 @@ export function useSettingsScreen(): SettingsView {
   useFocusEffect(
     useCallback(() => {
       setIsLoading(true);
-      void load().finally(() => setIsLoading(false));
+      void Promise.all([
+        load(),
+        getStoredLanguage().then((lang) => setLanguageValue(lang)),
+      ]).finally(() => setIsLoading(false));
     }, [load]),
   );
 
@@ -130,7 +150,7 @@ export function useSettingsScreen(): SettingsView {
     let timeoutId: ReturnType<typeof setTimeout> | null = null;
     timeoutId = setTimeout(() => {
       if (toastParam === 'updated') {
-        toastState.show({ variant: 'success', message: 'Profile updated.' });
+        toastState.show({ variant: 'success', message: t('settings.profileUpdated') });
       }
       router.setParams({ toast: undefined });
     }, 320);
@@ -164,6 +184,8 @@ export function useSettingsScreen(): SettingsView {
 
   const openThemePicker = useCallback(() => setThemeOpen(true), []);
   const closeThemePicker = useCallback(() => setThemeOpen(false), []);
+  const openLanguagePicker = useCallback(() => setLanguageOpen(true), []);
+  const closeLanguagePicker = useCallback(() => setLanguageOpen(false), []);
   const openLegal = useCallback(() => {
     router.push(routes.settingsLegal);
   }, []);
@@ -182,7 +204,7 @@ export function useSettingsScreen(): SettingsView {
       setThemeName(value);
       try {
         await profileApi.patch({ theme: value });
-        toastState.show({ variant: 'success', message: 'Theme updated.' });
+        toastState.show({ variant: 'success', message: t('settings.themeUpdated') });
       } catch (err) {
         const uiErr = mapCommonError(toApiError(err));
         showError(uiErr, { onRetry: () => setTheme(value) });
@@ -193,6 +215,15 @@ export function useSettingsScreen(): SettingsView {
       }
     },
     [isSaving, setThemeName, showError, theme, toastState],
+  );
+
+  const setLanguage = useCallback(
+    async (value: Language) => {
+      setLanguageValue(value);
+      setLanguageOpen(false);
+      await applyLanguage(value);
+    },
+    [applyLanguage],
   );
 
   const doDelete = useCallback(async () => {
@@ -230,7 +261,19 @@ export function useSettingsScreen(): SettingsView {
     [error, isDeleting, isLoading, isRefreshing, isSaving],
   );
 
-  const data = useMemo<SettingsData>(() => ({ theme, themeOptions: THEME_OPTIONS }), [theme]);
+  const languageOptions = useMemo<LanguageOption[]>(
+    () => [
+      { label: t('settings.language.auto'), value: 'auto' },
+      { label: t('settings.language.en'), value: 'en' },
+      { label: t('settings.language.sv'), value: 'sv' },
+    ],
+    [t],
+  );
+
+  const data = useMemo<SettingsData>(
+    () => ({ theme, themeOptions: THEME_OPTIONS, language, languageOptions }),
+    [language, languageOptions, theme],
+  );
 
   const actions = useMemo<SettingsActions>(
     () => ({
@@ -241,6 +284,9 @@ export function useSettingsScreen(): SettingsView {
       openThemePicker,
       closeThemePicker,
       setTheme,
+      openLanguagePicker,
+      closeLanguagePicker,
+      setLanguage,
       openLegal,
       openDeveloperAccess,
       openDeleteConfirm,
@@ -249,16 +295,19 @@ export function useSettingsScreen(): SettingsView {
     }),
     [
       closeDeleteConfirm,
+      closeLanguagePicker,
       closeThemePicker,
       confirmDelete,
       handleRefresh,
       load,
+      openLanguagePicker,
       openLegal,
       openDeveloperAccess,
       openDeleteConfirm,
       openProfileEdit,
       logout,
       openThemePicker,
+      setLanguage,
       setTheme,
     ],
   );
@@ -270,6 +319,7 @@ export function useSettingsScreen(): SettingsView {
       actions,
       modal: {
         themeOpen,
+        languageOpen,
         deleteOpen,
       },
       toast: {
@@ -278,6 +328,6 @@ export function useSettingsScreen(): SettingsView {
         topInset: insets.top,
       },
     }),
-    [actions, data, insets.top, showToast, state, themeOpen, deleteOpen, toastState],
+    [actions, data, insets.top, showToast, state, themeOpen, languageOpen, deleteOpen, toastState],
   );
 }

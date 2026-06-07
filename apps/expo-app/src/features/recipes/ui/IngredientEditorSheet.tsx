@@ -9,6 +9,7 @@ import {
   View,
   useWindowDimensions,
 } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { Boxes, Scale, Trash2 } from 'lucide-react-native';
 import { PickerSelect, PickerSheetOverlay } from '@/src/shared/ui';
 import { ErrorText } from '@/src/shared/ui/ErrorText';
@@ -64,6 +65,7 @@ export function IngredientEditorSheet({
   onCancel,
   onDelete,
 }: Props) {
+  const { t } = useTranslation();
   const theme = useTheme();
   const styles = useThemedStyles(createStyles);
   const { height: screenHeight } = useWindowDimensions();
@@ -78,7 +80,7 @@ export function IngredientEditorSheet({
     const selected = UNITS.find((u) => u.key === unit);
     return selected?.label ?? '';
   }, [unit]);
-  const amountPrefix = unitLabel || 'Unit';
+  const amountPrefix = unitLabel || t('recipes.unit');
   const handleAmountChange = (value: string) => {
     const sanitized = sanitizeAmountInput(value, unit);
     onChangeAmount(sanitized);
@@ -88,12 +90,12 @@ export function IngredientEditorSheet({
     <View style={styles.pickerOverlay}>
       <Pressable style={StyleSheet.absoluteFill} onPress={() => setPickerOpen(null)} />
       {pickerOpen === 'unit' ? (
-        <PickerSheetOverlay title="Unit" onClose={() => setPickerOpen(null)}>
+        <PickerSheetOverlay title={t('recipes.unit')} onClose={() => setPickerOpen(null)}>
           <PickerSelect
             value={unit}
             onChange={onChangeUnit}
             options={UNITS.map((u) => ({ label: u.label, value: u.key }))}
-            placeholder="Select unit"
+            placeholder={t('recipes.selectUnit')}
           />
         </PickerSheetOverlay>
       ) : null}
@@ -111,11 +113,11 @@ export function IngredientEditorSheet({
         onDelete ? (
           <Pressable onPress={onDelete} style={styles.deleteAction}>
             <Trash2 color={theme.colors.error} size={20} strokeWidth={2.2} />
-            <Text style={styles.deleteLabel}>Delete</Text>
+            <Text style={styles.deleteLabel}>{t('common.delete')}</Text>
           </Pressable>
         ) : null
       }
-      footer={<RecipeActionBar onCancel={onCancel} onSave={onSave} saveLabel="Save" />}
+      footer={<RecipeActionBar onCancel={onCancel} onSave={onSave} saveLabel={t('common.save')} />}
       footerFullBleed
       overlay={overlay}
     >
@@ -130,12 +132,12 @@ export function IngredientEditorSheet({
         keyboardShouldPersistTaps="handled"
       >
         <View style={styles.section}>
-          <Text style={styles.label}>Ingredient name</Text>
+          <Text style={styles.label}>{t('recipes.ingredientName')}</Text>
           <TextField
             inputRef={nameInputRef}
             value={name}
             onChangeText={onChangeName}
-            placeholder="Name..."
+            placeholder={t('recipes.ingredientNamePlaceholder')}
             autoCapitalize="words"
             maxLength={80}
             onFocus={() => {
@@ -149,17 +151,17 @@ export function IngredientEditorSheet({
 
         <View style={styles.row}>
           <View style={styles.rowItem}>
-            <Text style={styles.label}>Unit</Text>
+            <Text style={styles.label}>{t('recipes.unit')}</Text>
             <RecipeSelectField
               icon={<Boxes color={theme.colors.textMuted} size={18} strokeWidth={2.5} />}
               value={unitLabel}
-              placeholder="Select unit"
+              placeholder={t('recipes.selectUnit')}
               onPress={() => setPickerOpen('unit')}
             />
             {unitError ? <ErrorText>{unitError}</ErrorText> : null}
           </View>
           <View style={styles.rowItem}>
-            <Text style={styles.label}>Amount</Text>
+            <Text style={styles.label}>{t('recipes.amount')}</Text>
             <RecipeAmountField
               inputRef={amountInputRef}
               icon={<Scale color={theme.colors.textMuted} size={18} strokeWidth={2.5} />}
@@ -178,11 +180,11 @@ export function IngredientEditorSheet({
 
         <View style={styles.preview}>
           <View style={styles.previewHeader}>
-            <Text style={styles.previewTitle}>Preview</Text>
+            <Text style={styles.previewTitle}>{t('common.preview')}</Text>
             <View style={styles.previewDivider} />
           </View>
           <RecipeIngredientRow
-            name={name || 'Ingredient'}
+            name={name || t('recipes.addIngredientTitle')}
             amount={amount ? `${amount}${unit ? ` ${unit}` : ''}` : ''}
             showHandle
           />

@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, FlatList, StyleSheet, Text, View } from 'react-native';
 import { router } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 import {
   Screen,
   EmptyState,
@@ -13,7 +14,7 @@ import {
 import { type Theme, useTheme, useThemedStyles } from '@/src/shared/theme';
 import { routes } from '@/src/core/navigation/routes';
 import type { InspirationListItem, RecipeListItem } from '@/src/features/recipes/types';
-import { RECIPE_CATEGORY_OPTIONS } from '@/src/features/recipes/constants/recipePickerOptions';
+import { getRecipeCategoryOptions } from '@/src/features/recipes/constants/recipePickerOptions';
 import {
   RecipeSavedGridItem,
   RecipeDiscoveryListItem,
@@ -28,6 +29,8 @@ export function RecipesScreen() {
   const view = useRecipesScreen();
   const { state, filters, data, actions, toast, savedListRef, discoveryListRef } = view;
   const { toast: globalToast } = useGlobalToast();
+  const { t } = useTranslation();
+  const recipeCategoryOptions = useMemo(() => getRecipeCategoryOptions(t), [t]);
   const [savedScrolled, setSavedScrolled] = useState(false);
   const [discoveryScrolled, setDiscoveryScrolled] = useState(false);
   const allowDiscoveryLoadMore = data.savedFilterMode !== 'saved';
@@ -57,17 +60,17 @@ export function RecipesScreen() {
       const emptyState =
         mode === 'saved' ? (
           <EmptyState
-            title="No recipes yet"
-            description="Tap the + button to create one, or import a recipe from a photo or video."
+            title={t('recipes.noRecipesYet')}
+            description={t('recipes.noRecipesTap')}
             action={
               <View style={styles.emptyActions}>
                 <Button
-                  title="Create your first recipe"
+                  title={t('recipes.createFirstRecipe')}
                   variant="primary"
                   onPress={() => router.push(routes.recipeNew)}
                 />
                 <Button
-                  title="Import from photo or video"
+                  title={t('recipes.importFromPhotoOrVideo')}
                   variant="secondary"
                   onPress={() => router.push(routes.recipeImport)}
                 />
@@ -76,16 +79,16 @@ export function RecipesScreen() {
           />
         ) : (
           <EmptyState
-            title="No inspiration recipes"
+            title={t('recipes.noInspirationRecipes')}
             description={
               state.hasDiscoveryFilters
-                ? 'Try clearing filters or search for something else.'
-                : 'Try searching for a recipe or adjusting filters.'
+                ? t('recipes.tryClearingFilters')
+                : t('recipes.trySearching')
             }
             action={
               state.hasDiscoveryFilters ? (
                 <Button
-                  title="Clear filters"
+                  title={t('recipes.clearFilters')}
                   variant="secondary"
                   onPress={() => {
                     filters.setQuery('');
@@ -111,7 +114,7 @@ export function RecipesScreen() {
             activeFilterCount={filters.activeFilterCount}
           />
 
-          {list.isLoading ? <Text style={styles.muted}>Loading recipes…</Text> : null}
+          {list.isLoading ? <Text style={styles.muted}>{t('recipes.loadingRecipes')}</Text> : null}
 
           {!list.isLoading && !list.error && emptyCount === 0 ? emptyState : null}
         </View>
@@ -138,7 +141,7 @@ export function RecipesScreen() {
   }, [state.tab]);
 
   return (
-    <Screen title="Recipes" scroll={false} contentStyle={styles.screenContent}>
+    <Screen title={t('recipes.title')} scroll={false} contentStyle={styles.screenContent}>
       <View style={styles.root}>
         {toastBanner}
         {state.tab === 'saved' ? (
@@ -164,7 +167,7 @@ export function RecipesScreen() {
                 {data.saved.isLoadingMore ? (
                   <ActivityIndicator color={theme.colors.primaryDark} />
                 ) : data.saved.canLoadMore || !showSavedEndMessage ? null : (
-                  <Text style={styles.footerText}>No more recipes</Text>
+                  <Text style={styles.footerText}>{t('recipes.noMoreRecipes')}</Text>
                 )}
               </View>
             }
@@ -197,10 +200,10 @@ export function RecipesScreen() {
                     <ActivityIndicator color={theme.colors.primaryDark} />
                   ) : data.discovery.canLoadMore || !showDiscoveryEndMessage ? null : (
                     <View style={styles.footerActions}>
-                      <Text style={styles.footerText}>No more recipes</Text>
+                      <Text style={styles.footerText}>{t('recipes.noMoreRecipes')}</Text>
                       {showDiscoveryReset ? (
                         <Button
-                          title="Get a fresh batch"
+                          title={t('recipes.getAFreshBatch')}
                           variant="secondary"
                           size="small"
                           onPress={actions.handleDiscoveryReset}
@@ -238,9 +241,9 @@ export function RecipesScreen() {
 
         <RecipePickerSheet
           visible={state.savePickerOpen}
-          title="Pick meal type"
+          title={t('recipes.pickMealType')}
           value={state.saveCategory}
-          options={RECIPE_CATEGORY_OPTIONS}
+          options={recipeCategoryOptions}
           onChange={actions.setSaveCategory}
           onClose={() => actions.setSavePickerOpen(false)}
           onDone={actions.handleSaveConfirm}

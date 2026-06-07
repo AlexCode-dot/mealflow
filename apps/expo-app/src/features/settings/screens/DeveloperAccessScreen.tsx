@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
 import * as Clipboard from 'expo-clipboard';
 import { router } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 import { Check, KeyRound, Trash2 } from 'lucide-react-native';
 import {
   Button,
@@ -22,18 +23,19 @@ import {
   type IssuedIntegrationToken,
 } from '@/src/features/settings/api/integrationTokensApi';
 
-type ExpiryOption = { label: string; days: number | null };
+type ExpiryOption = { labelKey: string; days: number | null };
 
 const EXPIRY_OPTIONS: ExpiryOption[] = [
-  { label: '30 days', days: 30 },
-  { label: '90 days', days: 90 },
-  { label: '1 year', days: 365 },
-  { label: 'Never', days: null },
+  { labelKey: 'developer.expiry30Days', days: 30 },
+  { labelKey: 'developer.expiry90Days', days: 90 },
+  { labelKey: 'developer.expiry1Year', days: 365 },
+  { labelKey: 'developer.expiryNever', days: null },
 ];
 
 export function DeveloperAccessScreen() {
   const styles = useThemedStyles(createStyles);
   const { show, showError } = useGlobalToast();
+  const { t } = useTranslation();
 
   const [tokens, setTokens] = useState<IntegrationTokenSummary[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -114,7 +116,7 @@ export function DeveloperAccessScreen() {
   const copyToken = useCallback(
     async (token: string) => {
       await Clipboard.setStringAsync(token);
-      show({ variant: 'success', message: 'Token copied to clipboard.' });
+      show({ variant: 'success', message: t('developer.tokenCopied') });
     },
     [show],
   );
@@ -127,7 +129,7 @@ export function DeveloperAccessScreen() {
     setIsRevoking(true);
     try {
       await integrationTokensApi.revoke(revokeTarget.id);
-      show({ variant: 'success', message: 'Token revoked.' });
+      show({ variant: 'success', message: t('developer.tokenRevoked') });
       setRevokeTarget(null);
       await load();
     } catch (err) {
@@ -140,32 +142,30 @@ export function DeveloperAccessScreen() {
   return (
     <View style={styles.root}>
       <Screen
-        title="Developer access"
+        title={t('developer.title')}
         scroll
         showBack
         onBack={() => router.back()}
         refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />}
       >
         <Card style={styles.intro}>
-          <Text style={styles.introTitle}>API tokens</Text>
-          <Text style={styles.introBody}>
-            Generate a long-lived token to let a trusted third-party app read or write your recipes.
-          </Text>
-          <Button title="Generate API token" variant="primary" onPress={openCreate} />
+          <Text style={styles.introTitle}>{t('developer.apiTokensTitle')}</Text>
+          <Text style={styles.introBody}>{t('developer.apiTokensBody')}</Text>
+          <Button title={t('developer.generateToken')} variant="primary" onPress={openCreate} />
         </Card>
 
-        <Text style={styles.sectionHeader}>Your tokens</Text>
+        <Text style={styles.sectionHeader}>{t('developer.yourTokens')}</Text>
 
         {isLoading ? (
           <ActivityIndicator />
         ) : tokens.length === 0 ? (
           <Card style={styles.emptyCard}>
-            <Text style={styles.emptyText}>You haven&apos;t generated any tokens yet.</Text>
+            <Text style={styles.emptyText}>{t('developer.noTokensYet')}</Text>
           </Card>
         ) : (
           <View style={styles.list}>
-            {tokens.map((t) => (
-              <TokenRow key={t.id} token={t} onRevoke={() => askRevoke(t)} styles={styles} />
+            {tokens.map((tok) => (
+              <TokenRow key={tok.id} token={tok} onRevoke={() => askRevoke(tok)} styles={styles} t={t} />
             ))}
           </View>
         )}
@@ -173,89 +173,84 @@ export function DeveloperAccessScreen() {
 
       <FormSheet
         visible={createOpen}
-        title={createdToken ? 'Token created' : 'Generate API token'}
+        title={createdToken ? t('developer.tokenCreated') : t('developer.generateToken')}
         onClose={closeCreate}
       >
         {createdToken ? (
           <View style={styles.modalBody}>
-            <Text style={styles.warningText}>
-              This is the only time we&apos;ll show this token. Save it now or generate a new one.
-            </Text>
+            <Text style={styles.warningText}>{t('developer.tokenWarning')}</Text>
             <View style={styles.tokenBox}>
               <Text style={styles.tokenText} selectable>
                 {createdToken.token}
               </Text>
             </View>
             <Text style={styles.helper}>
-              Scopes: {createdToken.scopes.join(', ')}
+              {t('developer.scopesLabel', { scopes: createdToken.scopes.join(', ') })}
               {createdToken.expiresAt
-                ? ` • Expires ${new Date(createdToken.expiresAt).toLocaleDateString()}`
-                : ' • Never expires'}
+                ? ` • ${t('developer.expiresLabel', { date: new Date(createdToken.expiresAt).toLocaleDateString() })}`
+                : ` • ${t('developer.neverExpires')}`}
             </Text>
             <Button
-              title="Copy token"
+              title={t('developer.copyToken')}
               variant="primary"
               onPress={() => copyToken(createdToken.token)}
             />
-            <Button title="Done" variant="secondary" onPress={closeCreate} />
+            <Button title={t('common.done')} variant="secondary" onPress={closeCreate} />
           </View>
         ) : (
           <View style={styles.modalBody}>
-            <Text style={styles.label}>Token name</Text>
+            <Text style={styles.label}>{t('developer.tokenName')}</Text>
             <TextField
               value={name}
               onChangeText={setName}
-              placeholder="e.g. second-brain-ai"
+              placeholder={t('developer.tokenNamePlaceholder')}
               maxLength={80}
             />
 
-            <Text style={styles.label}>Permissions</Text>
+            <Text style={styles.label}>{t('developer.permissions')}</Text>
             <ScopeToggle
-              label="Read recipes"
-              description="GET /api/recipes"
+              label={t('developer.readRecipes')}
+              description={t('developer.readRecipesDesc')}
               checked={canRead}
               onToggle={() => setCanRead((v) => !v)}
               styles={styles}
             />
             <ScopeToggle
-              label="Write recipes"
-              description="Create, update, delete recipes"
+              label={t('developer.writeRecipes')}
+              description={t('developer.writeRecipesDesc')}
               checked={canWrite}
               onToggle={() => setCanWrite((v) => !v)}
               styles={styles}
             />
 
-            <Text style={styles.label}>Expires in</Text>
+            <Text style={styles.label}>{t('developer.expiresIn')}</Text>
             <View style={styles.optionRow}>
               {EXPIRY_OPTIONS.map((opt) => (
                 <Pressable
-                  key={opt.label}
+                  key={opt.labelKey}
                   onPress={() => setExpiry(opt)}
                   style={[
                     styles.optionChip,
-                    expiry.label === opt.label ? styles.optionChipActive : null,
+                    expiry.labelKey === opt.labelKey ? styles.optionChipActive : null,
                   ]}
                 >
                   <Text
                     style={[
                       styles.optionChipText,
-                      expiry.label === opt.label ? styles.optionChipTextActive : null,
+                      expiry.labelKey === opt.labelKey ? styles.optionChipTextActive : null,
                     ]}
                   >
-                    {opt.label}
+                    {t(opt.labelKey as Parameters<typeof t>[0])}
                   </Text>
                 </Pressable>
               ))}
             </View>
             {expiry.days === null ? (
-              <Text style={styles.helper}>
-                Tokens that never expire stay valid until you revoke them. Pick a finite expiry when
-                possible.
-              </Text>
+              <Text style={styles.helper}>{t('developer.neverExpiresHint')}</Text>
             ) : null}
 
             <Button
-              title={isCreating ? 'Generating…' : 'Generate token'}
+              title={isCreating ? t('developer.generating') : t('developer.generateTokenBtn')}
               variant="primary"
               onPress={submitCreate}
               disabled={!name.trim() || selectedScopes.length === 0 || isCreating}
@@ -266,16 +261,16 @@ export function DeveloperAccessScreen() {
 
       <ConfirmSheet
         visible={revokeTarget !== null}
-        title="Revoke this token?"
+        title={t('developer.revokeTitle')}
         description={
           revokeTarget
-            ? `"${revokeTarget.name}" will stop working immediately for any app using it.`
+            ? t('developer.revokeDescription', { name: revokeTarget.name })
             : ''
         }
-        confirmLabel={isRevoking ? 'Revoking…' : 'Revoke token'}
+        confirmLabel={isRevoking ? t('developer.revoking') : t('developer.revokeToken')}
         confirmVariant="danger"
         disabled={isRevoking}
-        cancelLabel="Cancel"
+        cancelLabel={t('common.cancel')}
         onConfirm={confirmRevoke}
         onCancel={cancelRevoke}
       />
@@ -313,21 +308,25 @@ function TokenRow({
   token,
   onRevoke,
   styles,
+  t,
 }: {
   token: IntegrationTokenSummary;
   onRevoke: () => void;
   styles: ReturnType<typeof createStyles>;
+  t: ReturnType<typeof useTranslation>['t'];
 }) {
   const now = Date.now();
   const isRevoked = token.revokedAt !== null;
   const isExpired = token.expiresAt !== null && new Date(token.expiresAt).getTime() < now;
   const inactive = isRevoked || isExpired;
 
-  const lastUsed = token.lastUsedAt ? new Date(token.lastUsedAt).toLocaleString() : 'never';
-  const created = new Date(token.createdAt).toLocaleDateString();
+  const lastUsedText = token.lastUsedAt
+    ? t('developer.lastUsed', { date: new Date(token.lastUsedAt).toLocaleString() })
+    : t('developer.lastUsedNever');
+  const created = t('developer.created', { date: new Date(token.createdAt).toLocaleDateString() });
   const expiry = token.expiresAt
-    ? `Expires ${new Date(token.expiresAt).toLocaleDateString()}`
-    : 'Never expires';
+    ? t('developer.expiresLabel', { date: new Date(token.expiresAt).toLocaleDateString() })
+    : t('developer.neverExpires');
 
   let statusSuffix = '';
   if (isRevoked) statusSuffix = ' (revoked)';
@@ -353,10 +352,10 @@ function TokenRow({
         ) : null}
       </View>
       <Text style={styles.tokenMeta}>
-        {token.scopes.join(', ') || 'no scopes'} • {expiry}
+        {token.scopes.join(', ') || t('developer.noScopes')} • {expiry}
       </Text>
       <Text style={styles.tokenMeta}>
-        Created {created} • Last used {lastUsed}
+        {created} • {lastUsedText}
       </Text>
     </Card>
   );

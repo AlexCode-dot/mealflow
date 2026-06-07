@@ -1,3 +1,5 @@
+import type { TFunction } from 'i18next';
+
 export const RECIPE_TIME_OPTIONS = [
   { label: '0', value: '0' },
   { label: '10', value: '10' },
@@ -15,10 +17,10 @@ export const RECIPE_PORTIONS_OPTIONS = [
   { label: '6', value: '6' },
 ];
 
-export const RECIPE_CATEGORY_OPTIONS = [
-  { label: 'Select category', value: '' },
-  { label: 'Breakfast', value: 'Breakfast' },
-  { label: 'Lunch', value: 'Lunch' },
-  { label: 'Dinner', value: 'Dinner' },
-  { label: 'Snack', value: 'Snack' },
+export const getRecipeCategoryOptions = (t: TFunction) => [
+  { label: t('recipes.categories.selectCategory'), value: '' },
+  { label: t('recipes.categories.breakfast'), value: 'Breakfast' },
+  { label: t('recipes.categories.lunch'), value: 'Lunch' },
+  { label: t('recipes.categories.dinner'), value: 'Dinner' },
+  { label: t('recipes.categories.snack'), value: 'Snack' },
 ];

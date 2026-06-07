@@ -1,5 +1,6 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { router } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 import { ChevronRight, Image as ImageIcon, PenLine, Video } from 'lucide-react-native';
 import { ModalSheet } from '@/src/shared/ui/ModalSheet';
 import { type Theme, useTheme, useThemedStyles } from '@/src/shared/theme';
@@ -13,8 +14,8 @@ type Props = {
 
 type Row = {
   key: 'manual' | 'photo' | 'video';
-  title: string;
-  subtitle?: string;
+  titleKey: string;
+  subtitleKey?: string;
   icon: (color: string) => React.ReactNode;
   href: Href;
 };
@@ -22,21 +23,21 @@ type Row = {
 const ROWS: Row[] = [
   {
     key: 'manual',
-    title: 'Write it yourself',
+    titleKey: 'recipes.addRecipeSheet.writeItYourself',
     icon: (color) => <PenLine color={color} size={20} strokeWidth={2.25} />,
     href: routes.recipeNew,
   },
   {
     key: 'photo',
-    title: 'From a photo',
-    subtitle: 'Screenshot of a recipe',
+    titleKey: 'recipes.addRecipeSheet.fromAPhoto',
+    subtitleKey: 'recipes.addRecipeSheet.fromAPhotoSubtitle',
     icon: (color) => <ImageIcon color={color} size={20} strokeWidth={2.25} />,
     href: { pathname: '/recipes/import', params: { autostart: 'image' } } as Href,
   },
   {
     key: 'video',
-    title: 'From a video',
-    subtitle: 'TikTok, Reel or short clip',
+    titleKey: 'recipes.addRecipeSheet.fromAVideo',
+    subtitleKey: 'recipes.addRecipeSheet.fromAVideoSubtitle',
     icon: (color) => <Video color={color} size={20} strokeWidth={2.25} />,
     href: { pathname: '/recipes/import', params: { autostart: 'video' } } as Href,
   },
@@ -45,6 +46,7 @@ const ROWS: Row[] = [
 export function AddRecipeSheet({ visible, onClose }: Props) {
   const theme = useTheme();
   const styles = useThemedStyles(createStyles);
+  const { t } = useTranslation();
 
   const handlePress = (row: Row) => {
     onClose();
@@ -55,26 +57,30 @@ export function AddRecipeSheet({ visible, onClose }: Props) {
   return (
     <ModalSheet visible={visible} onClose={onClose}>
       <View style={styles.header}>
-        <Text style={styles.title}>Add a recipe</Text>
+        <Text style={styles.title}>{t('recipes.addRecipeSheet.title')}</Text>
       </View>
 
       <View style={styles.rows}>
-        {ROWS.map((row) => (
-          <Pressable
-            key={row.key}
-            onPress={() => handlePress(row)}
-            style={({ pressed }) => [styles.row, pressed ? styles.rowPressed : null]}
-            accessibilityRole="button"
-            accessibilityLabel={row.title}
-          >
-            <View style={styles.iconBox}>{row.icon(theme.colors.primaryDark)}</View>
-            <View style={styles.text}>
-              <Text style={styles.rowTitle}>{row.title}</Text>
-              {row.subtitle ? <Text style={styles.rowSubtitle}>{row.subtitle}</Text> : null}
-            </View>
-            <ChevronRight color={theme.colors.textMuted} size={18} strokeWidth={2.25} />
-          </Pressable>
-        ))}
+        {ROWS.map((row) => {
+          const title = t(row.titleKey as Parameters<typeof t>[0]);
+          const subtitle = row.subtitleKey ? t(row.subtitleKey as Parameters<typeof t>[0]) : undefined;
+          return (
+            <Pressable
+              key={row.key}
+              onPress={() => handlePress(row)}
+              style={({ pressed }) => [styles.row, pressed ? styles.rowPressed : null]}
+              accessibilityRole="button"
+              accessibilityLabel={title}
+            >
+              <View style={styles.iconBox}>{row.icon(theme.colors.primaryDark)}</View>
+              <View style={styles.text}>
+                <Text style={styles.rowTitle}>{title}</Text>
+                {subtitle ? <Text style={styles.rowSubtitle}>{subtitle}</Text> : null}
+              </View>
+              <ChevronRight color={theme.colors.textMuted} size={18} strokeWidth={2.25} />
+            </Pressable>
+          );
+        })}
       </View>
 
       <Pressable
@@ -82,7 +88,7 @@ export function AddRecipeSheet({ visible, onClose }: Props) {
         style={({ pressed }) => [styles.cancel, pressed ? styles.cancelPressed : null]}
         accessibilityRole="button"
       >
-        <Text style={styles.cancelText}>Cancel</Text>
+        <Text style={styles.cancelText}>{t('common.cancel')}</Text>
       </Pressable>
     </ModalSheet>
   );

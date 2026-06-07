@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Animated, Easing, PanResponder, Pressable, StyleSheet, Text, View } from 'react-native';
 import * as VideoThumbnails from 'expo-video-thumbnails';
+import { useTranslation } from 'react-i18next';
 import { Film } from 'lucide-react-native';
 import { Button } from '@/src/shared/ui/Button';
 import { ModalSheet } from '@/src/shared/ui/ModalSheet';
@@ -28,6 +29,7 @@ export function VideoThumbnailPickerSheet({
 }: Props) {
   const theme = useTheme();
   const styles = useThemedStyles(createStyles);
+  const { t } = useTranslation();
 
   const totalMs = durationMs && durationMs > 0 ? durationMs : FALLBACK_DURATION_MS;
 
@@ -207,8 +209,8 @@ export function VideoThumbnailPickerSheet({
             <Film color={theme.colors.primaryDark} size={16} strokeWidth={2.5} />
           </View>
           <View style={styles.headerText}>
-            <Text style={styles.title}>Pick a thumbnail</Text>
-            <Text style={styles.subtitle}>Drag to find the frame you want.</Text>
+            <Text style={styles.title}>{t('recipes.thumbnailPicker.title')}</Text>
+            <Text style={styles.subtitle}>{t('recipes.thumbnailPicker.subtitle')}</Text>
           </View>
         </View>
 
@@ -260,7 +262,7 @@ export function VideoThumbnailPickerSheet({
 
         <View style={styles.actions}>
           <Button
-            title="Use this frame"
+            title={t('recipes.thumbnailPicker.useThisFrame')}
             variant="primary"
             onPress={onConfirm}
             containerStyle={styles.confirmBtn}
@@ -271,7 +273,7 @@ export function VideoThumbnailPickerSheet({
             hitSlop={theme.spacing.s2}
             accessibilityRole="button"
           >
-            <Text style={styles.cancelText}>Cancel</Text>
+            <Text style={styles.cancelText}>{t('common.cancel')}</Text>
           </Pressable>
         </View>
       </View>

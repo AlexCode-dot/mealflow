@@ -8,6 +8,7 @@ import {
   View,
 } from 'react-native';
 import { useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { LinearGradient } from 'expo-linear-gradient';
 import { ImagePlus } from 'lucide-react-native';
 import { type Theme, useTheme, useThemedStyles } from '@/src/shared/theme';
@@ -20,6 +21,7 @@ type Props = {
 };
 
 export function RecipeHero({ imageUrl, onPress, onRemove, isUploading }: Props) {
+  const { t } = useTranslation();
   const theme = useTheme();
   const styles = useThemedStyles(createStyles);
   const progress = useRef(new Animated.Value(0)).current;
@@ -62,7 +64,7 @@ export function RecipeHero({ imageUrl, onPress, onRemove, isUploading }: Props) 
           {isUploading ? (
             <View style={styles.uploadOverlay}>
               <ActivityIndicator color="#fff" />
-              <Text style={styles.uploadText}>Uploading…</Text>
+              <Text style={styles.uploadText}>{t('recipes.uploadingPhoto')}</Text>
               <View style={styles.uploadTrack}>
                 <Animated.View style={[styles.uploadFill, { width: progressWidth }]} />
               </View>
@@ -72,12 +74,12 @@ export function RecipeHero({ imageUrl, onPress, onRemove, isUploading }: Props) 
             <View style={styles.actionRow}>
               {onRemove ? (
                 <Pressable onPress={onRemove} style={styles.removeBadge}>
-                  <Text style={styles.removeBadgeText}>Remove photo</Text>
+                  <Text style={styles.removeBadgeText}>{t('recipes.removePhoto')}</Text>
                 </Pressable>
               ) : null}
               {onPress ? (
                 <Pressable onPress={onPress} style={styles.changeBadge}>
-                  <Text style={styles.changeBadgeText}>Change photo</Text>
+                  <Text style={styles.changeBadgeText}>{t('recipes.changePhoto')}</Text>
                 </Pressable>
               ) : null}
             </View>
@@ -87,7 +89,7 @@ export function RecipeHero({ imageUrl, onPress, onRemove, isUploading }: Props) 
         <Pressable style={styles.photoButton} onPress={onPress} disabled={isUploading}>
           <View style={styles.photoInner}>
             <ImagePlus color={theme.colors.primary} size={34} strokeWidth={2} />
-            <Text style={styles.photoLabel}>Add photo</Text>
+            <Text style={styles.photoLabel}>{t('recipes.addPhoto')}</Text>
           </View>
         </Pressable>
       )}

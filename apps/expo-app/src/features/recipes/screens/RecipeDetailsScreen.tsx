@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, Image, StyleSheet, Text, View } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import { useFocusEffect, useIsFocused } from '@react-navigation/native';
+import { useTranslation } from 'react-i18next';
 import { Clock3, ShoppingBasket, Utensils, Users, Pencil, Trash2 } from 'lucide-react-native';
 import {
   Screen,
@@ -46,6 +47,7 @@ export function RecipeDetailsScreen() {
   const returnEntryId = typeof params.returnEntryId === 'string' ? params.returnEntryId : null;
   const returnDay = typeof params.returnDay === 'string' ? params.returnDay : null;
 
+  const { t } = useTranslation();
   const view = useRecipeDetails(id);
   const { state, actions } = view;
   const [tab, setTab] = useState<RecipeDetailsTab>('ingredients');
@@ -76,7 +78,7 @@ export function RecipeDetailsScreen() {
     const categoryLabel = state.recipe?.category ?? '—';
     const portionsLabel =
       state.recipe?.portions !== null && state.recipe?.portions !== undefined
-        ? `${state.recipe.portions} Portions`
+        ? t('recipes.portions', { count: state.recipe.portions })
         : '—';
 
     return [
@@ -119,11 +121,11 @@ export function RecipeDetailsScreen() {
   const handleAddResult = useCallback(
     (result: Awaited<ReturnType<typeof addRecipeToShoppingList>>) => {
       if (result.ok) {
-        show({ variant: 'success', message: 'Added to shopping list.' });
+        show({ variant: 'success', message: t('recipes.addedToShoppingList') });
         return;
       }
       if (result.reason === 'no-ingredients') {
-        show({ variant: 'info', message: 'No ingredients to add.' });
+        show({ variant: 'info', message: t('recipes.noIngredientsToAdd') });
         return;
       }
       if (result.reason === 'error') {
@@ -157,7 +159,7 @@ export function RecipeDetailsScreen() {
     if (isAddingToList) return;
     const selected = parsePortions(addListPortions);
     if (!selected) {
-      showValidationError('Pick a valid portions value.');
+      showValidationError(t('recipes.pickValidPortions'));
       return;
     }
     setAddListOpen(false);
@@ -180,20 +182,20 @@ export function RecipeDetailsScreen() {
     () => [
       {
         key: 'edit',
-        label: 'Edit',
+        label: t('common.edit'),
         icon: <Pencil color={actionColor} size={TAB_BAR.ICON_SIZE} strokeWidth={2.25} />,
         onPress: onEdit,
       },
       {
         key: 'shopping-list',
-        label: 'Add to Shopping List',
+        label: t('recipes.addToShoppingList'),
         icon: <ShoppingBasket color={actionColor} size={TAB_BAR.ICON_SIZE} strokeWidth={2.25} />,
         onPress: onAddToShoppingList,
         disabled: isAddingToList,
       },
       {
         key: 'delete',
-        label: 'Delete',
+        label: t('common.delete'),
         icon: <Trash2 color={actionColor} size={TAB_BAR.ICON_SIZE} strokeWidth={2.25} />,
         onPress: onDelete,
       },
@@ -214,10 +216,10 @@ export function RecipeDetailsScreen() {
 
     const timeoutId = setTimeout(() => {
       if (toastParam === 'saved') {
-        show({ variant: 'success', message: 'Saved successfully' });
+        show({ variant: 'success', message: t('recipes.savedSuccessfully') });
       }
       if (toastParam === 'shopping-list') {
-        show({ variant: 'success', message: 'Added to shopping list' });
+        show({ variant: 'success', message: t('recipes.addedToShoppingList') });
       }
       router.setParams({ toast: undefined });
     }, 80);
@@ -249,7 +251,7 @@ export function RecipeDetailsScreen() {
       return;
     }
     setIsLeaving(false);
-    showError({ kind: 'unknown', message: 'Delete failed. Please try again.' });
+    showError({ kind: 'unknown', message: t('recipes.deleteFailed') });
   };
 
   const onRefresh = useCallback(async () => {
@@ -282,7 +284,7 @@ export function RecipeDetailsScreen() {
 
   return (
     <Screen
-      title={state.isLoading ? 'Recipe' : (state.recipe?.title ?? 'Recipe')}
+      title={state.isLoading ? t('recipes.recipe') : (state.recipe?.title ?? t('recipes.recipe'))}
       showBack
       onBack={onBack}
       showProfileIcon={false}
@@ -317,7 +319,7 @@ export function RecipeDetailsScreen() {
                 )}
                 {state.recipe?.fromExternal ? (
                   <View style={styles.originBadge}>
-                    <Text style={styles.originBadgeText}>Imported</Text>
+                    <Text style={styles.originBadgeText}>{t('recipes.imported')}</Text>
                   </View>
                 ) : null}
               </View>
@@ -342,7 +344,7 @@ export function RecipeDetailsScreen() {
                 </Text>
               ) : (
                 <Text style={[styles.summaryText, styles.summaryTextWide, styles.summaryEmpty]}>
-                  No description yet
+                  {t('recipes.noDescriptionYet')}
                 </Text>
               )}
             </View>
@@ -366,7 +368,7 @@ export function RecipeDetailsScreen() {
                       ))}
                     </View>
                   ) : (
-                    <Text style={styles.emptyText}>No ingredients yet</Text>
+                    <Text style={styles.emptyText}>{t('recipes.noIngredientsYet')}</Text>
                   )
                 ) : state.recipe?.steps?.length ? (
                   <View style={styles.list}>
@@ -382,7 +384,7 @@ export function RecipeDetailsScreen() {
                     ))}
                   </View>
                 ) : (
-                  <Text style={styles.emptyText}>No steps yet</Text>
+                  <Text style={styles.emptyText}>{t('recipes.noStepsYet')}</Text>
                 )}
               </View>
             </View>
@@ -392,9 +394,9 @@ export function RecipeDetailsScreen() {
 
       <ConfirmSheet
         visible={deleteOpen}
-        title="Delete recipe?"
-        description={`You are deleting recipe ${state.recipe?.title ?? 'this recipe'}.`}
-        confirmLabel={state.isDeleting ? 'Deleting…' : 'Delete'}
+        title={t('recipes.deleteRecipeTitle')}
+        description={t('recipes.deleteRecipeBody', { title: state.recipe?.title ?? '' })}
+        confirmLabel={state.isDeleting ? t('recipes.deletingRecipe') : t('common.delete')}
         confirmVariant="danger"
         onConfirm={doDelete}
         onCancel={() => setDeleteOpen(false)}
@@ -403,18 +405,18 @@ export function RecipeDetailsScreen() {
 
       <RecipePickerSheet
         visible={addListOpen}
-        title="Portions"
+        title={t('recipes.portions')}
         value={addListPortions || '1'}
         options={portionsOptions}
         onChange={setAddListPortions}
         onClose={() => setAddListOpen(false)}
         onDone={confirmAddToList}
-        doneLabel={isAddingToList ? 'Adding...' : 'Add Items'}
+        doneLabel={isAddingToList ? t('recipes.addingItems') : t('recipes.addItems')}
       />
 
       <ModalSheet visible={stepOpen} onClose={() => setStepOpen(false)}>
         <View style={styles.stepSheet}>
-          <Text style={styles.stepTitle}>{stepIndex ? `Step ${stepIndex}` : 'Step'}</Text>
+          <Text style={styles.stepTitle}>{stepIndex ? t('recipes.stepLabel', { n: stepIndex }) : t('recipes.step')}</Text>
           <View style={styles.stepBody}>
             {splitStepParagraphs(stepText).map((paragraph, index) => (
               <View key={`${index}-${paragraph}`} style={styles.stepParagraphRow}>
@@ -428,8 +430,8 @@ export function RecipeDetailsScreen() {
 
       <ModalSheet visible={titleOpen} onClose={() => setTitleOpen(false)}>
         <View style={styles.titleSheet}>
-          <Text style={styles.titleSheetHeading}>Recipe title</Text>
-          <Text style={styles.titleSheetText}>{state.recipe?.title ?? 'Recipe'}</Text>
+          <Text style={styles.titleSheetHeading}>{t('recipes.recipeTitle')}</Text>
+          <Text style={styles.titleSheetText}>{state.recipe?.title ?? t('recipes.recipe')}</Text>
         </View>
       </ModalSheet>
     </Screen>

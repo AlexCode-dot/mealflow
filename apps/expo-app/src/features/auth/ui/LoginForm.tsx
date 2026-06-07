@@ -1,4 +1,5 @@
 import { View } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { TextField, Button, ErrorText } from '@/src/shared/ui';
 import type { UiError } from '@/src/shared/errors/errorTypes';
 import { validateLogin } from '@/src/features/auth/validation/authValidation';
@@ -12,6 +13,7 @@ type Props = {
 };
 
 export function LoginForm({ onSubmit, isLoading, error, clearError }: Props) {
+  const { t } = useTranslation();
   const form = useAuthForm({ validate: validateLogin, error, isLoading });
 
   const submit = () => {
@@ -23,13 +25,13 @@ export function LoginForm({ onSubmit, isLoading, error, clearError }: Props) {
   return (
     <View style={{ gap: 12 }}>
       <TextField
-        label="Email"
+        label={t('auth.email')}
         value={form.email}
         onChangeText={(v) => {
           form.setEmail(v);
           clearError?.();
         }}
-        placeholder="you@example.com"
+        placeholder={t('auth.emailPlaceholder')}
         keyboardType="email-address"
         autoCapitalize="none"
         returnKeyType="next"
@@ -39,13 +41,13 @@ export function LoginForm({ onSubmit, isLoading, error, clearError }: Props) {
       {form.showEmailError ? <ErrorText>{form.clientErrors.email!}</ErrorText> : null}
 
       <TextField
-        label="Password"
+        label={t('auth.password')}
         value={form.password}
         onChangeText={(v) => {
           form.setPassword(v);
           clearError?.();
         }}
-        placeholder="••••••••"
+        placeholder={t('auth.passwordPlaceholder')}
         secureTextEntry
         autoCapitalize="none"
         returnKeyType="done"
@@ -58,7 +60,7 @@ export function LoginForm({ onSubmit, isLoading, error, clearError }: Props) {
       {form.showServerError ? <ErrorText>{form.showServerError.message}</ErrorText> : null}
 
       <Button
-        title={isLoading ? 'Logging in...' : 'Login'}
+        title={isLoading ? t('auth.loggingIn') : t('auth.login')}
         onPress={submit}
         disabled={!form.canSubmit}
       />

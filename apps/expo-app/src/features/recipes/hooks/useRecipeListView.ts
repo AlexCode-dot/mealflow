@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { RecipeListItem } from '@/src/features/recipes/types';
 import {
   buildDiscoveryFilters,
@@ -6,12 +7,7 @@ import {
 } from '@/src/features/recipes/constants/recipeFilters';
 import { useTheme } from '@/src/shared/theme';
 
-const TABS = [
-  { key: 'saved', label: 'Saved recipes' },
-  { key: 'inspiration', label: 'Find new recipes' },
-] as const;
-
-export type RecipeListTabKey = (typeof TABS)[number]['key'];
+export type RecipeListTabKey = 'saved' | 'inspiration';
 
 type Args = {
   savedItems: RecipeListItem[];
@@ -19,15 +15,24 @@ type Args = {
 
 export function useRecipeListView({ savedItems }: Args) {
   const theme = useTheme();
+  const { t } = useTranslation();
   const [tab, setTab] = useState<RecipeListTabKey>('saved');
   const [query, setQuery] = useState('');
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [savedFilters, setSavedFilters] = useState<Record<string, string[]>>({});
   const [discoveryFilters, setDiscoveryFilters] = useState<Record<string, string[]>>({});
 
+  const tabs = useMemo(
+    () => [
+      { key: 'saved' as const, label: t('recipes.title') },
+      { key: 'inspiration' as const, label: t('overview.findNewRecipes') },
+    ],
+    [t],
+  );
+
   const filterSections = useMemo(
-    () => (tab === 'saved' ? buildSavedFilters(theme) : buildDiscoveryFilters(theme)),
-    [tab, theme],
+    () => (tab === 'saved' ? buildSavedFilters(theme, t) : buildDiscoveryFilters(theme, t)),
+    [tab, theme, t],
   );
   const filterSelection = tab === 'saved' ? savedFilters : discoveryFilters;
   const activeFilterCount = Object.values(filterSelection).reduce(
@@ -102,7 +107,7 @@ export function useRecipeListView({ savedItems }: Args) {
   }, [tab]);
 
   return {
-    tabs: TABS,
+    tabs,
     tab,
     setTab,
     query,

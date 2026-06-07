@@ -1,6 +1,7 @@
 import { View, Text, Pressable, StyleSheet, Linking } from 'react-native';
 import { useState } from 'react';
 import Constants from 'expo-constants';
+import { useTranslation } from 'react-i18next';
 import { TextField, Button, ErrorText } from '@/src/shared/ui';
 import type { UiError } from '@/src/shared/errors/errorTypes';
 import { validateRegister } from '@/src/features/auth/validation/authValidation';
@@ -16,6 +17,7 @@ type Props = {
 
 export function RegisterForm({ onSubmit, isLoading, error, clearError }: Props) {
   const styles = useThemedStyles(createStyles);
+  const { t } = useTranslation();
   const form = useAuthForm({
     validate: validateRegister,
     error,
@@ -42,13 +44,13 @@ export function RegisterForm({ onSubmit, isLoading, error, clearError }: Props) 
   return (
     <View style={{ gap: 12 }}>
       <TextField
-        label="Email"
+        label={t('auth.email')}
         value={form.email}
         onChangeText={(v) => {
           form.setEmail(v);
           clearError?.();
         }}
-        placeholder="you@example.com"
+        placeholder={t('auth.emailPlaceholder')}
         keyboardType="email-address"
         autoCapitalize="none"
         returnKeyType="next"
@@ -58,13 +60,13 @@ export function RegisterForm({ onSubmit, isLoading, error, clearError }: Props) 
       {form.showEmailError ? <ErrorText>{form.emailErrorText!}</ErrorText> : null}
 
       <TextField
-        label="Password"
+        label={t('auth.password')}
         value={form.password}
         onChangeText={(v) => {
           form.setPassword(v);
           clearError?.();
         }}
-        placeholder="••••••••"
+        placeholder={t('auth.passwordPlaceholder')}
         secureTextEntry
         autoCapitalize="none"
         returnKeyType="done"
@@ -74,7 +76,7 @@ export function RegisterForm({ onSubmit, isLoading, error, clearError }: Props) 
       />
 
       {!form.touched.password ? (
-        <Text style={{ fontSize: 12, opacity: 0.6 }}>Minimum 8 characters</Text>
+        <Text style={{ fontSize: 12, opacity: 0.6 }}>{t('auth.passwordHint')}</Text>
       ) : null}
 
       {form.showPasswordError ? <ErrorText>{form.passwordErrorText!}</ErrorText> : null}
@@ -96,28 +98,28 @@ export function RegisterForm({ onSubmit, isLoading, error, clearError }: Props) 
             {acceptedLegal ? <View style={styles.checkboxDot} /> : null}
           </View>
           <Text style={styles.legalText}>
-            I agree to the{' '}
+            {t('auth.iAgreeTo')}{' '}
             <Text
               style={styles.legalLink}
               onPress={() => (legal?.termsUrl ? Linking.openURL(legal.termsUrl) : undefined)}
             >
-              Terms of Service
+              {t('auth.termsOfService')}
             </Text>{' '}
-            and{' '}
+            {t('common.and')}{' '}
             <Text
               style={styles.legalLink}
               onPress={() => (legal?.privacyUrl ? Linking.openURL(legal.privacyUrl) : undefined)}
             >
-              Privacy Policy
+              {t('auth.privacyPolicy')}
             </Text>
             .
           </Text>
         </Pressable>
-        {showLegalError ? <ErrorText>Please accept the terms to continue.</ErrorText> : null}
+        {showLegalError ? <ErrorText>{t('auth.acceptTermsError')}</ErrorText> : null}
       </View>
 
       <Button
-        title={isLoading ? 'Creating account...' : 'Create account'}
+        title={isLoading ? t('auth.creatingAccount') : t('auth.createAccount')}
         onPress={submit}
         disabled={!form.canSubmit || !acceptedLegal}
       />

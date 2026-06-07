@@ -1,30 +1,31 @@
 import type { FilterSection } from '@/src/shared/ui/FilterSheet';
 import { Clock3, Users, Tag, MapPin } from 'lucide-react-native';
 import { type Theme } from '@/src/shared/theme';
+import type { TFunction } from 'i18next';
 import {
   RECIPE_PORTIONS_OPTIONS,
   RECIPE_TIME_OPTIONS,
 } from '@/src/features/recipes/constants/recipePickerOptions';
 
-export const buildSavedFilters = (theme: Theme): FilterSection[] => [
+export const buildSavedFilters = (theme: Theme, t: TFunction): FilterSection[] => [
   {
     key: 'category',
-    title: 'Category',
+    title: t('recipes.filters.category'),
     type: 'chips',
     selectionMode: 'multi',
     layout: 'row',
     options: [
-      { key: 'breakfast', label: 'Breakfast' },
-      { key: 'lunch', label: 'Lunch' },
-      { key: 'dinner', label: 'Dinner' },
-      { key: 'snack', label: 'Snack' },
+      { key: 'breakfast', label: t('recipes.filters.breakfast') },
+      { key: 'lunch', label: t('recipes.filters.lunch') },
+      { key: 'dinner', label: t('recipes.filters.dinner') },
+      { key: 'snack', label: t('recipes.filters.snack') },
     ],
   },
   {
     key: 'ingredients',
-    title: 'Ingredients',
+    title: t('recipes.filters.ingredients'),
     type: 'tags',
-    placeholder: 'Add ingredient',
+    placeholder: t('recipes.filters.addIngredient'),
   },
   {
     key: 'time-portions',
@@ -33,15 +34,15 @@ export const buildSavedFilters = (theme: Theme): FilterSection[] => [
     items: [
       {
         key: 'time',
-        title: 'Cooking time',
-        placeholder: 'Any',
+        title: t('recipes.filters.cookingTime'),
+        placeholder: t('recipes.filters.any'),
         icon: <Clock3 color={theme.colors.primaryDark} size={20} strokeWidth={2.3} />,
         options: RECIPE_TIME_OPTIONS.map((opt) => ({ key: opt.value, label: opt.label })),
       },
       {
         key: 'portions',
-        title: 'Portions',
-        placeholder: 'Any',
+        title: t('recipes.filters.portions'),
+        placeholder: t('recipes.filters.any'),
         icon: <Users color={theme.colors.primaryDark} size={20} strokeWidth={2.3} />,
         options: RECIPE_PORTIONS_OPTIONS.map((opt) => ({ key: opt.value, label: opt.label })),
       },
@@ -49,16 +50,16 @@ export const buildSavedFilters = (theme: Theme): FilterSection[] => [
   },
 ];
 
-export const buildDiscoveryFilters = (theme: Theme): FilterSection[] => [
+export const buildDiscoveryFilters = (theme: Theme, t: TFunction): FilterSection[] => [
   {
     key: 'hideSaved',
-    title: 'Saved',
+    title: t('recipes.filters.saved'),
     type: 'segmented',
     layout: 'row',
     options: [
-      { key: 'show', label: 'Show all' },
-      { key: 'hide', label: 'Hide saved' },
-      { key: 'saved', label: 'Saved' },
+      { key: 'show', label: t('recipes.filters.showAll') },
+      { key: 'hide', label: t('recipes.filters.hideSaved') },
+      { key: 'saved', label: t('recipes.filters.saved') },
     ],
   },
   {
@@ -68,8 +69,8 @@ export const buildDiscoveryFilters = (theme: Theme): FilterSection[] => [
     items: [
       {
         key: 'category',
-        title: 'Category',
-        placeholder: 'Any',
+        title: t('recipes.filters.category'),
+        placeholder: t('recipes.filters.any'),
         icon: <Tag color={theme.colors.primaryDark} size={20} strokeWidth={2.3} />,
         options: [
           { key: 'Beef', label: 'Beef' },
@@ -82,8 +83,8 @@ export const buildDiscoveryFilters = (theme: Theme): FilterSection[] => [
       },
       {
         key: 'area',
-        title: 'Cuisine',
-        placeholder: 'Any',
+        title: t('recipes.filters.cuisine'),
+        placeholder: t('recipes.filters.any'),
         icon: <MapPin color={theme.colors.primaryDark} size={20} strokeWidth={2.3} />,
         options: [
           { key: 'American', label: 'American' },
@@ -99,8 +100,8 @@ export const buildDiscoveryFilters = (theme: Theme): FilterSection[] => [
   },
   {
     key: 'ingredients',
-    title: 'Ingredients',
+    title: t('recipes.filters.ingredients'),
     type: 'tags',
-    placeholder: 'Add ingredient',
+    placeholder: t('recipes.filters.addIngredient'),
   },
 ];

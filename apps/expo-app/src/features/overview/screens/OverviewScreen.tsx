@@ -11,6 +11,7 @@ import {
   useWindowDimensions,
   View,
 } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { LinearGradient } from 'expo-linear-gradient';
 import { ChevronRight, Flame } from 'lucide-react-native';
 import Carousel, { Pagination, type ICarouselInstance } from 'react-native-reanimated-carousel';
@@ -44,6 +45,7 @@ type OverviewScreenProps = {
 };
 
 function OverviewScreenNative({ theme, styles }: OverviewScreenProps) {
+  const { t } = useTranslation();
   const { state, data, actions } = useOverviewScreen();
   useBottomBarActions(null);
   const { width } = useWindowDimensions();
@@ -132,7 +134,7 @@ function OverviewScreenNative({ theme, styles }: OverviewScreenProps) {
                       {item.title}
                     </Text>
                     <Text style={styles.carouselSubtitle} numberOfLines={1}>
-                      {[item.category, item.area].filter(Boolean).join(' · ') || 'Discover recipe'}
+                      {[item.category, item.area].filter(Boolean).join(' · ') || t('overview.discoverRecipe')}
                     </Text>
                   </View>
                 </Pressable>
@@ -160,6 +162,7 @@ function OverviewScreenNative({ theme, styles }: OverviewScreenProps) {
 }
 
 function OverviewScreenWeb({ theme, styles }: OverviewScreenProps) {
+  const { t } = useTranslation();
   const { state, data, actions } = useOverviewScreen();
   useBottomBarActions(null);
   const { width } = useWindowDimensions();
@@ -224,7 +227,7 @@ function OverviewScreenWeb({ theme, styles }: OverviewScreenProps) {
                       {item.title}
                     </Text>
                     <Text style={styles.carouselSubtitle} numberOfLines={1}>
-                      {[item.category, item.area].filter(Boolean).join(' · ') || 'Discover recipe'}
+                      {[item.category, item.area].filter(Boolean).join(' · ') || t('overview.discoverRecipe')}
                     </Text>
                   </View>
                 </Pressable>
@@ -255,6 +258,7 @@ function OverviewScreenLayout({
   theme,
   styles,
 }: OverviewLayoutProps & OverviewScreenProps) {
+  const { t } = useTranslation();
   const hasPlan = Boolean(data.planId);
   const hasInspiration = data.inspiration.length > 0;
   const weekDays = useMemo(() => buildWeekDays(data.weekStart), [data.weekStart]);
@@ -271,7 +275,7 @@ function OverviewScreenLayout({
 
   return (
     <Screen
-      title="Overview"
+      title={t('overview.title')}
       scroll
       contentStyle={styles.content}
       refreshControl={
@@ -283,9 +287,9 @@ function OverviewScreenLayout({
           carouselNode
         ) : (
           <SectionEmpty
-            title="No inspiration yet"
-            description="Pull to refresh or head to discovery for more recipes."
-            actionLabel="Find new recipes"
+            title={t('overview.noInspirationYet')}
+            description={t('overview.noInspirationBody')}
+            actionLabel={t('overview.findNewRecipes')}
             onAction={actions.openDiscovery}
             actionIcon={<Flame size={16} color={theme.colors.primaryDark} />}
           />
@@ -299,8 +303,8 @@ function OverviewScreenLayout({
             style={({ pressed }) => [styles.findCard, pressed ? styles.findCardPressed : null]}
           >
             <View style={styles.findContent}>
-              <Text style={styles.findTitle}>Find new recipes</Text>
-              <Text style={styles.findSubtitle}>Browse the full inspiration catalog</Text>
+              <Text style={styles.findTitle}>{t('overview.findNewRecipes')}</Text>
+              <Text style={styles.findSubtitle}>{t('overview.browseInspirationCatalog')}</Text>
             </View>
             <View style={styles.findChevronWrap}>
               <ChevronRight size={20} color={theme.colors.primaryDark} strokeWidth={2.6} />
@@ -312,15 +316,15 @@ function OverviewScreenLayout({
       <Card style={styles.sectionSpacing}>
         <View style={styles.sectionHeader}>
           <View>
-            <Text style={styles.sectionTitle}>Weekly planner</Text>
+            <Text style={styles.sectionTitle}>{t('overview.weeklyPlanner')}</Text>
             <Text style={styles.sectionSubtitle}>{data.weekRangeLabel}</Text>
           </View>
           <View style={styles.weekBadge}>
-            <Text style={styles.weekBadgeText}>Week {data.weekNumber}</Text>
+            <Text style={styles.weekBadgeText}>{t('overview.weekLabel', { n: data.weekNumber })}</Text>
           </View>
         </View>
 
-        <Text style={styles.heroPlanned}>Planned meals: {data.plannedCount}</Text>
+        <Text style={styles.heroPlanned}>{t('overview.plannedMeals', { count: data.plannedCount })}</Text>
         <WeekStrip
           weekDays={weekDays}
           dayMealCounts={dayMealCounts}
@@ -337,10 +341,10 @@ function OverviewScreenLayout({
         >
           <View style={styles.weeklyCtaText}>
             <Text style={styles.weeklyCtaTitle}>
-              {hasPlan ? 'Open weekly plan' : 'Plan this week'}
+              {hasPlan ? t('overview.openWeeklyPlan') : t('overview.planThisWeek')}
             </Text>
             <Text style={styles.weeklyCtaSubtitle}>
-              {hasPlan ? 'See meals and adjust entries' : 'Start planning your week'}
+              {hasPlan ? t('overview.seeMealsAndAdjust') : t('overview.startPlanningWeek')}
             </Text>
           </View>
           <ChevronRight size={20} color={theme.colors.textOnPrimary} strokeWidth={2.8} />
@@ -348,31 +352,31 @@ function OverviewScreenLayout({
       </Card>
 
       <Card style={styles.sectionSpacing}>
-        <Text style={styles.sectionTitle}>Quick actions</Text>
+        <Text style={styles.sectionTitle}>{t('overview.quickActions')}</Text>
         <View style={styles.quickRows}>
           <ListRow
-            title="Add a recipe"
-            subtitle="Create a new recipe from scratch"
+            title={t('overview.addARecipe')}
+            subtitle={t('overview.createRecipeFromScratch')}
             onPress={actions.openNewRecipe}
             right={<ChevronRight size={18} color={theme.colors.primaryDark} strokeWidth={2.4} />}
           />
           <ListRow
-            title="Browse recipes"
-            subtitle="See your saved recipes"
+            title={t('overview.browseRecipes')}
+            subtitle={t('overview.seeSavedRecipes')}
             onPress={actions.openRecipes}
             right={<ChevronRight size={18} color={theme.colors.primaryDark} strokeWidth={2.4} />}
           />
           {data.activeListId ? (
             <ListRow
               title={data.activeListTitle}
-              subtitle={`${data.activeItemCount} items in your active list`}
+              subtitle={t('overview.shoppingListItems', { count: data.activeItemCount })}
               onPress={actions.openActiveList}
               right={<ChevronRight size={18} color={theme.colors.primaryDark} strokeWidth={2.4} />}
             />
           ) : (
             <ListRow
-              title="Open shopping list"
-              subtitle="View current list or archived lists"
+              title={t('overview.openShoppingList')}
+              subtitle={t('overview.viewCurrentOrArchived')}
               onPress={actions.openShoppingList}
               right={<ChevronRight size={18} color={theme.colors.primaryDark} strokeWidth={2.4} />}
             />

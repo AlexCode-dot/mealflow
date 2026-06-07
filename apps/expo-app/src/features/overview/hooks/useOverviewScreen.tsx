@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useState } from 'react';
 import { router } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 import { useFocusEffect } from '@react-navigation/native';
 import { weeklyPlansApi } from '@/src/features/weekly-plans/api/weeklyPlansApi';
 import { recipesApi } from '@/src/features/recipes/api/recipesApi';
@@ -62,6 +63,7 @@ export type OverviewView = {
 const EMPTY_LIST: ShoppingListListItem[] = [];
 
 export function useOverviewScreen(): OverviewView {
+  const { t } = useTranslation();
   const { showError } = useGlobalToast();
   const [weekPlan, setWeekPlan] = useState<WeeklyPlanListItem | null>(null);
   const [weekPlanDetails, setWeekPlanDetails] = useState<WeeklyPlan | null>(null);
@@ -208,11 +210,11 @@ export function useOverviewScreen(): OverviewView {
       inspiration,
       dayMealCounts,
       activeListId: activeList?.id ?? null,
-      activeListTitle: activeList?.title?.trim() || 'Active list',
+      activeListTitle: activeList?.title?.trim() || t('overview.activeList'),
       activeListCount: activeLists.length,
       activeItemCount,
     };
-  }, [activeLists, inspiration, recipeCount, weekPlan, weekPlanDetails, weekStart]);
+  }, [activeLists, inspiration, recipeCount, t, weekPlan, weekPlanDetails, weekStart]);
 
   const state = useMemo<OverviewState>(
     () => ({ isLoading, isRefreshing, error }),

@@ -9,6 +9,7 @@ import {
   useWindowDimensions,
 } from 'react-native';
 import { useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Trash2 } from 'lucide-react-native';
 import { FormSheet } from '@/src/shared/ui/FormSheet';
 import { TextField } from '@/src/shared/ui/TextField';
@@ -41,6 +42,7 @@ export function StepEditorSheet({
   onCancel,
   onDelete,
 }: Props) {
+  const { t } = useTranslation();
   const theme = useTheme();
   const styles = useThemedStyles(createStyles);
   const { height: screenHeight } = useWindowDimensions();
@@ -61,11 +63,11 @@ export function StepEditorSheet({
         onDelete ? (
           <Pressable onPress={onDelete} style={styles.deleteAction}>
             <Trash2 color={theme.colors.error} size={20} strokeWidth={2.2} />
-            <Text style={styles.deleteLabel}>Delete</Text>
+            <Text style={styles.deleteLabel}>{t('common.delete')}</Text>
           </Pressable>
         ) : null
       }
-      footer={<RecipeActionBar onCancel={onCancel} onSave={onSave} saveLabel="Save" />}
+      footer={<RecipeActionBar onCancel={onCancel} onSave={onSave} saveLabel={t('common.save')} />}
       footerFullBleed
     >
       <ScrollView
@@ -79,12 +81,12 @@ export function StepEditorSheet({
         keyboardShouldPersistTaps="handled"
       >
         <View style={styles.section}>
-          <Text style={styles.label}>Step description</Text>
+          <Text style={styles.label}>{t('recipes.stepDescription')}</Text>
           <TextField
             inputRef={descriptionInputRef}
             value={description}
             onChangeText={onChangeDescription}
-            placeholder="Description..."
+            placeholder={t('recipes.stepDescriptionPlaceholder')}
             autoCapitalize="sentences"
             multiline
             numberOfLines={4}
@@ -99,10 +101,10 @@ export function StepEditorSheet({
         </View>
         <View style={styles.preview}>
           <View style={styles.previewHeader}>
-            <Text style={styles.previewTitle}>Preview</Text>
+            <Text style={styles.previewTitle}>{t('common.preview')}</Text>
             <View style={styles.previewDivider} />
           </View>
-          <RecipeStepRow index={1} text={description || 'Step description'} showHandle />
+          <RecipeStepRow index={1} text={description || t('recipes.stepDescription')} showHandle />
         </View>
       </ScrollView>
     </FormSheet>

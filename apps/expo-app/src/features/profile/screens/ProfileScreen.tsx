@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { Linking, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import {
   CalendarDays,
   ChevronRight,
@@ -24,6 +25,7 @@ type Props = {
 };
 
 export function ProfileScreen({ showBack = false }: Props) {
+  const { t } = useTranslation();
   const theme = useTheme();
   const styles = useThemedStyles(createStyles);
   const view = useProfileScreen();
@@ -36,12 +38,12 @@ export function ProfileScreen({ showBack = false }: Props) {
 
   const openLegalUrl = async (url?: string) => {
     if (!url) {
-      showValidationError('Legal link is not configured yet.');
+      showValidationError(t('errors.legalLinkNotConfigured'));
       return;
     }
     const supported = await Linking.canOpenURL(url);
     if (!supported) {
-      showValidationError('Unable to open this link on your device.');
+      showValidationError(t('errors.unableToOpenLink'));
       return;
     }
     await Linking.openURL(url);
@@ -49,16 +51,16 @@ export function ProfileScreen({ showBack = false }: Props) {
 
   const copySupportEmail = async (email?: string) => {
     if (!email) {
-      showValidationError('Support email is not configured yet.');
+      showValidationError(t('errors.supportEmailNotConfigured'));
       return;
     }
     await Clipboard.setStringAsync(email);
-    show({ variant: 'success', message: 'Support email copied.' });
+    show({ variant: 'success', message: t('errors.supportEmailCopied') });
   };
 
   const openEmail = async (email?: string) => {
     if (!email) {
-      showValidationError('Support email is not configured yet.');
+      showValidationError(t('errors.supportEmailNotConfigured'));
       return;
     }
     const url = `mailto:${email}`;
@@ -91,7 +93,7 @@ export function ProfileScreen({ showBack = false }: Props) {
   return (
     <View style={styles.root}>
       <Screen
-        title="Profile"
+        title={t('profile.title')}
         scroll
         showBack={showBack}
         onBack={actions.handleBack}
@@ -108,31 +110,31 @@ export function ProfileScreen({ showBack = false }: Props) {
           </View>
           <View style={styles.heroContent}>
             <Text style={styles.heroName}>{data.displayName}</Text>
-            <Text style={styles.heroSubtitle}>MealFlow member</Text>
+            <Text style={styles.heroSubtitle}>{t('profile.memberLabel')}</Text>
             <Pressable style={styles.heroEdit} onPress={actions.openEdit}>
               <Pencil size={16} color={theme.colors.textOnPrimary} strokeWidth={2.6} />
-              <Text style={styles.heroEditText}>Edit Profile</Text>
+              <Text style={styles.heroEditText}>{t('profile.editProfile')}</Text>
             </Pressable>
           </View>
         </View>
 
         <View style={styles.statsRow}>
           <StatCard
-            label="Recipes"
+            label={t('profile.recipes')}
             value={data.recipeCount}
             icon={<NotebookText size={22} color="#1E5EC8" strokeWidth={2.3} />}
             iconBg="#DCE7FF"
             styles={styles}
           />
           <StatCard
-            label="Plans"
+            label={t('profile.plans')}
             value={data.planCount}
             icon={<CalendarDays size={22} color="#1E8E3E" strokeWidth={2.3} />}
             iconBg="#E1F6E7"
             styles={styles}
           />
           <StatCard
-            label="Lists"
+            label={t('profile.lists')}
             value={data.listCount}
             icon={<ListChecks size={22} color="#C57B13" strokeWidth={2.3} />}
             iconBg="#FFF0D6"
@@ -141,17 +143,17 @@ export function ProfileScreen({ showBack = false }: Props) {
         </View>
 
         <Card style={styles.infoCard} variant="premium">
-          <Text style={styles.infoTitle}>Contact Info</Text>
+          <Text style={styles.infoTitle}>{t('profile.contactInfo')}</Text>
           <View style={styles.infoDivider} />
           <InfoRow
-            label="Email"
-            value="Not available"
+            label={t('profile.emailLabel')}
+            value={t('profile.notAvailable')}
             icon={<Mail size={20} color="#2463EB" strokeWidth={2.4} />}
             iconBg="#E6EEFF"
             styles={styles}
           />
           <InfoRow
-            label="Member Since"
+            label={t('profile.memberSince')}
             value={data.memberSince}
             icon={<CalendarDays size={20} color="#7A3EE6" strokeWidth={2.4} />}
             iconBg="#F0E9FF"
@@ -160,10 +162,10 @@ export function ProfileScreen({ showBack = false }: Props) {
         </Card>
 
         <Card style={styles.infoCard} variant="premium">
-          <Text style={styles.infoTitle}>Legal</Text>
+          <Text style={styles.infoTitle}>{t('profile.legal')}</Text>
           <View style={styles.infoDivider} />
           <LegalRow
-            label="Privacy Policy"
+            label={t('profile.privacyPolicy')}
             onPress={() => openLegalUrl(legal?.privacyUrl)}
             icon={<ShieldCheck size={20} color="#0F9D58" strokeWidth={2.4} />}
             iconBg="#E3F7EB"
@@ -171,7 +173,7 @@ export function ProfileScreen({ showBack = false }: Props) {
             theme={theme}
           />
           <LegalRow
-            label="Terms of Service"
+            label={t('profile.termsOfService')}
             onPress={() => openLegalUrl(legal?.termsUrl)}
             icon={<FileText size={20} color="#2463EB" strokeWidth={2.4} />}
             iconBg="#E6EEFF"
@@ -181,11 +183,11 @@ export function ProfileScreen({ showBack = false }: Props) {
         </Card>
 
         <Card style={styles.infoCard} variant="premium">
-          <Text style={styles.infoTitle}>Support</Text>
+          <Text style={styles.infoTitle}>{t('profile.support')}</Text>
           <View style={styles.infoDivider} />
           <SupportRow
-            label="Contact support"
-            value={support?.email ?? 'Support email'}
+            label={t('profile.contactSupport')}
+            value={support?.email ?? t('legal.supportEmail')}
             icon={<Mail size={20} color="#2463EB" strokeWidth={2.4} />}
             iconBg="#E6EEFF"
             onPress={() => openEmail(support?.email)}
@@ -197,7 +199,7 @@ export function ProfileScreen({ showBack = false }: Props) {
 
         <Pressable style={styles.signOut} onPress={actions.logout}>
           <LogOut size={18} color={theme.colors.error} strokeWidth={2.4} />
-          <Text style={styles.signOutText}>Sign Out</Text>
+          <Text style={styles.signOutText}>{t('profile.signOut')}</Text>
         </Pressable>
       </Screen>
     </View>
@@ -522,7 +524,7 @@ function SupportRow({
       </Pressable>
       <Pressable style={styles.copyButton} onPress={onCopy}>
         <Copy size={14} color={theme.colors.textMuted} strokeWidth={2.2} />
-        <Text style={styles.copyText}>Copy</Text>
+        <Text style={styles.copyText}>{t('profile.copyLabel')}</Text>
       </Pressable>
     </View>
   );

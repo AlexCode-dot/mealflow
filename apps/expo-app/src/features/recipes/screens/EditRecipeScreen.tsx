@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 import DraggableFlatList from 'react-native-draggable-flatlist';
 import {
   Screen,
@@ -36,6 +37,7 @@ import { TAB_BAR } from '@/src/shared/ui/layout/tabBar';
 import { routes } from '@/src/core/navigation/routes';
 
 export function EditRecipeScreen() {
+  const { t } = useTranslation();
   const theme = useTheme();
   const styles = useThemedStyles(createStyles);
   const params = useLocalSearchParams<{ id?: string }>();
@@ -116,7 +118,7 @@ export function EditRecipeScreen() {
     () => [
       {
         key: 'cancel',
-        label: 'Cancel',
+        label: t('common.cancel'),
         icon: <XCircle color={actionColor} size={TAB_BAR.ICON_SIZE} strokeWidth={2.25} />,
         onPress: onCancel,
       },
@@ -124,10 +126,10 @@ export function EditRecipeScreen() {
         key: 'save',
         label:
           isUploading || state.isRemovingImage
-            ? 'Updating…'
+            ? t('recipes.updatingRecipe')
             : state.isSaving
-              ? 'Saving…'
-              : 'Save recipe',
+              ? t('recipes.savingRecipe')
+              : t('recipes.saveRecipe'),
         icon: <Download color={actionColor} size={TAB_BAR.ICON_SIZE} strokeWidth={2.25} />,
         onPress: onSave,
         disabled: !state.canSave || isUploading || state.isRemovingImage,
@@ -148,13 +150,14 @@ export function EditRecipeScreen() {
 
   const stickyAdd = useMemo(() => {
     if (editorState.tab === 'ingredients' && ingredientRows.length) {
-      return { label: 'Add ingredient', onPress: ingredientEditor.openAdd };
+      return { label: t('recipes.addIngredient'), onPress: ingredientEditor.openAdd };
     }
     if (editorState.tab === 'steps' && stepRows.length) {
-      return { label: 'Add step', onPress: stepEditor.openAdd };
+      return { label: t('recipes.addStep'), onPress: stepEditor.openAdd };
     }
     return null;
   }, [
+    t,
     editorState.tab,
     ingredientEditor.openAdd,
     ingredientRows.length,
@@ -163,7 +166,7 @@ export function EditRecipeScreen() {
   ]);
 
   return (
-    <Screen title="Edit Recipe" showBack scroll={false} contentStyle={styles.screenContent}>
+    <Screen title={t('recipes.editRecipe')} showBack scroll={false} contentStyle={styles.screenContent}>
       <View style={styles.root}>
         <RecipeSheetLayout
           hero={
@@ -218,16 +221,16 @@ export function EditRecipeScreen() {
                 }
                 empty={
                   <SectionEmpty
-                    title="No ingredients yet"
-                    description="Add your first ingredient to start building your recipe."
-                    actionLabel="Add ingredient"
+                    title={t('recipes.noIngredientsYet')}
+                    description={t('recipes.noIngredientsAddFirst')}
+                    actionLabel={t('recipes.addIngredient')}
                     onAction={ingredientEditor.openAdd}
                     actionIcon={
                       <Plus color={theme.colors.primaryDark} size={18} strokeWidth={2.5} />
                     }
                   />
                 }
-                addLabel="Add ingredient"
+                addLabel={t('recipes.addIngredient')}
                 onAdd={ingredientEditor.openAdd}
                 showInlineAdd={false}
               />
@@ -249,16 +252,16 @@ export function EditRecipeScreen() {
                 }
                 empty={
                   <SectionEmpty
-                    title="No steps yet"
-                    description="Add your first step to start building your recipe."
-                    actionLabel="Add step"
+                    title={t('recipes.noStepsYet')}
+                    description={t('recipes.noStepsAddFirst')}
+                    actionLabel={t('recipes.addStep')}
                     onAction={stepEditor.openAdd}
                     actionIcon={
                       <Plus color={theme.colors.primaryDark} size={18} strokeWidth={2.5} />
                     }
                   />
                 }
-                addLabel="Add step"
+                addLabel={t('recipes.addStep')}
                 onAdd={stepEditor.openAdd}
                 showInlineAdd={false}
               />
@@ -280,9 +283,9 @@ export function EditRecipeScreen() {
 
       <ConfirmSheet
         visible={showRemoveImage}
-        title="Remove photo?"
-        description="This will remove the photo from your recipe."
-        confirmLabel="Remove"
+        title={t('recipes.removePhotoTitle')}
+        description={t('recipes.removePhotoBody')}
+        confirmLabel={t('recipes.remove')}
         confirmVariant="danger"
         onCancel={() => setShowRemoveImage(false)}
         onConfirm={confirmRemoveImage}
@@ -291,7 +294,7 @@ export function EditRecipeScreen() {
 
       <IngredientEditorSheet
         visible={ingredientEditor.isOpen}
-        title={ingredientEditor.editingIndex === null ? 'Add Ingredient' : 'Edit Ingredient'}
+        title={ingredientEditor.editingIndex === null ? t('recipes.addIngredientTitle') : t('recipes.editIngredientTitle')}
         name={ingredientEditor.draft.name}
         unit={ingredientEditor.draft.unit}
         amount={ingredientEditor.draft.amount}
@@ -308,7 +311,7 @@ export function EditRecipeScreen() {
 
       <StepEditorSheet
         visible={stepEditor.isOpen}
-        title={stepEditor.editingIndex === null ? 'Add step' : 'Edit step'}
+        title={stepEditor.editingIndex === null ? t('recipes.addStepTitle') : t('recipes.editStepTitle')}
         description={stepEditor.draft}
         onChangeDescription={stepEditor.setDescription}
         error={stepEditor.error}

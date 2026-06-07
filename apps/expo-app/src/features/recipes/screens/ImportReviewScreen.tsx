@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, Animated, Pressable, StyleSheet, Text, View } from 'react-native';
 import type { TextInput } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 import DraggableFlatList from 'react-native-draggable-flatlist';
 import {
   Button,
@@ -41,6 +42,7 @@ import { TAB_BAR } from '@/src/shared/ui/layout/tabBar';
 import { routes } from '@/src/core/navigation/routes';
 
 export function ImportReviewScreen() {
+  const { t } = useTranslation();
   const theme = useTheme();
   const styles = useThemedStyles(createStyles);
   const params = useLocalSearchParams<{
@@ -119,7 +121,7 @@ export function ImportReviewScreen() {
         review.form.setImageFileId(response.imageFileId);
         setFramePickerOpen(false);
       } catch {
-        setFramePickerError('Could not upload that frame. Try again.');
+        setFramePickerError(t('recipes.review.uploadFrameFailed'));
       } finally {
         setIsUploadingFrame(false);
       }
@@ -153,14 +155,14 @@ export function ImportReviewScreen() {
     () => [
       {
         key: 'cancel',
-        label: 'Cancel',
+        label: t('common.cancel'),
         icon: <XCircle color={actionColor} size={TAB_BAR.ICON_SIZE} strokeWidth={2.25} />,
         onPress: onCancel,
       },
       {
         key: 'save',
         label:
-          isUploading || isUploadingFrame ? 'Uploading…' : isSaving ? 'Saving…' : 'Save recipe',
+          isUploading || isUploadingFrame ? t('recipes.uploadingRecipe') : isSaving ? t('recipes.savingRecipe') : t('recipes.saveRecipe'),
         icon: <Download color={actionColor} size={TAB_BAR.ICON_SIZE} strokeWidth={2.25} />,
         onPress: submit,
         disabled: !canSubmit || isUploading || isUploadingFrame,
@@ -202,13 +204,13 @@ export function ImportReviewScreen() {
 
   const stickyAdd = useMemo(() => {
     if (editorState.tab === 'ingredients' && review.ingredients.length) {
-      return { label: 'Add ingredient', onPress: ingredientEditor.openAdd };
+      return { label: t('recipes.addIngredient'), onPress: ingredientEditor.openAdd };
     }
     if (editorState.tab === 'steps' && review.steps.length) {
-      return { label: 'Add step', onPress: stepEditor.openAdd };
+      return { label: t('recipes.addStep'), onPress: stepEditor.openAdd };
     }
     return null;
-  }, [
+  }, [t,
     editorState.tab,
     ingredientEditor.openAdd,
     review.ingredients.length,
@@ -218,10 +220,10 @@ export function ImportReviewScreen() {
 
   if (review.state.isLoading) {
     return (
-      <Screen title="Review recipe" showBack onBack={() => router.back()} scroll={false}>
+      <Screen title={t('recipes.review.title')} showBack onBack={() => router.back()} scroll={false}>
         <View style={styles.loading}>
           <ActivityIndicator color={theme.colors.primaryDark} />
-          <Text style={styles.mutedText}>Loading extraction…</Text>
+          <Text style={styles.mutedText}>{t('recipes.review.loadingExtraction')}</Text>
         </View>
       </Screen>
     );
@@ -229,11 +231,11 @@ export function ImportReviewScreen() {
 
   if (review.state.loadError) {
     return (
-      <Screen title="Review recipe" showBack onBack={() => router.back()} scroll>
+      <Screen title={t('recipes.review.title')} showBack onBack={() => router.back()} scroll>
         <View style={styles.errorBlock}>
           <ErrorText>{review.state.loadError}</ErrorText>
-          <Button title="Retry" variant="secondary" onPress={review.reload} />
-          <Button title="Back" variant="secondary" onPress={() => router.back()} />
+          <Button title={t('common.retry')} variant="secondary" onPress={review.reload} />
+          <Button title={t('common.back')} variant="secondary" onPress={() => router.back()} />
         </View>
       </Screen>
     );
@@ -243,7 +245,7 @@ export function ImportReviewScreen() {
 
   return (
     <Screen
-      title="Review recipe"
+      title={t('recipes.review.title')}
       showBack
       onBack={() => router.back()}
       scroll={false}
@@ -268,7 +270,7 @@ export function ImportReviewScreen() {
             <View style={styles.reviewHint}>
               <Info color={theme.colors.primaryDark} size={14} strokeWidth={2.5} />
               <Text style={styles.reviewHintText} numberOfLines={1}>
-                Review the details before saving.
+                {t('recipes.review.reviewDetails')}
               </Text>
             </View>
           ) : null}
@@ -285,7 +287,7 @@ export function ImportReviewScreen() {
                 ]}
                 accessibilityRole="button"
                 accessibilityLabel={
-                  heroImageUrl ? 'Change cover frame' : 'Pick a frame from your video'
+                  heroImageUrl ? t('recipes.review.changeCoverFrame') : t('recipes.review.pickVideoFrame')
                 }
               >
                 <View style={styles.framePickerIcon}>
@@ -298,12 +300,12 @@ export function ImportReviewScreen() {
                 <View style={styles.framePickerTextBlock}>
                   <Text style={styles.framePickerLabel}>
                     {isUploadingFrame
-                      ? 'Uploading frame…'
+                      ? t('recipes.review.uploadingFrame')
                       : heroImageUrl
-                        ? 'Change cover frame'
-                        : 'Use a frame as cover'}
+                        ? t('recipes.review.changeCoverFrame')
+                        : t('recipes.review.useFrameAsCover')}
                   </Text>
-                  <Text style={styles.framePickerHint}>From your video</Text>
+                  <Text style={styles.framePickerHint}>{t('recipes.review.fromYourVideo')}</Text>
                 </View>
                 {!isUploadingFrame ? (
                   <ChevronRight color={theme.colors.primaryDark} size={20} strokeWidth={2.5} />
@@ -357,16 +359,16 @@ export function ImportReviewScreen() {
                 }
                 empty={
                   <SectionEmpty
-                    title="No ingredients"
-                    description="Nothing was extracted. Add ingredients manually."
-                    actionLabel="Add ingredient"
+                    title={t('recipes.review.noIngredients')}
+                    description={t('recipes.review.noIngredientsBody')}
+                    actionLabel={t('recipes.addIngredient')}
                     onAction={ingredientEditor.openAdd}
                     actionIcon={
                       <Plus color={theme.colors.primaryDark} size={18} strokeWidth={2.5} />
                     }
                   />
                 }
-                addLabel="Add ingredient"
+                addLabel={t('recipes.addIngredient')}
                 onAdd={ingredientEditor.openAdd}
                 showInlineAdd={false}
               />
@@ -388,16 +390,16 @@ export function ImportReviewScreen() {
                 }
                 empty={
                   <SectionEmpty
-                    title="No steps"
-                    description="Nothing was extracted. Add steps manually."
-                    actionLabel="Add step"
+                    title={t('recipes.review.noSteps')}
+                    description={t('recipes.review.noStepsBody')}
+                    actionLabel={t('recipes.addStep')}
                     onAction={stepEditor.openAdd}
                     actionIcon={
                       <Plus color={theme.colors.primaryDark} size={18} strokeWidth={2.5} />
                     }
                   />
                 }
-                addLabel="Add step"
+                addLabel={t('recipes.addStep')}
                 onAdd={stepEditor.openAdd}
                 showInlineAdd={false}
               />
@@ -419,9 +421,9 @@ export function ImportReviewScreen() {
 
       <ConfirmSheet
         visible={showRemoveImage}
-        title="Remove photo?"
-        description="This will remove the photo from your imported recipe."
-        confirmLabel="Remove"
+        title={t('recipes.review.removePhotoTitle')}
+        description={t('recipes.review.removePhotoBody')}
+        confirmLabel={t('recipes.remove')}
         confirmVariant="danger"
         onCancel={() => setShowRemoveImage(false)}
         onConfirm={confirmRemoveImage}
@@ -437,7 +439,7 @@ export function ImportReviewScreen() {
 
       <IngredientEditorSheet
         visible={ingredientEditor.isOpen}
-        title={ingredientEditor.editingIndex === null ? 'Add Ingredient' : 'Edit Ingredient'}
+        title={ingredientEditor.editingIndex === null ? t('recipes.addIngredientTitle') : t('recipes.editIngredientTitle')}
         name={ingredientEditor.draft.name}
         unit={ingredientEditor.draft.unit}
         amount={ingredientEditor.draft.amount}
@@ -454,7 +456,7 @@ export function ImportReviewScreen() {
 
       <StepEditorSheet
         visible={stepEditor.isOpen}
-        title={stepEditor.editingIndex === null ? 'Add step' : 'Edit step'}
+        title={stepEditor.editingIndex === null ? t('recipes.addStepTitle') : t('recipes.editStepTitle')}
         description={stepEditor.draft}
         onChangeDescription={stepEditor.setDescription}
         error={stepEditor.error}

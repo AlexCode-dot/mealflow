@@ -1,3 +1,4 @@
+import '@/src/shared/i18n/i18n';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { StyleSheet } from 'react-native';
 import { Stack, router } from 'expo-router';
@@ -8,6 +9,7 @@ import { GlobalToastHost, GlobalToastProvider } from '@/src/shared/ui';
 import { WebFrame } from '@/src/shared/ui/WebFrame';
 import { ThemeProvider } from '@/src/shared/theme';
 import { ThemeBootstrap } from '@/src/core/theme/ThemeBootstrap';
+import { I18nBootstrap } from '@/src/shared/i18n';
 import '@/src/core/monitoring/sentry';
 
 export default function RootLayout() {
@@ -24,6 +26,7 @@ export default function RootLayout() {
       <GlobalToastProvider>
         <ThemeProvider>
           <ThemeBootstrap />
+          <I18nBootstrap />
           <WebFrame>
             <GlobalToastHost />
             <Stack screenOptions={{ headerShown: false }}>

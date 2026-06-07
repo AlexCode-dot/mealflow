@@ -3,10 +3,12 @@ import type { ReactNode } from 'react';
 import { Linking, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
 import Constants from 'expo-constants';
 import * as Clipboard from 'expo-clipboard';
+import { useTranslation } from 'react-i18next';
 import {
   ChevronRight,
   FileText,
   KeyRound,
+  Languages,
   LogOut,
   Mail,
   Palette,
@@ -16,6 +18,7 @@ import {
 } from 'lucide-react-native';
 import { useSettingsScreen } from '@/src/features/settings/hooks/useSettingsScreen';
 import { ThemePickerSheet } from '@/src/features/settings/ui/ThemePickerSheet';
+import { LanguagePickerSheet } from '@/src/features/settings/ui/LanguagePickerSheet';
 import { ConfirmSheet, ToastBanner, LoadingScreen, Screen, useGlobalToast } from '@/src/shared/ui';
 import { type Theme, useTheme, useThemedStyles } from '@/src/shared/theme';
 
@@ -25,6 +28,7 @@ export function SettingsScreen() {
   const view = useSettingsScreen();
   const { state, data, actions, modal, toast } = view;
   const { toast: globalToast, showValidationError, show } = useGlobalToast();
+  const { t } = useTranslation();
 
   const appVersion = Constants.expoConfig?.version ?? Constants.expoConfig?.sdkVersion ?? '0.1';
   const legal = Constants.expoConfig?.extra?.legal as
@@ -36,14 +40,18 @@ export function SettingsScreen() {
     return data.themeOptions.find((option) => option.value === data.theme)?.label ?? data.theme;
   }, [data.theme, data.themeOptions]);
 
+  const languageLabel = useMemo(() => {
+    return data.languageOptions.find((option) => option.value === data.language)?.label ?? data.language;
+  }, [data.language, data.languageOptions]);
+
   const openLegalUrl = async (url?: string) => {
     if (!url) {
-      showValidationError('Legal link is not configured yet.');
+      showValidationError(t('errors.legalLinkNotConfigured'));
       return;
     }
     const supported = await Linking.canOpenURL(url);
     if (!supported) {
-      showValidationError('Unable to open this link on your device.');
+      showValidationError(t('errors.unableToOpenLink'));
       return;
     }
     await Linking.openURL(url);
@@ -51,14 +59,14 @@ export function SettingsScreen() {
 
   const openEmail = async (email?: string) => {
     if (!email) {
-      showValidationError('Support email is not configured yet.');
+      showValidationError(t('errors.supportEmailNotConfigured'));
       return;
     }
     const url = `mailto:${email}`;
     const supported = await Linking.canOpenURL(url);
     if (!supported) {
       await Clipboard.setStringAsync(email);
-      show({ variant: 'success', message: 'Support email copied.' });
+      show({ variant: 'success', message: t('errors.supportEmailCopied') });
       return;
     }
     await Linking.openURL(url);
@@ -85,19 +93,19 @@ export function SettingsScreen() {
   return (
     <View style={styles.root}>
       <Screen
-        title="Settings"
+        title={t('settings.title')}
         scroll
         refreshControl={
           <RefreshControl refreshing={state.isRefreshing} onRefresh={actions.handleRefresh} />
         }
       >
         <View style={styles.list}>
-          <ProfileBanner onPress={actions.openProfileEdit} styles={styles} theme={theme} />
+          <ProfileBanner onPress={actions.openProfileEdit} styles={styles} theme={theme} t={t} />
 
-          <SectionHeader title="Preferences" styles={styles} />
+          <SectionHeader title={t('settings.preferences')} styles={styles} />
           <View style={styles.sectionGroup}>
             <SettingsRow
-              title="Theme"
+              title={t('settings.theme')}
               subtitle={themeLabel}
               onPress={actions.openThemePicker}
               icon={<Palette size={22} color={theme.colors.textMuted} strokeWidth={2.3} />}
@@ -106,8 +114,17 @@ export function SettingsScreen() {
               styles={styles}
             />
             <SettingsRow
-              title="About & Legal"
-              subtitle={`Version ${appVersion}`}
+              title={t('settings.language.title')}
+              subtitle={languageLabel}
+              onPress={actions.openLanguagePicker}
+              icon={<Languages size={22} color={theme.colors.textMuted} strokeWidth={2.3} />}
+              iconBg={theme.colors.bgLight}
+              right={<ChevronRight size={22} color={theme.colors.textMuted} strokeWidth={2.4} />}
+              styles={styles}
+            />
+            <SettingsRow
+              title={t('settings.aboutAndLegal')}
+              subtitle={t('common.version', { version: appVersion })}
               onPress={actions.openLegal}
               icon={<FileText size={22} color={theme.colors.textMuted} strokeWidth={2.3} />}
               iconBg={theme.colors.bgLight}
@@ -116,19 +133,19 @@ export function SettingsScreen() {
             />
           </View>
 
-          <SectionHeader title="Legal" styles={styles} />
+          <SectionHeader title={t('settings.legal')} styles={styles} />
           <View style={styles.sectionGroup}>
             <SettingsRow
-              title="Privacy Policy"
-              subtitle="Read our privacy policy"
+              title={t('settings.privacyPolicy')}
+              subtitle={t('settings.readPrivacyPolicy')}
               onPress={() => openLegalUrl(legal?.privacyUrl)}
               icon={<ShieldCheck size={22} color={theme.colors.textMuted} strokeWidth={2.3} />}
               iconBg={theme.colors.bgLight}
               styles={styles}
             />
             <SettingsRow
-              title="Terms of Service"
-              subtitle="Read the terms of service"
+              title={t('settings.termsOfService')}
+              subtitle={t('settings.readTermsOfService')}
               onPress={() => openLegalUrl(legal?.termsUrl)}
               icon={<FileText size={22} color={theme.colors.textMuted} strokeWidth={2.3} />}
               iconBg={theme.colors.bgLight}
@@ -136,11 +153,11 @@ export function SettingsScreen() {
             />
           </View>
 
-          <SectionHeader title="Support" styles={styles} />
+          <SectionHeader title={t('settings.support')} styles={styles} />
           <View style={styles.sectionGroup}>
             <SettingsRow
-              title="Contact support"
-              subtitle={support?.email ?? 'Send us an email'}
+              title={t('settings.contactSupport')}
+              subtitle={support?.email ?? t('settings.sendUsAnEmail')}
               onPress={() => openEmail(support?.email)}
               icon={<Mail size={22} color={theme.colors.textMuted} strokeWidth={2.3} />}
               iconBg={theme.colors.bgLight}
@@ -148,11 +165,11 @@ export function SettingsScreen() {
             />
           </View>
 
-          <SectionHeader title="Developer" styles={styles} />
+          <SectionHeader title={t('settings.developer')} styles={styles} />
           <View style={styles.sectionGroup}>
             <SettingsRow
-              title="Developer access"
-              subtitle="Generate API tokens for third-party apps"
+              title={t('settings.developerAccess')}
+              subtitle={t('settings.developerAccessSubtitle')}
               onPress={actions.openDeveloperAccess}
               icon={<KeyRound size={22} color={theme.colors.textMuted} strokeWidth={2.3} />}
               iconBg={theme.colors.bgLight}
@@ -161,19 +178,19 @@ export function SettingsScreen() {
             />
           </View>
 
-          <SectionHeader title="Account" styles={styles} />
+          <SectionHeader title={t('settings.account')} styles={styles} />
           <View style={styles.sectionGroup}>
             <SettingsRow
-              title="Logout"
-              subtitle="Sign out of MealFlow"
+              title={t('settings.logout')}
+              subtitle={t('settings.signOutOfMealFlow')}
               onPress={actions.logout}
               icon={<LogOut size={22} color={theme.colors.textMuted} strokeWidth={2.3} />}
               iconBg={theme.colors.bgLight}
               styles={styles}
             />
             <SettingsRow
-              title="Delete account"
-              subtitle="Permanently remove your data"
+              title={t('settings.deleteAccount')}
+              subtitle={t('settings.permanentlyRemoveData')}
               onPress={actions.openDeleteConfirm}
               icon={<Trash2 size={22} color={theme.colors.error} strokeWidth={2.3} />}
               iconBg={theme.colors.errorBg}
@@ -193,14 +210,21 @@ export function SettingsScreen() {
         onClose={actions.closeThemePicker}
       />
 
+      <LanguagePickerSheet
+        visible={modal.languageOpen}
+        value={data.language}
+        onChange={actions.setLanguage}
+        onClose={actions.closeLanguagePicker}
+      />
+
       <ConfirmSheet
         visible={modal.deleteOpen}
-        title="Delete account?"
-        description="This will permanently delete your account and all your data. This cannot be undone."
-        confirmLabel={state.isDeleting ? 'Deleting…' : 'Delete account'}
+        title={t('settings.deleteAccountConfirmTitle')}
+        description={t('settings.deleteAccountConfirmBody')}
+        confirmLabel={state.isDeleting ? t('settings.deletingAccount') : t('settings.deleteAccount')}
         confirmVariant="danger"
         disabled={state.isDeleting}
-        cancelLabel="Cancel"
+        cancelLabel={t('common.cancel')}
         onConfirm={actions.confirmDelete}
         onCancel={actions.closeDeleteConfirm}
       />
@@ -383,10 +407,12 @@ function ProfileBanner({
   onPress,
   styles,
   theme,
+  t,
 }: {
   onPress: () => void;
   styles: ReturnType<typeof createStyles>;
   theme: Theme;
+  t: (key: string) => string;
 }) {
   return (
     <Pressable onPress={onPress} style={({ pressed }) => (pressed ? styles.rowPressed : null)}>
@@ -395,8 +421,8 @@ function ProfileBanner({
           <UserRound size={28} color={theme.colors.textOnPrimary} strokeWidth={2.4} />
         </View>
         <View style={styles.rowText}>
-          <Text style={styles.profileTitle}>My Profile</Text>
-          <Text style={styles.profileSubtitle}>Edit your details</Text>
+          <Text style={styles.profileTitle}>{t('settings.myProfile')}</Text>
+          <Text style={styles.profileSubtitle}>{t('settings.editYourDetails')}</Text>
         </View>
         <ChevronRight
           size={24}

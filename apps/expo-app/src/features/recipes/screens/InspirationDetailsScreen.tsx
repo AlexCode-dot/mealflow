@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, Image, StyleSheet, Text, View } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 import { Bookmark, MapPin, ShoppingBasket, Utensils } from 'lucide-react-native';
 import {
   IconStatRow,
@@ -24,12 +25,13 @@ import {
 } from '@/src/features/recipes/ui';
 import { useToastState } from '@/src/shared/hooks/useToastState';
 import { TAB_BAR } from '@/src/shared/ui/layout/tabBar';
-import { RECIPE_CATEGORY_OPTIONS } from '@/src/features/recipes/constants/recipePickerOptions';
+import { getRecipeCategoryOptions } from '@/src/features/recipes/constants/recipePickerOptions';
 import { routes } from '@/src/core/navigation/routes';
 import { normalizePath } from '@/src/core/navigation/normalizePath';
 import { buildHref } from '@/src/core/navigation/buildHref';
 
 export function InspirationDetailsScreen() {
+  const { t } = useTranslation();
   const theme = useTheme();
   const styles = useThemedStyles(createStyles);
   const params = useLocalSearchParams<{ id?: string; returnTo?: string }>();
@@ -66,7 +68,7 @@ export function InspirationDetailsScreen() {
 
   const onSaveWithCategory = useCallback(async () => {
     if (!mealType) {
-      showValidationError('Choose a category before saving.');
+      showValidationError(t('recipes.chooseCategory'));
       return;
     }
 
@@ -84,7 +86,7 @@ export function InspirationDetailsScreen() {
     () => [
       {
         key: 'save',
-        label: state.isSaving ? 'Saving…' : 'Save recipe',
+        label: state.isSaving ? t('recipes.savingRecipe') : t('recipes.saveRecipe'),
         icon: <Bookmark color={actionColor} size={TAB_BAR.ICON_SIZE} strokeWidth={2.3} />,
         onPress: onSave,
         disabled: state.isSaving || !state.recipe,
@@ -134,7 +136,7 @@ export function InspirationDetailsScreen() {
 
   return (
     <Screen
-      title={state.isLoading ? 'Inspiration' : (state.recipe?.title ?? 'Inspiration')}
+      title={state.isLoading ? t('recipes.inspiration') : (state.recipe?.title ?? t('recipes.inspiration'))}
       showBack
       showProfileIcon={false}
       onBack={() => {
@@ -175,7 +177,7 @@ export function InspirationDetailsScreen() {
                 )}
                 {isSaved ? (
                   <View style={styles.savedBadge}>
-                    <Text style={styles.savedBadgeText}>Saved</Text>
+                    <Text style={styles.savedBadgeText}>{t('recipes.saved')}</Text>
                   </View>
                 ) : null}
               </View>
@@ -217,9 +219,9 @@ export function InspirationDetailsScreen() {
 
         <RecipePickerSheet
           visible={pickerOpen}
-          title="Meal type"
+          title={t('recipes.mealType')}
           value={mealType}
-          options={RECIPE_CATEGORY_OPTIONS}
+          options={getRecipeCategoryOptions(t)}
           onChange={setMealType}
           onClose={() => setPickerOpen(false)}
           onDone={onSaveWithCategory}
@@ -227,7 +229,7 @@ export function InspirationDetailsScreen() {
 
         <ModalSheet visible={stepOpen} onClose={() => setStepOpen(false)}>
           <View style={styles.stepSheet}>
-            <Text style={styles.stepTitle}>{stepIndex ? `Step ${stepIndex}` : 'Step'}</Text>
+            <Text style={styles.stepTitle}>{stepIndex ? t('recipes.stepLabel', { n: stepIndex }) : t('recipes.step')}</Text>
             <View style={styles.stepBody}>
               {splitStepParagraphs(stepText).map((paragraph, index) => (
                 <View key={`${index}-${paragraph}`} style={styles.stepParagraphRow}>
@@ -241,8 +243,8 @@ export function InspirationDetailsScreen() {
 
         <ModalSheet visible={titleOpen} onClose={() => setTitleOpen(false)}>
           <View style={styles.titleSheet}>
-            <Text style={styles.titleSheetHeading}>Recipe title</Text>
-            <Text style={styles.titleSheetText}>{state.recipe?.title ?? 'Inspiration'}</Text>
+            <Text style={styles.titleSheetHeading}>{t('recipes.recipeTitle')}</Text>
+            <Text style={styles.titleSheetText}>{state.recipe?.title ?? t('recipes.inspiration')}</Text>
           </View>
         </ModalSheet>
       </View>

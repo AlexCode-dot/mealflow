@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Animated, Easing, StyleSheet, Text, View } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 import { routes } from '@/src/core/navigation/routes';
 import {
   AlertTriangle,
@@ -14,16 +15,18 @@ import { useRecipeExtraction } from '@/src/features/recipes/hooks';
 
 type MediaKind = 'image' | 'video';
 
-const PROCESSING_STEPS: { phase: 'uploading' | 'processing'; label: string; body: string }[] = [
+type ProcessingStep = { phase: 'uploading' | 'processing'; labelKey: string; bodyKey: string };
+
+const PROCESSING_STEPS: ProcessingStep[] = [
   {
     phase: 'uploading',
-    label: 'Uploading…',
-    body: 'Sending your file to MealFlow.',
+    labelKey: 'recipes.import.uploadingFile',
+    bodyKey: 'recipes.import.uploadingBody',
   },
   {
     phase: 'processing',
-    label: 'Reading the recipe…',
-    body: 'Pulling out ingredients, steps and timings.',
+    labelKey: 'recipes.import.readingRecipe',
+    bodyKey: 'recipes.import.readingBody',
   },
 ];
 
@@ -127,12 +130,14 @@ export function ImportRecipeScreen() {
   const showLaunching = state.phase === 'idle' && pickerInFlight;
   const showFallbackPickers = state.phase === 'idle' && !inProgress && !showLaunching;
 
+  const { t } = useTranslation();
+
   return (
-    <Screen title="Import recipe" showBack onBack={() => router.back()} scroll>
-      {showLaunching ? <LaunchingView kind={lastMediaKind ?? 'image'} theme={theme} /> : null}
+    <Screen title={t('recipes.import.title')} showBack onBack={() => router.back()} scroll>
+      {showLaunching ? <LaunchingView kind={lastMediaKind ?? 'image'} theme={theme} t={t} /> : null}
 
       {inProgress ? (
-        <ProgressView phase={state.phase as 'uploading' | 'processing'} theme={theme} />
+        <ProgressView phase={state.phase as 'uploading' | 'processing'} theme={theme} t={t} />
       ) : null}
 
       {state.phase === 'failed' ? (
@@ -145,6 +150,7 @@ export function ImportRecipeScreen() {
           }}
           onCancel={() => router.back()}
           theme={theme}
+          t={t}
         />
       ) : null}
 
@@ -154,13 +160,14 @@ export function ImportRecipeScreen() {
           preferredKind={lastMediaKind}
           onPickImage={() => void startKind('image')}
           onPickVideo={() => void startKind('video')}
+          t={t}
         />
       ) : null}
     </Screen>
   );
 }
 
-function LaunchingView({ kind, theme }: { kind: MediaKind; theme: Theme }) {
+function LaunchingView({ kind, theme, t }: { kind: MediaKind; theme: Theme; t: ReturnType<typeof useTranslation>['t'] }) {
   const styles = useThemedStyles(createStyles);
   const Icon = kind === 'video' ? VideoIcon : ImageIcon;
   return (
@@ -169,13 +176,13 @@ function LaunchingView({ kind, theme }: { kind: MediaKind; theme: Theme }) {
         <Icon color={theme.colors.primaryDark} size={26} strokeWidth={2.25} />
       </View>
       <Text style={styles.launchingText}>
-        Opening {kind === 'video' ? 'video' : 'photo'} library…
+        {kind === 'video' ? t('recipes.import.openingVideoLibrary') : t('recipes.import.openingPhotoLibrary')}
       </Text>
     </View>
   );
 }
 
-function ProgressView({ phase, theme }: { phase: 'uploading' | 'processing'; theme: Theme }) {
+function ProgressView({ phase, theme, t }: { phase: 'uploading' | 'processing'; theme: Theme; t: ReturnType<typeof useTranslation>['t'] }) {
   const styles = useThemedStyles(createStyles);
   const pulse = useRef(new Animated.Value(0)).current;
   const rotate = useRef(new Animated.Value(0)).current;
@@ -234,8 +241,8 @@ function ProgressView({ phase, theme }: { phase: 'uploading' | 'processing'; the
       </View>
 
       <View style={styles.progressText}>
-        <Text style={styles.progressLabel}>{step.label}</Text>
-        <Text style={styles.progressBody}>{step.body}</Text>
+        <Text style={styles.progressLabel}>{t(step.labelKey as Parameters<typeof t>[0])}</Text>
+        <Text style={styles.progressBody}>{t(step.bodyKey as Parameters<typeof t>[0])}</Text>
       </View>
 
       <View style={styles.progressSteps}>
@@ -260,16 +267,14 @@ function ProgressView({ phase, theme }: { phase: 'uploading' | 'processing'; the
                   isPast ? styles.stepLabelPast : null,
                 ]}
               >
-                {s.label.replace('…', '')}
+                {t(s.labelKey as Parameters<typeof t>[0]).replace('…', '')}
               </Text>
             </View>
           );
         })}
       </View>
 
-      <Text style={styles.progressFootnote}>
-        This usually takes 5–30 seconds. You can keep the app open.
-      </Text>
+      <Text style={styles.progressFootnote}>{t('recipes.import.processingHint')}</Text>
     </View>
   );
 }
@@ -280,30 +285,32 @@ function FailedView({
   onRetry,
   onCancel,
   theme,
+  t,
 }: {
   error: string | null;
   mediaKind: MediaKind;
   onRetry: () => void;
   onCancel: () => void;
   theme: Theme;
+  t: ReturnType<typeof useTranslation>[‘t’];
 }) {
   const styles = useThemedStyles(createStyles);
-  const retryLabel = mediaKind === 'video' ? 'Pick a different video' : 'Pick a different photo';
+  const retryLabel = mediaKind === ‘video’ ? t(‘recipes.import.pickDifferentVideo’) : t(‘recipes.import.pickDifferentPhoto’);
   return (
     <View style={styles.failedWrap}>
       <View style={styles.failedIcon}>
         <AlertTriangle color={theme.colors.error} size={28} strokeWidth={2.25} />
       </View>
-      <Text style={styles.failedTitle}>That didn&apos;t work</Text>
+      <Text style={styles.failedTitle}>{t(‘recipes.import.errorTitle’)}</Text>
       <Text style={styles.failedBody}>
         {error ??
-          (mediaKind === 'video'
-            ? 'We couldn’t read a recipe from this clip. Try a shorter or clearer one.'
-            : 'We couldn’t read a recipe from this photo. Try a clearer shot.')}
+          (mediaKind === ‘video’
+            ? t(‘recipes.import.videoErrorBody’)
+            : t(‘recipes.import.photoErrorBody’))}
       </Text>
       <View style={styles.failedActions}>
         <Button title={retryLabel} variant="primary" onPress={onRetry} />
-        <Button title="Cancel" variant="secondary" onPress={onCancel} />
+        <Button title={t(‘common.cancel’)} variant="secondary" onPress={onCancel} />
       </View>
     </View>
   );
@@ -314,28 +321,30 @@ function FallbackPickerView({
   preferredKind,
   onPickImage,
   onPickVideo,
+  t,
 }: {
   theme: Theme;
   preferredKind: MediaKind | null;
   onPickImage: () => void;
   onPickVideo: () => void;
+  t: ReturnType<typeof useTranslation>[‘t’];
 }) {
   const styles = useThemedStyles(createStyles);
-  const isVideoFocus = preferredKind === 'video';
-  const isPhotoFocus = preferredKind === 'image';
+  const isVideoFocus = preferredKind === ‘video’;
+  const isPhotoFocus = preferredKind === ‘image’;
   const isFocused = isVideoFocus || isPhotoFocus;
 
   const Icon = isVideoFocus ? VideoIcon : ImageIcon;
   const heroTitle = isFocused
     ? isVideoFocus
-      ? 'Pick a video'
-      : 'Pick a photo'
-    : 'Import a recipe';
+      ? t(‘recipes.import.pickVideo’)
+      : t(‘recipes.import.pickPhoto’)
+    : t(‘recipes.import.importTitle’);
   const heroBody = isFocused
     ? isVideoFocus
-      ? 'A short cooking clip — TikTok, Reel or any saved video.'
-      : 'A screenshot or photo of a recipe works best.'
-    : 'Choose a photo or short video and we’ll try to extract the recipe.';
+      ? t(‘recipes.import.videoHint’)
+      : t(‘recipes.import.photoHint’)
+    : t(‘recipes.import.importBody’);
 
   return (
     <View style={styles.fallbackWrap}>
@@ -357,13 +366,13 @@ function FallbackPickerView({
         {isVideoFocus ? (
           <>
             <Button
-              title="Pick a video"
+              title={t(‘recipes.import.pickVideo’)}
               variant="primary"
               onPress={onPickVideo}
               containerStyle={styles.fallbackButton}
             />
             <Button
-              title="Use a photo instead"
+              title={t(‘recipes.import.usePhotoInstead’)}
               variant="secondary"
               onPress={onPickImage}
               containerStyle={styles.fallbackButton}
@@ -372,13 +381,13 @@ function FallbackPickerView({
         ) : isPhotoFocus ? (
           <>
             <Button
-              title="Pick a photo"
+              title={t(‘recipes.import.pickPhoto’)}
               variant="primary"
               onPress={onPickImage}
               containerStyle={styles.fallbackButton}
             />
             <Button
-              title="Use a video instead"
+              title={t(‘recipes.import.useVideoInstead’)}
               variant="secondary"
               onPress={onPickVideo}
               containerStyle={styles.fallbackButton}
@@ -387,13 +396,13 @@ function FallbackPickerView({
         ) : (
           <>
             <Button
-              title="Pick a photo"
+              title={t(‘recipes.import.pickPhoto’)}
               variant="primary"
               onPress={onPickImage}
               containerStyle={styles.fallbackButton}
             />
             <Button
-              title="Pick a video"
+              title={t(‘recipes.import.pickVideo’)}
               variant="secondary"
               onPress={onPickVideo}
               containerStyle={styles.fallbackButton}
@@ -403,7 +412,7 @@ function FallbackPickerView({
       </View>
 
       <View style={styles.tipsCard}>
-        <Text style={styles.tipsTitle}>Tips for best results</Text>
+        <Text style={styles.tipsTitle}>{t(‘recipes.import.tipsTitle’)}</Text>
 
         <View style={styles.tipRow}>
           <View style={styles.tipIconBox}>
