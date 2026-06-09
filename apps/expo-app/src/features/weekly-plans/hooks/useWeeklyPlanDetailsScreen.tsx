@@ -626,19 +626,19 @@ export function useWeeklyPlanDetailsScreen(): WeeklyPlanDetailsView {
 
   const clearWeekDescription = useMemo(() => {
     if (!plan) {
-      return 'This will remove all meals and reset sections to Breakfast, Lunch, and Dinner.';
+      return t('weeklyPlans.clearWeekBody');
     }
     const label = formatWeekRange(plan.weeklyStart);
-    return `This will remove all meals from ${label} and reset sections to Breakfast, Lunch, and Dinner.`;
-  }, [plan]);
+    return t('weeklyPlans.clearWeekBodyWithLabel', { label });
+  }, [plan, t]);
 
   const generateDescription = useMemo(() => {
     if (!plan) {
-      return 'This will replace your active shopping list with items from this week.';
+      return t('weeklyPlans.generateListBody');
     }
     const label = formatWeekRange(plan.weeklyStart);
-    return `This will replace your active shopping list with items from ${label}.`;
-  }, [plan]);
+    return t('weeklyPlans.generateListBodyWithLabel', { label });
+  }, [plan, t]);
 
   const resetAddForm = useCallback(() => {
     setSelectedRecipeId(null);

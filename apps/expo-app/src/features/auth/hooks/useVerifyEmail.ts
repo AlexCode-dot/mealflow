@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { authApi } from '@/src/features/auth/api/authApi';
 import { tokenStore } from '@/src/core/auth/tokenStore';
 import { authEvents } from '@/src/core/auth/authEvents';
@@ -34,6 +35,7 @@ export type VerifyEmailView = {
 const DEFAULT_RESEND_COOLDOWN_SECONDS = 60;
 
 export function useVerifyEmail(email: string): VerifyEmailView {
+  const { t } = useTranslation();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isResending, setIsResending] = useState(false);
   const [error, setError] = useState<UiError | null>(null);
@@ -69,8 +71,7 @@ export function useVerifyEmail(email: string): VerifyEmailView {
         if (apiErr.kind === 'http' && apiErr.code === 'INVALID_VERIFICATION_CODE') {
           setError({
             kind: 'validation',
-            message:
-              apiErr.detail || 'That code didn’t work. Double-check it or request a new one.',
+            message: apiErr.detail || t('auth.invalidCode'),
             status: apiErr.status,
           });
           return false;
@@ -85,7 +86,7 @@ export function useVerifyEmail(email: string): VerifyEmailView {
         setIsSubmitting(false);
       }
     },
-    [email, showError],
+    [email, showError, t],
   );
 
   const resend = useCallback(async (): Promise<boolean> => {
@@ -102,7 +103,7 @@ export function useVerifyEmail(email: string): VerifyEmailView {
         setResendCooldown(wait);
         setError({
           kind: 'rate_limit',
-          message: `Please wait ${wait} seconds before requesting a new code.`,
+          message: t('auth.resendWait', { seconds: wait }),
           status: apiErr.status,
           retryAfterSeconds: wait,
         });
@@ -115,7 +116,7 @@ export function useVerifyEmail(email: string): VerifyEmailView {
     } finally {
       setIsResending(false);
     }
-  }, [email, showError]);
+  }, [email, showError, t]);
 
   const state = useMemo<VerifyEmailState>(
     () => ({ isSubmitting, isResending, resendCooldown, error }),

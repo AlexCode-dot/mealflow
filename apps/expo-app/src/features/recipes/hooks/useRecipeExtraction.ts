@@ -76,7 +76,7 @@ export function useRecipeExtraction(): {
         if (isTerminal(next.status)) {
           setPhase(next.status === 'READY' ? 'ready' : 'failed');
           if (next.status === 'FAILED') {
-            setError(next.errorMessage || 'Extraction failed. Try a different file.');
+            setError(next.errorMessage || t('recipes.extractionFailedTryDifferent'));
           }
           return;
         }
@@ -91,10 +91,10 @@ export function useRecipeExtraction(): {
       await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL_MS));
     }
     if (!cancelledRef.current) {
-      setError('Extraction is taking too long. Please try again.');
+      setError(t('recipes.extractionTakingTooLong'));
       setPhase('failed');
     }
-  }, []);
+  }, [t]);
 
   const startUpload = useCallback(
     async (formData: FormData) => {
