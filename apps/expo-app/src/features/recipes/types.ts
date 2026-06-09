@@ -3,6 +3,8 @@ export type IngredientDto = {
   name: string;
   quantity?: number | null;
   unit?: string | null;
+  /** Review-only hint: the amount/unit was estimated by extraction, not read from the source. */
+  estimated?: boolean | null;
 };
 
 export type RecipeListItem = {
@@ -95,6 +97,7 @@ export type ExtractionDraftIngredient = {
   name: string;
   quantity?: number | null;
   unit?: string | null;
+  estimated?: boolean | null;
 };
 
 export type ExtractionDraft = {

@@ -31,7 +31,8 @@ public class ExtractionMapper {
 
     private ExtractionDraftResponse toDraftResponse(RecipeDraft draft) {
         List<ExtractionDraftResponse.DraftIngredientDto> ingredients = draft.getIngredients().stream()
-                .map(i -> new ExtractionDraftResponse.DraftIngredientDto(i.getName(), i.getQuantity(), i.getUnit()))
+                .map(i -> new ExtractionDraftResponse.DraftIngredientDto(
+                        i.getName(), i.getQuantity(), i.getUnit(), i.isEstimated()))
                 .toList();
         return new ExtractionDraftResponse(
                 draft.getTitle(),

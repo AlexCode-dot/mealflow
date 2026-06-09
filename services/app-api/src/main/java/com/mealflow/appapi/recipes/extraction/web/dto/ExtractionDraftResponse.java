@@ -13,5 +13,5 @@ public record ExtractionDraftResponse(
         String language,
         List<String> uncertainFields) {
 
-    public record DraftIngredientDto(String name, Double quantity, String unit) {}
+    public record DraftIngredientDto(String name, Double quantity, String unit, boolean estimated) {}
 }

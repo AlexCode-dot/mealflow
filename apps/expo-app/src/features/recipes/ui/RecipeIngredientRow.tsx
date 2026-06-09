@@ -7,6 +7,8 @@ type Props = {
   amount?: string;
   quantity?: number | null;
   unit?: string | null;
+  /** When true, the amount was estimated by extraction; shown with a subtle "~" prefix. */
+  estimated?: boolean | null;
   onDrag?: () => void;
   showHandle?: boolean;
 };
@@ -16,6 +18,7 @@ export function RecipeIngredientRow({
   amount,
   quantity,
   unit,
+  estimated = false,
   onDrag,
   showHandle = false,
 }: Props) {
@@ -23,6 +26,7 @@ export function RecipeIngredientRow({
   const styles = useThemedStyles(createStyles);
   const hasHandle = Boolean(onDrag) || showHandle;
   const derivedAmount = amount ?? formatAmount(quantity, unit);
+  const amountText = derivedAmount && estimated ? `~${derivedAmount}` : derivedAmount;
 
   return (
     <View style={styles.row}>
@@ -31,7 +35,7 @@ export function RecipeIngredientRow({
       </View>
       <Text style={styles.name} numberOfLines={1}>
         {name}
-        {derivedAmount ? <Text style={styles.amountInline}>{` | ${derivedAmount}`}</Text> : null}
+        {amountText ? <Text style={styles.amountInline}>{` | ${amountText}`}</Text> : null}
       </Text>
       {hasHandle ? (
         onDrag ? (

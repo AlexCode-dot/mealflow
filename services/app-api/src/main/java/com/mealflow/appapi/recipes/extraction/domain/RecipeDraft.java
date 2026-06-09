@@ -93,13 +93,19 @@ public class RecipeDraft {
         private String name;
         private Double quantity;
         private String unit;
+        private boolean estimated;
 
         public DraftIngredient() {}
 
         public DraftIngredient(String name, Double quantity, String unit) {
+            this(name, quantity, unit, false);
+        }
+
+        public DraftIngredient(String name, Double quantity, String unit, boolean estimated) {
             this.name = name;
             this.quantity = quantity;
             this.unit = unit;
+            this.estimated = estimated;
         }
 
         public String getName() {
@@ -124,6 +130,14 @@ public class RecipeDraft {
 
         public void setUnit(String unit) {
             this.unit = unit;
+        }
+
+        public boolean isEstimated() {
+            return estimated;
+        }
+
+        public void setEstimated(boolean estimated) {
+            this.estimated = estimated;
         }
     }
 }
