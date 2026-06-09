@@ -93,7 +93,7 @@ export default function ShoppingListDetailsScreen() {
           data.totalCount === 0 ? (
             <View style={styles.emptyBlock}>
               <Text style={styles.emptyTitle}>{t('shoppingLists.noItemsYet')}</Text>
-              <Text style={styles.emptySubtitle}>Add your first item to get started.</Text>
+              <Text style={styles.emptySubtitle}>{t('shoppingLists.addFirstItemSubtitle')}</Text>
             </View>
           ) : (
             <View style={styles.sections}>
@@ -116,7 +116,7 @@ export default function ShoppingListDetailsScreen() {
         ) : data.visibleItems.length === 0 ? (
           <View style={styles.emptyBlock}>
             <Text style={styles.emptyTitle}>{t('shoppingLists.noItemsHere')}</Text>
-            <Text style={styles.emptySubtitle}>Add something to keep the list moving.</Text>
+            <Text style={styles.emptySubtitle}>{t('shoppingLists.addSomethingSubtitle')}</Text>
           </View>
         ) : (
           <View style={styles.list}>

@@ -151,7 +151,7 @@ export function useRecipesScreen(): RecipesScreenView {
     let timeoutId: ReturnType<typeof setTimeout> | null = null;
     timeoutId = setTimeout(() => {
       if (toastParam === 'deleted') {
-        toastState.show({ variant: 'success', message: 'Deleted successfully' });
+        toastState.show({ variant: 'success', message: t('recipes.deletedSuccessfully') });
       }
       router.setParams({ toast: undefined });
     }, 320);
@@ -159,7 +159,7 @@ export function useRecipesScreen(): RecipesScreenView {
     return () => {
       if (timeoutId) clearTimeout(timeoutId);
     };
-  }, [isFocused, toastParam, toastState]);
+  }, [isFocused, toastParam, toastState, t]);
 
   useEffect(() => {
     if (!isFocused || !tabParam) return;
@@ -203,7 +203,7 @@ export function useRecipesScreen(): RecipesScreenView {
       const detail = await inspirationApi.get(saveTarget.id);
       const payload = buildInspirationCreatePayload(detail, saveCategory);
       await recipesApi.create(payload);
-      toastState.show({ variant: 'success', message: 'Recipe saved.' });
+      toastState.show({ variant: 'success', message: t('recipes.recipeSaved') });
       setSavePickerOpen(false);
       setSaveTarget(null);
       setSaveCategory('');

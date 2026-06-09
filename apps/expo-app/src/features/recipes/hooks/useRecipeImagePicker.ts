@@ -1,5 +1,6 @@
 import { useCallback, useState } from 'react';
 import { Platform } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
 import * as FileSystem from 'expo-file-system/legacy';
@@ -19,6 +20,7 @@ const TARGET_WIDTH = 1600;
 const TARGET_QUALITY = 0.75;
 
 export function useRecipeImagePicker({ setImageUrl, setImageFileId, recipeId }: Options) {
+  const { t } = useTranslation();
   const { showError } = useGlobalToast();
   const [isUploading, setIsUploading] = useState(false);
 
@@ -46,7 +48,7 @@ export function useRecipeImagePicker({ setImageUrl, setImageFileId, recipeId }: 
         if (file.size > MAX_UPLOAD_BYTES) {
           showError({
             kind: 'unknown',
-            message: 'Image is too large. Please choose a smaller photo.',
+            message: t('recipes.imageTooLarge'),
           });
           return;
         }
@@ -64,7 +66,7 @@ export function useRecipeImagePicker({ setImageUrl, setImageFileId, recipeId }: 
 
       const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (!permission.granted) {
-        showError({ kind: 'unknown', message: 'Photo access not granted.' });
+        showError({ kind: 'unknown', message: t('recipes.photoAccessNotGranted') });
         return;
       }
 
@@ -80,7 +82,7 @@ export function useRecipeImagePicker({ setImageUrl, setImageFileId, recipeId }: 
           quality: 1,
         });
       } catch {
-        showError({ kind: 'unknown', message: 'Could not open photo library.' });
+        showError({ kind: 'unknown', message: t('recipes.couldNotOpenPhotoLibrary') });
         return;
       }
 
@@ -105,7 +107,7 @@ export function useRecipeImagePicker({ setImageUrl, setImageFileId, recipeId }: 
       if (info.exists && typeof info.size === 'number' && info.size > MAX_UPLOAD_BYTES) {
         showError({
           kind: 'unknown',
-          message: 'Image is too large after compression. Please choose a smaller photo.',
+          message: t('recipes.imageTooLargeCompressed'),
         });
         return;
       }
@@ -131,7 +133,7 @@ export function useRecipeImagePicker({ setImageUrl, setImageFileId, recipeId }: 
     } finally {
       setIsUploading(false);
     }
-  }, [isUploading, pickWebFile, recipeId, setImageFileId, setImageUrl, showError]);
+  }, [isUploading, pickWebFile, recipeId, setImageFileId, setImageUrl, showError, t]);
 
   return { pickImage, isUploading };
 }

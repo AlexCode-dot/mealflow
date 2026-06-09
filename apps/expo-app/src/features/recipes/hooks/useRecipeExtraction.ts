@@ -42,7 +42,7 @@ export function useRecipeExtraction(): {
   actions: RecipeExtractionActions;
 } {
   const { showError } = useGlobalToast();
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [phase, setPhase] = useState<Phase>('idle');
   const [job, setJob] = useState<ExtractionJob | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -176,7 +176,7 @@ export function useRecipeExtraction(): {
 
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!permission.granted) {
-      showError({ kind: 'unknown', message: 'Photo access not granted.' });
+      showError({ kind: 'unknown', message: t('recipes.photoAccessNotGranted') });
       return;
     }
 
@@ -194,7 +194,7 @@ export function useRecipeExtraction(): {
     if (asset.fileSize && asset.fileSize > MAX_IMAGE_BYTES) {
       showError({
         kind: 'unknown',
-        message: 'Image is too large. Please choose a smaller photo.',
+        message: t('recipes.imageTooLarge'),
       });
       return;
     }
@@ -202,7 +202,7 @@ export function useRecipeExtraction(): {
     const mime = asset.mimeType ?? 'image/jpeg';
     const formData = buildFormData(asset.uri, fileName, mime);
     await startUpload(formData);
-  }, [buildFormData, showError, startFromWeb, startUpload]);
+  }, [buildFormData, showError, startFromWeb, startUpload, t]);
 
   const startFromVideo = useCallback(async () => {
     if (Platform.OS === 'web') {
@@ -212,7 +212,7 @@ export function useRecipeExtraction(): {
 
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!permission.granted) {
-      showError({ kind: 'unknown', message: 'Photo access not granted.' });
+      showError({ kind: 'unknown', message: t('recipes.photoAccessNotGranted') });
       return;
     }
 
@@ -228,7 +228,7 @@ export function useRecipeExtraction(): {
     if (result.canceled || !result.assets?.length) return;
     const asset = result.assets[0];
     if (asset.fileSize && asset.fileSize > MAX_VIDEO_BYTES) {
-      showError({ kind: 'unknown', message: 'Video is too large (max 100 MB).' });
+      showError({ kind: 'unknown', message: t('recipes.videoTooLarge') });
       return;
     }
     const fileName = asset.fileName ?? `recipe-${Date.now()}.mp4`;
@@ -237,7 +237,7 @@ export function useRecipeExtraction(): {
     setVideoDurationMs(typeof asset.duration === 'number' ? asset.duration : null);
     const formData = buildFormData(asset.uri, fileName, mime);
     await startUpload(formData);
-  }, [buildFormData, showError, startFromWeb, startUpload]);
+  }, [buildFormData, showError, startFromWeb, startUpload, t]);
 
   const state = useMemo<RecipeExtractionState>(
     () => ({ phase, job, error, videoUri, videoDurationMs }),

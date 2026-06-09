@@ -3,6 +3,7 @@ import { router } from 'expo-router';
 import { Plus } from 'lucide-react-native';
 import { useCallback, useMemo, useState } from 'react';
 import { Pressable, View, type LayoutChangeEvent, Text } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Path } from 'react-native-svg';
 import { routes } from '@/src/core/navigation/routes';
@@ -66,6 +67,7 @@ function TabBarBackground({ width, height, fill, backgroundStyle }: TabBarBackgr
 }
 
 export function AppTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
+  const { t } = useTranslation();
   const theme = useTheme();
   const styles = useThemedStyles(createStyles);
   const insets = useSafeAreaInsets();
@@ -138,7 +140,7 @@ export function AppTabBar({ state, descriptors, navigation }: BottomTabBarProps)
     'settings/index': routes.settings,
   };
   const labelByName: Record<string, string> = {
-    settings: 'Settings',
+    settings: t('settings.title'),
   };
   const normalizeRouteName = (name: string) =>
     name.endsWith('/index') ? name.slice(0, -'/index'.length) : name;
@@ -211,7 +213,7 @@ export function AppTabBar({ state, descriptors, navigation }: BottomTabBarProps)
           <View style={[styles.addButtonWrap, { pointerEvents: 'box-none' }]}>
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel="Add recipe"
+              accessibilityLabel={t('recipes.a11yAddRecipe')}
               onPress={openAddRecipeSheet}
               hitSlop={10}
               style={styles.addButton}
@@ -223,7 +225,7 @@ export function AppTabBar({ state, descriptors, navigation }: BottomTabBarProps)
             style={[styles.addLabel, { color: resolveTabBarItemColor(theme, false) }]}
             numberOfLines={1}
           >
-            Add Recipe
+            {t('recipes.addRecipe')}
           </Text>
         </View>
       ) : null}

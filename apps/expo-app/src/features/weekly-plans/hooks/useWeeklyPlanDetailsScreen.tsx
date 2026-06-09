@@ -847,7 +847,7 @@ export function useWeeklyPlanDetailsScreen(): WeeklyPlanDetailsView {
     if (editTab === 'recipes' && editEntry?.recipeId) {
       items.push({
         key: 'view',
-        label: 'View Recipe',
+        label: t('weeklyPlans.viewRecipe'),
         icon: (
           <ArrowUpRight
             color={theme.colors.tabBarAccent}

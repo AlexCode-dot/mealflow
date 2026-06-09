@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useFocusEffect, useIsFocused } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -61,6 +62,7 @@ function getInitials(name: string | null): string {
 }
 
 export function useProfileScreen(): ProfileScreenView {
+  const { t } = useTranslation();
   const params = useLocalSearchParams<{ toast?: string; returnTo?: string }>();
   const toastParam = typeof params.toast === 'string' ? params.toast : null;
   const returnTo = normalizePath(typeof params.returnTo === 'string' ? params.returnTo : null);
@@ -126,7 +128,7 @@ export function useProfileScreen(): ProfileScreenView {
     let timeoutId: ReturnType<typeof setTimeout> | null = null;
     timeoutId = setTimeout(() => {
       if (toastParam === 'updated') {
-        toastState.show({ variant: 'success', message: 'Profile updated.' });
+        toastState.show({ variant: 'success', message: t('profile.profileUpdated') });
       }
       router.setParams({ toast: undefined });
     }, 320);
@@ -134,7 +136,7 @@ export function useProfileScreen(): ProfileScreenView {
     return () => {
       if (timeoutId) clearTimeout(timeoutId);
     };
-  }, [isFocused, toastParam, toastState]);
+  }, [isFocused, toastParam, toastState, t]);
 
   useEffect(() => {
     if (!toastState.toast || !isFocused) {

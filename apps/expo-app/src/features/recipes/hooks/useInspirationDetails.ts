@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { inspirationApi } from '@/src/features/recipes/api/inspirationApi';
 import { recipesApi } from '@/src/features/recipes/api/recipesApi';
 import type { InspirationRecipe, Recipe } from '@/src/features/recipes/types';
@@ -31,6 +32,7 @@ export type InspirationDetailsView = {
 };
 
 export function useInspirationDetails(id: string): InspirationDetailsView {
+  const { t } = useTranslation();
   const { showError } = useGlobalToast();
   const [recipe, setRecipe] = useState<InspirationRecipe | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -40,7 +42,7 @@ export function useInspirationDetails(id: string): InspirationDetailsView {
 
   const load = useCallback(async () => {
     if (!id) {
-      setError({ kind: 'unknown', message: 'Missing recipe id.' });
+      setError({ kind: 'unknown', message: t('errors.missingRecipeId') });
       setIsLoading(false);
       return;
     }
@@ -59,7 +61,7 @@ export function useInspirationDetails(id: string): InspirationDetailsView {
     } finally {
       setIsLoading(false);
     }
-  }, [id, showError]);
+  }, [id, showError, t]);
 
   useEffect(() => {
     load().catch(() => undefined);

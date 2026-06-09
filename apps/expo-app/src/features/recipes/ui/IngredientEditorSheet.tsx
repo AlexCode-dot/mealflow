@@ -78,8 +78,9 @@ export function IngredientEditorSheet({
   const scrollToFocusedInput = useScrollToFocusedInput(scrollRef, 12);
   const unitLabel = useMemo(() => {
     const selected = UNITS.find((u) => u.key === unit);
-    return selected?.label ?? '';
-  }, [unit]);
+    if (!selected) return '';
+    return selected.key === 'pcs' ? t('recipes.unitPcs') : selected.label;
+  }, [unit, t]);
   const amountPrefix = unitLabel || t('recipes.unit');
   const handleAmountChange = (value: string) => {
     const sanitized = sanitizeAmountInput(value, unit);
@@ -94,7 +95,10 @@ export function IngredientEditorSheet({
           <PickerSelect
             value={unit}
             onChange={onChangeUnit}
-            options={UNITS.map((u) => ({ label: u.label, value: u.key }))}
+            options={UNITS.map((u) => ({
+              label: u.key === 'pcs' ? t('recipes.unitPcs') : u.label,
+              value: u.key,
+            }))}
             placeholder={t('recipes.selectUnit')}
           />
         </PickerSheetOverlay>

@@ -1,5 +1,6 @@
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
 import { PickerSelect, PickerSheet } from '@/src/shared/ui/PickerSheet/PickerSheet';
 import { Check, ChevronDown, X, XCircle } from 'lucide-react-native';
 import { type Theme, useTheme, useThemedStyles } from '@/src/shared/theme';
@@ -63,6 +64,7 @@ export function FilterSheet({
   onApply,
   onClose,
 }: Props) {
+  const { t } = useTranslation();
   const theme = useTheme();
   const styles = useThemedStyles(createStyles);
   const [tagInputs, setTagInputs] = useState<Record<string, string>>({});
@@ -362,13 +364,13 @@ export function FilterSheet({
             items={[
               {
                 key: 'clear',
-                label: 'Clear filters',
+                label: t('recipes.clearFilters'),
                 icon: <XCircle color={actionColor} size={TAB_BAR.ICON_SIZE} strokeWidth={2.25} />,
                 onPress: onClear,
               },
               {
                 key: 'apply',
-                label: 'Apply',
+                label: t('common.apply'),
                 icon: <Check color={actionColor} size={TAB_BAR.ICON_SIZE} strokeWidth={2.25} />,
                 onPress: onApply,
               },
