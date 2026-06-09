@@ -82,6 +82,7 @@ export function useExtractionReview(jobId: string | undefined): ExtractionReview
           name: ing.name,
           quantity: ing.quantity ?? null,
           unit: ing.unit ?? null,
+          estimated: ing.estimated ?? false,
         })),
       );
       setSteps(draft.steps ?? []);
@@ -115,7 +116,7 @@ export function useExtractionReview(jobId: string | undefined): ExtractionReview
       const base = form.getApiValues();
       const cleanIngredients = ingredients
         .filter((ing) => ing.name && ing.name.trim().length > 0)
-        .map(({ id: _id, ...rest }) => rest);
+        .map(({ id: _id, estimated: _estimated, ...rest }) => rest);
       const cleanSteps = steps.filter((s) => s.trim().length > 0);
       const created = await extractionApi.accept(jobId, {
         title: base.title,

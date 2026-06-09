@@ -25,6 +25,7 @@ export function createRecipeEditorRenderers({ onEditIngredient, onEditStep }: Ar
           name={item.name}
           quantity={item.quantity}
           unit={item.unit}
+          estimated={item.estimated}
           onDrag={drag}
         />
       </Pressable>
