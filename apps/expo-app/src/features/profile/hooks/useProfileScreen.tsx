@@ -178,7 +178,7 @@ export function useProfileScreen(): ProfileScreenView {
   }, []);
 
   const data = useMemo<ProfileScreenData>(() => {
-    const displayName = profile?.displayName?.trim() || 'Your profile';
+    const displayName = profile?.displayName?.trim() || t('profile.yourProfile');
     const createdAt = profile?.createdAt ? new Date(profile.createdAt) : null;
     const memberSince = createdAt
       ? createdAt.toLocaleDateString(undefined, { month: 'long', year: 'numeric' })
@@ -192,7 +192,7 @@ export function useProfileScreen(): ProfileScreenView {
       planCount,
       listCount,
     };
-  }, [listCount, planCount, profile, recipeCount]);
+  }, [listCount, planCount, profile, recipeCount, t]);
 
   const state = useMemo<ProfileScreenState>(
     () => ({ isLoading, isRefreshing, error }),

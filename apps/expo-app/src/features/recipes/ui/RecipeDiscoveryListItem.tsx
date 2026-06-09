@@ -30,7 +30,7 @@ export function RecipeDiscoveryListItem({
   return (
     <RecipeListCard
       title={item.title}
-      subtitle={subtitle || 'Discover recipe'}
+      subtitle={subtitle || t('overview.discoverRecipe')}
       imageUrl={item.imageUrl ?? undefined}
       onPress={() => onPress?.(item.id)}
       metaLeft={null}

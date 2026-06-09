@@ -1,5 +1,6 @@
 import { Animated, PanResponder, StyleSheet, View } from 'react-native';
 import { useEffect, useMemo, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ToastBanner } from '@/src/shared/ui/ToastBanner/ToastBanner';
 import { useRetryCountdown } from '@/src/shared/hooks/useRetryCountdown';
@@ -7,6 +8,7 @@ import { useGlobalToast } from './GlobalToastProvider';
 import { type Theme, useThemedStyles } from '@/src/shared/theme';
 
 export function GlobalToastHost() {
+  const { t } = useTranslation();
   const styles = useThemedStyles(createStyles);
   const { toast, clear } = useGlobalToast();
   const insets = useSafeAreaInsets();
@@ -59,9 +61,9 @@ export function GlobalToastHost() {
           variant={toast.variant}
           title={toast.title}
           message={toast.message}
-          meta={retry.remaining ? `Try again in ${retry.remaining}s` : toast.meta}
+          meta={retry.remaining ? t('common.tryAgainInSeconds', { seconds: retry.remaining }) : toast.meta}
           durationMs={toast.durationMs ?? 0}
-          actionLabel={toast.onAction ? (toast.actionLabel ?? 'Retry') : undefined}
+          actionLabel={toast.onAction ? (toast.actionLabel ?? t('common.retry')) : undefined}
           actionDisabled={retry.disabled || toast.actionDisabled}
           onAction={
             toast.onAction

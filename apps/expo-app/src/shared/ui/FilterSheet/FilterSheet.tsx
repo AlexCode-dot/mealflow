@@ -313,7 +313,7 @@ export function FilterSheet({
                     }}
                     value={tagInputs[section.key] ?? ''}
                     onChangeText={(text) => handleTagChange(section, text)}
-                    placeholder={section.placeholder ?? 'Add ingredient'}
+                    placeholder={section.placeholder ?? t('recipes.addIngredient')}
                     onAdd={() => handleAddTag(section)}
                     onFocus={() => {
                       setFocusedTagSectionKey(section.key);

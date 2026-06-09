@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { extractionApi } from '@/src/features/recipes/api/extractionApi';
 import type { ExtractionJob, IngredientDto } from '@/src/features/recipes/types';
 import { toApiError } from '@/src/core/http/toApiError';
@@ -27,6 +28,7 @@ export type ExtractionReviewView = {
 };
 
 export function useExtractionReview(jobId: string | undefined): ExtractionReviewView {
+  const { t } = useTranslation();
   const form = useRecipeFormState();
   const [ingredients, setIngredients] = useState<IngredientDto[]>([]);
   const [steps, setSteps] = useState<string[]>([]);
@@ -40,7 +42,7 @@ export function useExtractionReview(jobId: string | undefined): ExtractionReview
   const load = useCallback(async () => {
     if (!jobId) {
       setIsLoading(false);
-      setLoadError('Missing extraction id.');
+      setLoadError(t('recipes.missingExtractionId'));
       return;
     }
     setIsLoading(true);
@@ -51,14 +53,14 @@ export function useExtractionReview(jobId: string | undefined): ExtractionReview
       if (fresh.status !== 'READY') {
         setLoadError(
           fresh.status === 'FAILED'
-            ? fresh.errorMessage || 'Extraction failed.'
-            : 'Extraction is not ready yet.',
+            ? fresh.errorMessage || t('recipes.extractionFailed')
+            : t('recipes.extractionNotReady'),
         );
         return;
       }
       const draft = fresh.draft;
       if (!draft) {
-        setLoadError('Extraction has no draft.');
+        setLoadError(t('recipes.extractionNoDraft'));
         return;
       }
       form.setValues(
@@ -97,7 +99,7 @@ export function useExtractionReview(jobId: string | undefined): ExtractionReview
     // We intentionally only depend on jobId to avoid reloading on every form
     // change; form.setValues is stable.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [jobId]);
+  }, [jobId, t]);
 
   useEffect(() => {
     load();

@@ -16,6 +16,7 @@ export const sv: Translations = {
     close: 'Stäng',
     confirm: 'Bekräfta',
     apply: 'Använd',
+    tryAgainInSeconds: 'Försök igen om {{seconds}}s',
     yes: 'Ja',
     no: 'Nej',
     or: 'eller',
@@ -83,6 +84,8 @@ export const sv: Translations = {
     verifyEmailBody: 'Ange den 6-siffriga koden vi precis skickade.',
     alreadyVerified: 'Redan verifierad?',
     a11yVerificationCode: 'Verifieringskod',
+    invalidCode: 'Koden fungerade inte. Dubbelkolla den eller begär en ny.',
+    resendWait: 'Vänta {{seconds}} sekunder innan du begär en ny kod.',
   },
 
   overview: {
@@ -326,6 +329,12 @@ export const sv: Translations = {
     a11yReorderIngredient: 'Ändra ordning på ingrediens',
     a11yReorderStep: 'Ändra ordning på steg',
     a11yAddRecipe: 'Lägg till recept',
+    extractionFailed: 'Extraheringen misslyckades.',
+    extractionFailedTryDifferent: 'Extraheringen misslyckades. Prova en annan fil.',
+    extractionTakingTooLong: 'Extraheringen tar för lång tid. Försök igen.',
+    missingExtractionId: 'Extraherings-id saknas.',
+    extractionNotReady: 'Extraheringen är inte klar än.',
+    extractionNoDraft: 'Extraheringen har inget utkast.',
 
     addRecipeSheet: {
       title: 'Lägg till recept',
@@ -443,6 +452,12 @@ export const sv: Translations = {
     weeklyPlan: 'Veckoplan',
     viewWeekDetails: 'Visa veckodetaljer',
     viewRecipe: 'Visa recept',
+    clearWeekBody: 'Detta tar bort alla måltider och återställer avsnitten till Frukost, Lunch och Middag.',
+    clearWeekBodyWithLabel:
+      'Detta tar bort alla måltider från {{label}} och återställer avsnitten till Frukost, Lunch och Middag.',
+    generateListBody: 'Detta ersätter din aktiva inköpslista med varor från den här veckan.',
+    generateListBodyWithLabel:
+      'Detta ersätter din aktiva inköpslista med varor från {{label}}.',
 
     days: {
       monday: 'Måndag',

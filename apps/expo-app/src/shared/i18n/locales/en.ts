@@ -14,6 +14,7 @@ export const en = {
     close: 'Close',
     confirm: 'Confirm',
     apply: 'Apply',
+    tryAgainInSeconds: 'Try again in {{seconds}}s',
     yes: 'Yes',
     no: 'No',
     or: 'or',
@@ -81,6 +82,8 @@ export const en = {
     verifyEmailBody: 'Enter the 6-digit code we just sent.',
     alreadyVerified: 'Already verified?',
     a11yVerificationCode: 'Verification code',
+    invalidCode: "That code didn't work. Double-check it or request a new one.",
+    resendWait: 'Please wait {{seconds}} seconds before requesting a new code.',
   },
 
   overview: {
@@ -323,6 +326,12 @@ export const en = {
     a11yReorderIngredient: 'Reorder ingredient',
     a11yReorderStep: 'Reorder step',
     a11yAddRecipe: 'Add recipe',
+    extractionFailed: 'Extraction failed.',
+    extractionFailedTryDifferent: 'Extraction failed. Try a different file.',
+    extractionTakingTooLong: 'Extraction is taking too long. Please try again.',
+    missingExtractionId: 'Missing extraction id.',
+    extractionNotReady: 'Extraction is not ready yet.',
+    extractionNoDraft: 'Extraction has no draft.',
 
     addRecipeSheet: {
       title: 'Add a recipe',
@@ -440,6 +449,12 @@ export const en = {
     weeklyPlan: 'Weekly Plan',
     viewWeekDetails: 'View Week Details',
     viewRecipe: 'View Recipe',
+    clearWeekBody: 'This will remove all meals and reset sections to Breakfast, Lunch, and Dinner.',
+    clearWeekBodyWithLabel:
+      'This will remove all meals from {{label}} and reset sections to Breakfast, Lunch, and Dinner.',
+    generateListBody: 'This will replace your active shopping list with items from this week.',
+    generateListBodyWithLabel:
+      'This will replace your active shopping list with items from {{label}}.',
 
     days: {
       monday: 'Monday',
