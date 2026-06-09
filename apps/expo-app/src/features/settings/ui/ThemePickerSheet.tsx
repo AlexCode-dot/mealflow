@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { PickerSelect, PickerSheet } from '@/src/shared/ui';
 
 type Option = {
@@ -14,13 +15,14 @@ type Props = {
 };
 
 export function ThemePickerSheet({ visible, value, options, onChange, onClose }: Props) {
+  const { t } = useTranslation();
   return (
-    <PickerSheet visible={visible} title="Theme" onClose={onClose} onDone={onClose}>
+    <PickerSheet visible={visible} title={t('settings.theme')} onClose={onClose} onDone={onClose}>
       <PickerSelect
         value={value}
         onChange={onChange}
         options={options}
-        placeholder="Select theme"
+        placeholder={t('settings.selectThemePlaceholder')}
       />
     </PickerSheet>
   );

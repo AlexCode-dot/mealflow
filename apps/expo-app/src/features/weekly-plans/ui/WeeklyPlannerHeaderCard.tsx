@@ -1,4 +1,5 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { CalendarDays, ChevronLeft, ChevronRight } from 'lucide-react-native';
 import { Card } from '@/src/shared/ui';
 import { type Theme, useTheme, useThemedStyles } from '@/src/shared/theme';
@@ -39,6 +40,7 @@ export function WeeklyPlannerHeaderCard({
   isCreating,
   hasPlan,
 }: Props) {
+  const { t } = useTranslation();
   const theme = useTheme();
   const styles = useThemedStyles(createStyles);
   return (
@@ -46,7 +48,7 @@ export function WeeklyPlannerHeaderCard({
       <View style={styles.header}>
         <Pressable
           onPress={onPrev}
-          accessibilityLabel="Previous week"
+          accessibilityLabel={t('weeklyPlans.previousWeek')}
           disabled={weekOffset === -2}
           style={({ pressed }) => [
             styles.navButton,
@@ -63,7 +65,7 @@ export function WeeklyPlannerHeaderCard({
         </View>
         <Pressable
           onPress={onNext}
-          accessibilityLabel="Next week"
+          accessibilityLabel={t('weeklyPlans.nextWeek')}
           disabled={weekOffset === 2}
           style={({ pressed }) => [
             styles.navButton,
@@ -94,7 +96,7 @@ export function WeeklyPlannerHeaderCard({
         >
           <View style={styles.openButtonRow}>
             <CalendarDays size={20} color={theme.colors.primary} strokeWidth={2.6} />
-            <Text style={styles.openText}>View Week Details</Text>
+            <Text style={styles.openText}>{t('weeklyPlans.viewWeekDetails')}</Text>
           </View>
         </Pressable>
       </View>

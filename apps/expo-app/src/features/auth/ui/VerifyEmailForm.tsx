@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { Button, ErrorText, OtpInput } from '@/src/shared/ui';
 import type { UiError } from '@/src/shared/errors/errorTypes';
 import { type Theme, useThemedStyles } from '@/src/shared/theme';
@@ -30,27 +31,28 @@ export function VerifyEmailForm({
   resendCooldown,
   error,
 }: Props) {
+  const { t } = useTranslation();
   const styles = useThemedStyles(createStyles);
 
   const canSubmit = code.length === 6 && !isSubmitting;
   const canResend = !isResending && resendCooldown <= 0;
 
   const resendLabel = useMemo(() => {
-    if (isResending) return 'Sending…';
-    if (resendCooldown > 0) return `Resend in ${resendCooldown}s`;
-    return 'Resend code';
-  }, [isResending, resendCooldown]);
+    if (isResending) return t('auth.sendingCode');
+    if (resendCooldown > 0) return t('auth.resendIn', { seconds: resendCooldown });
+    return t('auth.resendCode');
+  }, [isResending, resendCooldown, t]);
 
   return (
     <View style={styles.root}>
       {/* Email summary */}
       <View style={styles.emailBlock}>
-        <Text style={styles.emailCaption}>Sent to</Text>
+        <Text style={styles.emailCaption}>{t('auth.sentTo')}</Text>
         <Text style={styles.emailValue} numberOfLines={1} ellipsizeMode="middle">
           {email}
         </Text>
         <Pressable onPress={onChangeEmail} hitSlop={8}>
-          <Text style={styles.changeLink}>Use a different email</Text>
+          <Text style={styles.changeLink}>{t('auth.useADifferentEmail')}</Text>
         </Pressable>
       </View>
 
@@ -70,7 +72,7 @@ export function VerifyEmailForm({
       </View>
 
       <Button
-        title={isSubmitting ? 'Verifying…' : 'Verify'}
+        title={isSubmitting ? t('auth.verifying') : t('auth.verify')}
         variant="primary"
         onPress={onSubmit}
         disabled={!canSubmit}

@@ -6,6 +6,7 @@ import { ModalSheet } from '@/src/shared/ui/ModalSheet';
 import { type Theme, useTheme, useThemedStyles } from '@/src/shared/theme';
 import { routes } from '@/src/core/navigation/routes';
 import type { Href } from 'expo-router';
+import type { ParseKeys } from 'i18next';
 
 type Props = {
   visible: boolean;
@@ -14,8 +15,8 @@ type Props = {
 
 type Row = {
   key: 'manual' | 'photo' | 'video';
-  titleKey: string;
-  subtitleKey?: string;
+  titleKey: ParseKeys;
+  subtitleKey?: ParseKeys;
   icon: (color: string) => React.ReactNode;
   href: Href;
 };
@@ -62,8 +63,8 @@ export function AddRecipeSheet({ visible, onClose }: Props) {
 
       <View style={styles.rows}>
         {ROWS.map((row) => {
-          const title = t(row.titleKey as Parameters<typeof t>[0]);
-          const subtitle = row.subtitleKey ? t(row.subtitleKey as Parameters<typeof t>[0]) : undefined;
+          const title = t(row.titleKey);
+          const subtitle = row.subtitleKey ? t(row.subtitleKey) : undefined;
           return (
             <Pressable
               key={row.key}

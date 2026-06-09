@@ -15,7 +15,11 @@ import { useRecipeExtraction } from '@/src/features/recipes/hooks';
 
 type MediaKind = 'image' | 'video';
 
-type ProcessingStep = { phase: 'uploading' | 'processing'; labelKey: string; bodyKey: string };
+type ProcessingStep = {
+  phase: 'uploading' | 'processing';
+  labelKey: 'recipes.import.uploadingFile' | 'recipes.import.readingRecipe';
+  bodyKey: 'recipes.import.uploadingBody' | 'recipes.import.readingBody';
+};
 
 const PROCESSING_STEPS: ProcessingStep[] = [
   {
@@ -241,8 +245,8 @@ function ProgressView({ phase, theme, t }: { phase: 'uploading' | 'processing'; 
       </View>
 
       <View style={styles.progressText}>
-        <Text style={styles.progressLabel}>{t(step.labelKey as Parameters<typeof t>[0])}</Text>
-        <Text style={styles.progressBody}>{t(step.bodyKey as Parameters<typeof t>[0])}</Text>
+        <Text style={styles.progressLabel}>{t(step.labelKey)}</Text>
+        <Text style={styles.progressBody}>{t(step.bodyKey)}</Text>
       </View>
 
       <View style={styles.progressSteps}>
@@ -267,7 +271,7 @@ function ProgressView({ phase, theme, t }: { phase: 'uploading' | 'processing'; 
                   isPast ? styles.stepLabelPast : null,
                 ]}
               >
-                {t(s.labelKey as Parameters<typeof t>[0]).replace('…', '')}
+                {t(s.labelKey).replace('…', '')}
               </Text>
             </View>
           );
@@ -292,25 +296,25 @@ function FailedView({
   onRetry: () => void;
   onCancel: () => void;
   theme: Theme;
-  t: ReturnType<typeof useTranslation>[‘t’];
+  t: ReturnType<typeof useTranslation>['t'];
 }) {
   const styles = useThemedStyles(createStyles);
-  const retryLabel = mediaKind === ‘video’ ? t(‘recipes.import.pickDifferentVideo’) : t(‘recipes.import.pickDifferentPhoto’);
+  const retryLabel = mediaKind === 'video' ? t('recipes.import.pickDifferentVideo') : t('recipes.import.pickDifferentPhoto');
   return (
     <View style={styles.failedWrap}>
       <View style={styles.failedIcon}>
         <AlertTriangle color={theme.colors.error} size={28} strokeWidth={2.25} />
       </View>
-      <Text style={styles.failedTitle}>{t(‘recipes.import.errorTitle’)}</Text>
+      <Text style={styles.failedTitle}>{t('recipes.import.errorTitle')}</Text>
       <Text style={styles.failedBody}>
         {error ??
-          (mediaKind === ‘video’
-            ? t(‘recipes.import.videoErrorBody’)
-            : t(‘recipes.import.photoErrorBody’))}
+          (mediaKind === 'video'
+            ? t('recipes.import.videoErrorBody')
+            : t('recipes.import.photoErrorBody'))}
       </Text>
       <View style={styles.failedActions}>
         <Button title={retryLabel} variant="primary" onPress={onRetry} />
-        <Button title={t(‘common.cancel’)} variant="secondary" onPress={onCancel} />
+        <Button title={t('common.cancel')} variant="secondary" onPress={onCancel} />
       </View>
     </View>
   );
@@ -327,24 +331,24 @@ function FallbackPickerView({
   preferredKind: MediaKind | null;
   onPickImage: () => void;
   onPickVideo: () => void;
-  t: ReturnType<typeof useTranslation>[‘t’];
+  t: ReturnType<typeof useTranslation>['t'];
 }) {
   const styles = useThemedStyles(createStyles);
-  const isVideoFocus = preferredKind === ‘video’;
-  const isPhotoFocus = preferredKind === ‘image’;
+  const isVideoFocus = preferredKind === 'video';
+  const isPhotoFocus = preferredKind === 'image';
   const isFocused = isVideoFocus || isPhotoFocus;
 
   const Icon = isVideoFocus ? VideoIcon : ImageIcon;
   const heroTitle = isFocused
     ? isVideoFocus
-      ? t(‘recipes.import.pickVideo’)
-      : t(‘recipes.import.pickPhoto’)
-    : t(‘recipes.import.importTitle’);
+      ? t('recipes.import.pickVideo')
+      : t('recipes.import.pickPhoto')
+    : t('recipes.import.importTitle');
   const heroBody = isFocused
     ? isVideoFocus
-      ? t(‘recipes.import.videoHint’)
-      : t(‘recipes.import.photoHint’)
-    : t(‘recipes.import.importBody’);
+      ? t('recipes.import.videoHint')
+      : t('recipes.import.photoHint')
+    : t('recipes.import.importBody');
 
   return (
     <View style={styles.fallbackWrap}>
@@ -366,13 +370,13 @@ function FallbackPickerView({
         {isVideoFocus ? (
           <>
             <Button
-              title={t(‘recipes.import.pickVideo’)}
+              title={t('recipes.import.pickVideo')}
               variant="primary"
               onPress={onPickVideo}
               containerStyle={styles.fallbackButton}
             />
             <Button
-              title={t(‘recipes.import.usePhotoInstead’)}
+              title={t('recipes.import.usePhotoInstead')}
               variant="secondary"
               onPress={onPickImage}
               containerStyle={styles.fallbackButton}
@@ -381,13 +385,13 @@ function FallbackPickerView({
         ) : isPhotoFocus ? (
           <>
             <Button
-              title={t(‘recipes.import.pickPhoto’)}
+              title={t('recipes.import.pickPhoto')}
               variant="primary"
               onPress={onPickImage}
               containerStyle={styles.fallbackButton}
             />
             <Button
-              title={t(‘recipes.import.useVideoInstead’)}
+              title={t('recipes.import.useVideoInstead')}
               variant="secondary"
               onPress={onPickVideo}
               containerStyle={styles.fallbackButton}
@@ -396,13 +400,13 @@ function FallbackPickerView({
         ) : (
           <>
             <Button
-              title={t(‘recipes.import.pickPhoto’)}
+              title={t('recipes.import.pickPhoto')}
               variant="primary"
               onPress={onPickImage}
               containerStyle={styles.fallbackButton}
             />
             <Button
-              title={t(‘recipes.import.pickVideo’)}
+              title={t('recipes.import.pickVideo')}
               variant="secondary"
               onPress={onPickVideo}
               containerStyle={styles.fallbackButton}
@@ -412,7 +416,7 @@ function FallbackPickerView({
       </View>
 
       <View style={styles.tipsCard}>
-        <Text style={styles.tipsTitle}>{t(‘recipes.import.tipsTitle’)}</Text>
+        <Text style={styles.tipsTitle}>{t('recipes.import.tipsTitle')}</Text>
 
         <View style={styles.tipRow}>
           <View style={styles.tipIconBox}>

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useLocalSearchParams, router } from 'expo-router';
 import { useIsFocused } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -161,13 +162,14 @@ export function useShoppingListDetailsScreen(): ShoppingListDetailsView {
   const [clearMode, setClearMode] = useState<'checked' | 'all' | 'uncheck'>('checked');
   const [deleteListOpen, setDeleteListOpen] = useState(false);
   const toastState = useToastState();
+  const { t } = useTranslation();
   const { showError, showValidationError } = useGlobalToast();
   const isFocused = useIsFocused();
   const insets = useSafeAreaInsets();
 
   const load = useCallback(async () => {
     if (!listId) {
-      const uiErr: UiError = { kind: 'unknown', message: 'Missing shopping list.' };
+      const uiErr: UiError = { kind: 'unknown', message: t('shoppingLists.errors.missingShoppingList') };
       setError(uiErr);
       showError(uiErr);
       return;
@@ -181,7 +183,7 @@ export function useShoppingListDetailsScreen(): ShoppingListDetailsView {
       setError(uiErr);
       showError(uiErr, { onRetry: load });
     }
-  }, [listId, showError]);
+  }, [listId, showError, t]);
 
   useEffect(() => {
     setIsLoading(true);
@@ -215,7 +217,7 @@ export function useShoppingListDetailsScreen(): ShoppingListDetailsView {
     if (!listId) return;
     const name = addName.trim();
     if (!name) {
-      setAddError('Item name is required.');
+      setAddError(t('shoppingLists.errors.itemNameRequired'));
       return;
     }
 
@@ -234,20 +236,20 @@ export function useShoppingListDetailsScreen(): ShoppingListDetailsView {
       setAddName('');
       setAddQuantity('');
       setAddUnit('');
-      toastState.show({ variant: 'success', message: 'Item added.' });
+      toastState.show({ variant: 'success', message: t('shoppingLists.toasts.itemAdded') });
     } catch (err) {
       const uiErr = mapCommonError(toApiError(err));
       setAddError(uiErr.message);
     } finally {
       setIsSaving(false);
     }
-  }, [addName, addQuantity, addUnit, listId, toastState]);
+  }, [addName, addQuantity, addUnit, listId, toastState, t]);
 
   const handleSaveEdit = useCallback(async () => {
     if (!listId || !editItem) return;
     const name = editName.trim();
     if (!name) {
-      showValidationError('Item name is required.');
+      showValidationError(t('shoppingLists.errors.itemNameRequired'));
       return;
     }
 
@@ -263,7 +265,7 @@ export function useShoppingListDetailsScreen(): ShoppingListDetailsView {
       setList(updated);
       setEditOpen(false);
       setEditItem(null);
-      toastState.show({ variant: 'success', message: 'Item updated.' });
+      toastState.show({ variant: 'success', message: t('shoppingLists.toasts.itemUpdated') });
     } catch (err) {
       const uiErr = mapCommonError(toApiError(err));
       showError(uiErr);
@@ -279,6 +281,7 @@ export function useShoppingListDetailsScreen(): ShoppingListDetailsView {
     showError,
     showValidationError,
     toastState,
+    t,
   ]);
 
   const toggleItem = useCallback(
@@ -366,7 +369,7 @@ export function useShoppingListDetailsScreen(): ShoppingListDetailsView {
     if (!listId) return;
     const title = renameTitle.trim();
     if (!title) {
-      setRenameError('List name is required.');
+      setRenameError(t('shoppingLists.errors.listNameRequired'));
       return;
     }
 
@@ -375,14 +378,14 @@ export function useShoppingListDetailsScreen(): ShoppingListDetailsView {
       const updated = await shoppingListsApi.patch(listId, { title });
       setList(updated);
       setRenameOpen(false);
-      toastState.show({ variant: 'success', message: 'List renamed.' });
+      toastState.show({ variant: 'success', message: t('shoppingLists.toasts.listRenamed') });
     } catch (err) {
       const uiErr = mapCommonError(toApiError(err));
       setRenameError(uiErr.message);
     } finally {
       setIsSaving(false);
     }
-  }, [listId, renameTitle, toastState]);
+  }, [listId, renameTitle, toastState, t]);
 
   const handleUncheckAll = useCallback(async () => {
     if (!listId) return;
@@ -500,7 +503,7 @@ export function useShoppingListDetailsScreen(): ShoppingListDetailsView {
     return [
       {
         key: 'options',
-        label: 'Options',
+        label: t('common.options'),
         icon: (
           <MoreVertical
             size={TAB_BAR.ICON_SIZE}
@@ -512,7 +515,7 @@ export function useShoppingListDetailsScreen(): ShoppingListDetailsView {
       },
       {
         key: 'clear',
-        label: 'Clear checked',
+        label: t('shoppingLists.clearChecked'),
         icon: (
           <ListX size={TAB_BAR.ICON_SIZE} color={theme.colors.tabBarAccent} strokeWidth={2.25} />
         ),
@@ -523,16 +526,16 @@ export function useShoppingListDetailsScreen(): ShoppingListDetailsView {
         disabled: !hasChecked,
       },
     ];
-  }, [checkedItems.length, openOptions, theme.colors.tabBarAccent]);
+  }, [checkedItems.length, openOptions, t, theme.colors.tabBarAccent]);
 
   const centerAction = useMemo(
     () => ({
-      label: 'Add Item',
+      label: t('shoppingLists.addItem'),
       icon: <Plus color={theme.colors.tabBarAddButtonIcon} size={38} strokeWidth={2.75} />,
       onPress: openAddSheet,
       accessibilityLabel: 'Add item',
     }),
-    [openAddSheet, theme.colors.tabBarAddButtonIcon],
+    [openAddSheet, t, theme.colors.tabBarAddButtonIcon],
   );
 
   useBottomBarActions(
@@ -569,8 +572,8 @@ export function useShoppingListDetailsScreen(): ShoppingListDetailsView {
     list?.title && list.title.trim()
       ? list.title
       : list?.status === 'archived'
-        ? 'Archived List'
-        : 'Active List';
+        ? t('shoppingLists.archivedListFallback')
+        : t('shoppingLists.activeListFallback');
 
   const state = useMemo(
     () => ({
@@ -582,7 +585,7 @@ export function useShoppingListDetailsScreen(): ShoppingListDetailsView {
       title,
       contentPaddingBottom: TAB_BAR.BOX_HEIGHT + TAB_BAR.PADDING_TOP + 40 + insets.bottom,
     }),
-    [error, filter, insets.bottom, isLoading, isRefreshing, isSaving, title],
+    [error, filter, insets.bottom, isLoading, isRefreshing, isSaving, title, t],
   );
 
   const data = useMemo(
@@ -693,10 +696,10 @@ export function useShoppingListDetailsScreen(): ShoppingListDetailsView {
       clearOpen,
       clearLabel:
         clearMode === 'checked'
-          ? 'Clear checked items'
+          ? t('shoppingLists.clearCheckedItems')
           : clearMode === 'uncheck'
-            ? 'Uncheck all items'
-            : 'Clear all items',
+            ? t('shoppingLists.uncheckAllItems')
+            : t('shoppingLists.clearAllItems'),
       setClearOpen,
       confirmClear,
       deleteListOpen,
@@ -712,6 +715,7 @@ export function useShoppingListDetailsScreen(): ShoppingListDetailsView {
       deleteListOpen,
       deleteOpen,
       deleteTarget?.name,
+      t,
     ],
   );
 

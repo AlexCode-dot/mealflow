@@ -1,5 +1,6 @@
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { EmptyState, LoadingScreen, Screen, UnderlineTabs, ScrollToTopFab } from '@/src/shared/ui';
 import type { UnderlineTab } from '@/src/shared/ui/UnderlineTabs/UnderlineTabs';
 import {
@@ -10,15 +11,18 @@ import { WeeklyPlannerHeaderCard } from '@/src/features/weekly-plans/ui/WeeklyPl
 import { WeeklyPlanListCard } from '@/src/features/weekly-plans/ui/WeeklyPlanListCard';
 import { type Theme, useTheme, useThemedStyles } from '@/src/shared/theme';
 
-const TABS: UnderlineTab[] = [
-  { key: 'recent', label: 'Recent' },
-  { key: 'window', label: 'Upcoming' },
-  { key: 'created', label: 'All created' },
-];
-
 export default function WeeklyPlannerScreen() {
+  const { t } = useTranslation();
   const theme = useTheme();
   const styles = useThemedStyles(createStyles);
+  const TABS: UnderlineTab[] = useMemo(
+    () => [
+      { key: 'recent', label: t('weeklyPlans.tabRecent') },
+      { key: 'window', label: t('weeklyPlans.tabUpcoming') },
+      { key: 'created', label: t('weeklyPlans.tabAllCreated') },
+    ],
+    [t],
+  );
   const view = useWeeklyPlannerScreen();
   const { state, actions, header, listItems } = view;
   const scrollRef = useRef<ScrollView>(null);
@@ -37,7 +41,7 @@ export default function WeeklyPlannerScreen() {
   return (
     <View style={styles.root}>
       <Screen
-        title="Weekly Planner"
+        title={t('weeklyPlans.title')}
         scroll
         refreshControl={state.refreshControl}
         contentStyle={styles.screenContent}
@@ -60,8 +64,8 @@ export default function WeeklyPlannerScreen() {
           </View>
         ) : listItems.length === 0 ? (
           <EmptyState
-            title="No weekly plans yet"
-            description="Create your first week to get started."
+            title={t('weeklyPlans.noPlansYet')}
+            description={t('weeklyPlans.noPlansBody')}
           />
         ) : (
           <View style={styles.list}>
@@ -93,7 +97,7 @@ export default function WeeklyPlannerScreen() {
                 {state.isLoadingMoreCreated ? (
                   <ActivityIndicator color={theme.colors.primaryDark} />
                 ) : (
-                  <Text style={styles.loadMoreText}>Load more weekly plans</Text>
+                  <Text style={styles.loadMoreText}>{t('weeklyPlans.loadMore')}</Text>
                 )}
               </Pressable>
             ) : null}

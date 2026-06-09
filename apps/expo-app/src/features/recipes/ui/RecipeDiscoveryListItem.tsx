@@ -1,4 +1,5 @@
 import { ShoppingBasket } from 'lucide-react-native';
+import { useTranslation } from 'react-i18next';
 import { RecipeListCard } from '@/src/features/recipes/ui/RecipeListCard';
 import type { InspirationListItem } from '@/src/features/recipes/types';
 import { useTheme } from '@/src/shared/theme';
@@ -18,6 +19,7 @@ export function RecipeDiscoveryListItem({
   isSaved = false,
   saveDisabled,
 }: Props) {
+  const { t } = useTranslation();
   const theme = useTheme();
   const subtitle = [item.category, item.area].filter(Boolean).join(' · ');
   const ingredientLabel =
@@ -41,7 +43,7 @@ export function RecipeDiscoveryListItem({
           : null
       }
       onSave={!isSaved && onSave ? () => onSave(item) : undefined}
-      saveLabel={isSaved ? 'Saved' : 'Save'}
+      saveLabel={isSaved ? t('recipes.saved') : t('common.save')}
       saveFilled={isSaved}
       savedBadge={isSaved}
       saveDisabled={saveDisabled || isSaved}

@@ -1,4 +1,5 @@
 import { Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { Plus } from 'lucide-react-native';
 import { WeeklyPlanDayPicker } from '@/src/features/weekly-plans/ui/WeeklyPlanDayPicker';
 import { WeeklyPlanEntryCard } from '@/src/features/weekly-plans/ui/WeeklyPlanEntryCard';
@@ -20,6 +21,7 @@ import {
 import { type Theme, useTheme, useThemedStyles } from '@/src/shared/theme';
 
 export default function WeeklyPlanDetailScreen() {
+  const { t } = useTranslation();
   const theme = useTheme();
   const styles = useThemedStyles(createStyles);
   const view = useWeeklyPlanDetailsScreen();
@@ -84,9 +86,9 @@ export default function WeeklyPlanDetailScreen() {
 
                 {sectionEntries.length === 0 ? (
                   <SectionEmpty
-                    title="No meals yet"
-                    description="Add your first meal to start building your plan."
-                    actionLabel="Add meal"
+                    title={t('weeklyPlans.noMealsYet')}
+                    description={t('weeklyPlans.noMealsBody')}
+                    actionLabel={t('weeklyPlans.addMeal')}
                     onAction={() => actions.openAddSheet(section)}
                     actionIcon={
                       <Plus size={18} color={theme.colors.primaryDark} strokeWidth={2.4} />
@@ -134,9 +136,9 @@ export default function WeeklyPlanDetailScreen() {
 
           <ConfirmSheet
             visible={confirms.entryDeleteOpen}
-            title="Remove meal?"
+            title={t('weeklyPlans.removeMeal')}
             description={confirms.entryDeleteDescription}
-            confirmLabel="Delete"
+            confirmLabel={t('common.delete')}
             onConfirm={confirms.confirmEntryDelete}
             onCancel={() => {
               confirms.setEntryDeleteOpen(false);
@@ -150,9 +152,9 @@ export default function WeeklyPlanDetailScreen() {
 
           <ConfirmSheet
             visible={confirms.clearWeekOpen}
-            title="Clear week?"
+            title={t('weeklyPlans.clearWeek')}
             description={confirms.clearWeekDescription}
-            confirmLabel="Clear"
+            confirmLabel={t('weeklyPlans.clear')}
             onConfirm={confirms.confirmClearWeek}
             onCancel={() => confirms.setClearWeekOpen(false)}
             disabled={state.isSaving}
@@ -160,9 +162,9 @@ export default function WeeklyPlanDetailScreen() {
 
           <ConfirmSheet
             visible={confirms.generateOpen}
-            title="Generate shopping list?"
+            title={t('weeklyPlans.generateShoppingList')}
             description={confirms.generateDescription}
-            confirmLabel="Generate"
+            confirmLabel={t('weeklyPlans.generate')}
             onConfirm={confirms.confirmGenerate}
             onCancel={() => confirms.setGenerateOpen(false)}
             disabled={state.isGenerating}

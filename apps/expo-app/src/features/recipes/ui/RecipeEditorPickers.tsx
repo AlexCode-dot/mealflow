@@ -1,6 +1,7 @@
+import { useTranslation } from 'react-i18next';
 import { RecipePickerSheet } from '@/src/features/recipes/ui/RecipePickerSheet';
 import {
-  RECIPE_CATEGORY_OPTIONS,
+  getRecipeCategoryOptions,
   RECIPE_PORTIONS_OPTIONS,
   RECIPE_TIME_OPTIONS,
 } from '@/src/features/recipes/constants/recipePickerOptions';
@@ -27,11 +28,12 @@ export function RecipeEditorPickers({
   onCategoryChange,
   onClose,
 }: Props) {
+  const { t } = useTranslation();
   return (
     <>
       <RecipePickerSheet
         visible={pickerOpen === 'time'}
-        title="Cooking time"
+        title={t('recipes.cookingTimeLabel')}
         value={time || '0'}
         options={RECIPE_TIME_OPTIONS}
         onChange={onTimeChange}
@@ -40,7 +42,7 @@ export function RecipeEditorPickers({
 
       <RecipePickerSheet
         visible={pickerOpen === 'portions'}
-        title="Portions"
+        title={t('recipes.portions')}
         value={portions || '0'}
         options={RECIPE_PORTIONS_OPTIONS}
         onChange={onPortionsChange}
@@ -49,9 +51,9 @@ export function RecipeEditorPickers({
 
       <RecipePickerSheet
         visible={pickerOpen === 'category'}
-        title="Category"
+        title={t('recipes.categoryLabel')}
         value={category}
-        options={RECIPE_CATEGORY_OPTIONS}
+        options={getRecipeCategoryOptions(t)}
         onChange={onCategoryChange}
         onClose={onClose}
       />

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { RefObject } from 'react';
 import type { FlatList } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useFocusEffect, useIsFocused } from '@react-navigation/native';
 import { useRecipeDiscovery } from '@/src/features/recipes/hooks/useRecipeDiscovery';
@@ -79,6 +80,7 @@ export function useRecipesScreen(): RecipesScreenView {
   const params = useLocalSearchParams<{ toast?: string; tab?: string }>();
   const toastParam = typeof params.toast === 'string' ? params.toast : null;
   const tabParam = typeof params.tab === 'string' ? params.tab : null;
+  const { t } = useTranslation();
   const saved = useRecipesList({ paginated: true, pageSize: 24 });
   const view = useRecipeListView({
     savedItems: saved.items,
@@ -191,7 +193,7 @@ export function useRecipesScreen(): RecipesScreenView {
 
   const handleSaveConfirm = useCallback(async () => {
     if (!saveCategory) {
-      showValidationError('Choose a category before saving.');
+      showValidationError(t('recipes.chooseCategory'));
       return;
     }
     if (!saveTarget) return;
@@ -212,7 +214,7 @@ export function useRecipesScreen(): RecipesScreenView {
     } finally {
       setIsSaving(false);
     }
-  }, [loadSaved, saveCategory, saveTarget, showApiError, showValidationError, toastState]);
+  }, [loadSaved, saveCategory, saveTarget, showApiError, showValidationError, t, toastState]);
 
   const handleDiscoveryScroll = useCallback((offsetY: number) => {
     setShowScrollTop(offsetY > 500);

@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { Check, ChevronRight, UserRound, XCircle } from 'lucide-react-native';
 import { useIsFocused } from '@react-navigation/native';
 import { useProfileEditScreen } from '@/src/features/profile/hooks/useProfileEditScreen';
@@ -20,6 +21,7 @@ import { TAB_BAR } from '@/src/shared/ui/layout/tabBar';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export function ProfileEditScreen() {
+  const { t } = useTranslation();
   const theme = useTheme();
   const styles = useThemedStyles(createStyles);
   const view = useProfileEditScreen();
@@ -34,20 +36,20 @@ export function ProfileEditScreen() {
     () => [
       {
         key: 'cancel',
-        label: 'Cancel',
+        label: t('common.cancel'),
         icon: <XCircle color={actionColor} size={TAB_BAR.ICON_SIZE} strokeWidth={2.4} />,
         onPress: actions.cancel,
         disabled: state.isSaving,
       },
       {
         key: 'save',
-        label: state.isSaving ? 'Saving' : 'Save',
+        label: state.isSaving ? t('common.saving') : t('common.save'),
         icon: <Check color={actionColor} size={TAB_BAR.ICON_SIZE} strokeWidth={2.6} />,
         onPress: actions.save,
         disabled: state.isSaving,
       },
     ],
-    [actionColor, actions.cancel, actions.save, state.isSaving],
+    [actionColor, actions.cancel, actions.save, state.isSaving, t],
   );
 
   useBottomBarActions(isFocused ? actionItems : null);
@@ -63,7 +65,7 @@ export function ProfileEditScreen() {
   return (
     <View style={styles.root}>
       <Screen
-        title="Edit Profile"
+        title={t('profile.editProfile')}
         scroll
         showBack
         onBack={actions.cancel}
@@ -87,31 +89,31 @@ export function ProfileEditScreen() {
           <View style={styles.avatarCircle}>
             <UserRound size={30} color={theme.colors.primaryDark} strokeWidth={2.6} />
           </View>
-          <Text style={styles.avatarLabel}>Profile avatar</Text>
+          <Text style={styles.avatarLabel}>{t('profile.profileAvatar')}</Text>
         </Card>
 
         <Card style={styles.formCard} variant="premium">
           <TextField
-            label="Display name"
+            label={t('profile.displayName')}
             value={form.displayName}
             onChangeText={form.setDisplayName}
-            placeholder="Your name"
+            placeholder={t('profile.yourName')}
             autoCapitalize="words"
             returnKeyType="done"
           />
 
           <View style={styles.readOnlyBlock}>
-            <Text style={styles.label}>Email</Text>
+            <Text style={styles.label}>{t('profile.emailLabel')}</Text>
             <View style={styles.readOnlyField}>
-              <Text style={styles.readOnlyText}>Not available</Text>
+              <Text style={styles.readOnlyText}>{t('profile.notAvailable')}</Text>
             </View>
           </View>
 
           <View style={styles.themeBlock}>
-            <Text style={styles.label}>Theme</Text>
+            <Text style={styles.label}>{t('profile.theme')}</Text>
             <ListRow
               title={themeLabel}
-              subtitle="Choose your look"
+              subtitle={t('profile.chooseYourLook')}
               onPress={() => setThemeOpen(true)}
               right={<ChevronRight size={18} color={theme.colors.textMuted} strokeWidth={2.4} />}
             />

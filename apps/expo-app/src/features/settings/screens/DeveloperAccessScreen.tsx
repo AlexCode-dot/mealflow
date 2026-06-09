@@ -3,6 +3,7 @@ import { ActivityIndicator, Pressable, RefreshControl, StyleSheet, Text, View } 
 import * as Clipboard from 'expo-clipboard';
 import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
+import type { ParseKeys } from 'i18next';
 import { Check, KeyRound, Trash2 } from 'lucide-react-native';
 import {
   Button,
@@ -23,7 +24,7 @@ import {
   type IssuedIntegrationToken,
 } from '@/src/features/settings/api/integrationTokensApi';
 
-type ExpiryOption = { labelKey: string; days: number | null };
+type ExpiryOption = { labelKey: ParseKeys; days: number | null };
 
 const EXPIRY_OPTIONS: ExpiryOption[] = [
   { labelKey: 'developer.expiry30Days', days: 30 },
@@ -240,7 +241,7 @@ export function DeveloperAccessScreen() {
                       expiry.labelKey === opt.labelKey ? styles.optionChipTextActive : null,
                     ]}
                   >
-                    {t(opt.labelKey as Parameters<typeof t>[0])}
+                    {t(opt.labelKey)}
                   </Text>
                 </Pressable>
               ))}

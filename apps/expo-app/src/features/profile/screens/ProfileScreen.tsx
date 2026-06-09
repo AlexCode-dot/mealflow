@@ -513,6 +513,7 @@ function SupportRow({
   styles: ReturnType<typeof createStyles>;
   theme: Theme;
 }) {
+  const { t } = useTranslation();
   return (
     <View style={styles.supportRow}>
       <Pressable style={styles.supportMain} onPress={onPress}>

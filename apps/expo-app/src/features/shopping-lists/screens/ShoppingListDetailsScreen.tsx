@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
 import { Archive, CheckCircle2, ListMinus, PencilLine, Trash2 } from 'lucide-react-native';
 import { ShoppingListItemRow } from '@/src/features/shopping-lists/ui/ShoppingListItemRow';
@@ -19,6 +20,7 @@ import { type Theme, useTheme, useThemedStyles } from '@/src/shared/theme';
 
 export default function ShoppingListDetailsScreen() {
   const theme = useTheme();
+  const { t } = useTranslation();
   const styles = useThemedStyles(createStyles);
   const view = useShoppingListDetailsScreen();
   const { state, data, actions, toast, addSheet, editSheet, renameSheet, confirms, options } = view;
@@ -26,10 +28,10 @@ export default function ShoppingListDetailsScreen() {
   const filterTabs = useMemo(
     () => [
       { key: 'all', label: `All (${data.totalCount})` },
-      { key: 'unchecked', label: `Unchecked (${data.uncheckedCount})` },
-      { key: 'checked', label: `Checked (${data.checkedCount})` },
+      { key: 'unchecked', label: t('shoppingLists.unchecked', { count: data.uncheckedCount }) },
+      { key: 'checked', label: t('shoppingLists.checkedSection', { count: data.checkedCount }) },
     ],
-    [data.checkedCount, data.totalCount, data.uncheckedCount],
+    [data.checkedCount, data.totalCount, data.uncheckedCount, t],
   );
 
   const toastBanner =
@@ -66,9 +68,12 @@ export default function ShoppingListDetailsScreen() {
         <View style={styles.summaryCard}>
           <View style={styles.summaryHeader}>
             <View style={styles.summaryText}>
-              <Text style={styles.summaryTitle}>Items</Text>
+              <Text style={styles.summaryTitle}>{t('shoppingLists.items')}</Text>
               <Text style={styles.summaryMeta}>
-                {data.totalCount} total · {data.checkedCount} checked
+                {t('shoppingLists.totalChecked', {
+                  total: data.totalCount,
+                  checked: data.checkedCount,
+                })}
               </Text>
             </View>
             <Text style={styles.summaryPercent}>{data.progress}%</Text>
@@ -87,20 +92,20 @@ export default function ShoppingListDetailsScreen() {
         {state.filter === 'all' ? (
           data.totalCount === 0 ? (
             <View style={styles.emptyBlock}>
-              <Text style={styles.emptyTitle}>No items yet</Text>
+              <Text style={styles.emptyTitle}>{t('shoppingLists.noItemsYet')}</Text>
               <Text style={styles.emptySubtitle}>Add your first item to get started.</Text>
             </View>
           ) : (
             <View style={styles.sections}>
               <SectionBlock
-                title={`Unchecked (${data.uncheckedCount})`}
+                title={t('shoppingLists.unchecked', { count: data.uncheckedCount })}
                 items={data.uncheckedItems}
                 onEdit={actions.openEditSheet}
                 onToggle={actions.toggleItem}
                 onDelete={actions.requestDelete}
               />
               <SectionBlock
-                title={`Checked (${data.checkedCount})`}
+                title={t('shoppingLists.checkedSection', { count: data.checkedCount })}
                 items={data.checkedItems}
                 onEdit={actions.openEditSheet}
                 onToggle={actions.toggleItem}
@@ -110,7 +115,7 @@ export default function ShoppingListDetailsScreen() {
           )
         ) : data.visibleItems.length === 0 ? (
           <View style={styles.emptyBlock}>
-            <Text style={styles.emptyTitle}>No items here yet</Text>
+            <Text style={styles.emptyTitle}>{t('shoppingLists.noItemsHere')}</Text>
             <Text style={styles.emptySubtitle}>Add something to keep the list moving.</Text>
           </View>
         ) : (
@@ -132,7 +137,7 @@ export default function ShoppingListDetailsScreen() {
 
       <ShoppingListItemEditorSheet
         visible={addSheet.open}
-        title="Add Item"
+        title={t('shoppingLists.addItem')}
         name={addSheet.name}
         quantity={addSheet.quantity}
         unit={addSheet.unit}
@@ -141,14 +146,14 @@ export default function ShoppingListDetailsScreen() {
         onChangeUnit={addSheet.setUnit}
         onSave={addSheet.handleSave}
         onCancel={() => addSheet.setOpen(false)}
-        saveLabel={state.isSaving ? 'Saving...' : 'Add Item'}
+        saveLabel={state.isSaving ? t('shoppingLists.saving') : t('shoppingLists.addItem')}
         disabled={state.isSaving}
         formError={addSheet.formError}
       />
 
       <ShoppingListItemEditorSheet
         visible={editSheet.open}
-        title="Edit Item"
+        title={t('shoppingLists.editItem')}
         name={editSheet.name}
         quantity={editSheet.quantity}
         unit={editSheet.unit}
@@ -157,27 +162,27 @@ export default function ShoppingListDetailsScreen() {
         onChangeUnit={editSheet.setUnit}
         onSave={editSheet.handleSave}
         onCancel={() => editSheet.setOpen(false)}
-        saveLabel={state.isSaving ? 'Saving...' : 'Save Changes'}
+        saveLabel={state.isSaving ? t('shoppingLists.saving') : t('shoppingLists.saveChanges')}
         disabled={state.isSaving}
       />
 
       <ShoppingListRenameSheet
         visible={renameSheet.open}
-        title="Rename List"
+        title={t('shoppingLists.renameList')}
         value={renameSheet.title}
         onChangeText={renameSheet.setTitle}
         onSave={renameSheet.handleSave}
         onCancel={() => renameSheet.setOpen(false)}
-        saveLabel={state.isSaving ? 'Saving...' : 'Save Name'}
+        saveLabel={state.isSaving ? t('shoppingLists.saving') : t('shoppingLists.saveName')}
         disabled={state.isSaving}
         formError={renameSheet.formError}
       />
 
       <ConfirmSheet
         visible={confirms.deleteOpen}
-        title="Delete item"
+        title={t('shoppingLists.deleteItem')}
         description={`Remove ${confirms.deleteLabel} from the list?`}
-        confirmLabel="Delete"
+        confirmLabel={t('common.delete')}
         onCancel={() => confirms.setDeleteOpen(false)}
         onConfirm={confirms.confirmDelete}
         disabled={state.isSaving}
@@ -186,8 +191,8 @@ export default function ShoppingListDetailsScreen() {
       <ConfirmSheet
         visible={confirms.clearOpen}
         title={confirms.clearLabel}
-        description="This action cannot be undone."
-        confirmLabel="Confirm"
+        description={t('common.thisActionCannotBeUndone')}
+        confirmLabel={t('common.confirm')}
         onCancel={() => confirms.setClearOpen(false)}
         onConfirm={confirms.confirmClear}
         disabled={state.isSaving}
@@ -196,9 +201,9 @@ export default function ShoppingListDetailsScreen() {
 
       <ConfirmSheet
         visible={confirms.deleteListOpen}
-        title="Delete list?"
-        description="This will permanently delete the list."
-        confirmLabel="Delete"
+        title={t('shoppingLists.deleteListTitle')}
+        description={t('shoppingLists.deleteListBody')}
+        confirmLabel={t('common.delete')}
         onCancel={() => confirms.setDeleteListOpen(false)}
         onConfirm={confirms.confirmDeleteList}
         disabled={state.isSaving}
@@ -209,29 +214,29 @@ export default function ShoppingListDetailsScreen() {
         <View style={styles.optionsSheet}>
           <Pressable style={styles.optionRow} onPress={options.handleRename}>
             <PencilLine size={18} color={theme.colors.text} />
-            <Text style={styles.optionText}>Rename list</Text>
+            <Text style={styles.optionText}>{t('shoppingLists.renameListOption')}</Text>
           </Pressable>
           {data.list?.status === 'active' ? (
             <Pressable style={styles.optionRow} onPress={options.handleArchive}>
               <Archive size={18} color={theme.colors.text} />
-              <Text style={styles.optionText}>Archive list</Text>
+              <Text style={styles.optionText}>{t('shoppingLists.archiveList')}</Text>
             </Pressable>
           ) : null}
           <Pressable style={styles.optionRow} onPress={options.handleUncheckAll}>
             <CheckCircle2 size={18} color={theme.colors.text} />
-            <Text style={styles.optionText}>Uncheck all items</Text>
+            <Text style={styles.optionText}>{t('shoppingLists.uncheckAllItems')}</Text>
           </Pressable>
           <Pressable style={styles.optionRow} onPress={options.handleClearChecked}>
             <ListMinus size={18} color={theme.colors.text} />
-            <Text style={styles.optionText}>Clear checked items</Text>
+            <Text style={styles.optionText}>{t('shoppingLists.clearCheckedItems')}</Text>
           </Pressable>
           <Pressable style={styles.optionRow} onPress={options.handleClearAll}>
             <Trash2 size={18} color={theme.colors.text} />
-            <Text style={styles.optionText}>Clear all items</Text>
+            <Text style={styles.optionText}>{t('shoppingLists.clearAllItems')}</Text>
           </Pressable>
           <Pressable style={styles.optionRow} onPress={options.handleDeleteList}>
             <Trash2 size={18} color={theme.colors.error} />
-            <Text style={[styles.optionText, styles.optionDanger]}>Delete list</Text>
+            <Text style={[styles.optionText, styles.optionDanger]}>{t('shoppingLists.deleteList')}</Text>
           </Pressable>
         </View>
       </ModalSheet>
@@ -252,12 +257,13 @@ function SectionBlock({
   onEdit: (item: ShoppingListItem) => void;
   onDelete: (item: ShoppingListItem) => void;
 }) {
+  const { t } = useTranslation();
   const styles = useThemedStyles(createStyles);
   if (items.length === 0) {
     return (
       <View style={styles.sectionBlock}>
         <Text style={styles.sectionTitle}>{title}</Text>
-        <Text style={styles.sectionEmpty}>No items</Text>
+        <Text style={styles.sectionEmpty}>{t('shoppingLists.noItems')}</Text>
       </View>
     );
   }
