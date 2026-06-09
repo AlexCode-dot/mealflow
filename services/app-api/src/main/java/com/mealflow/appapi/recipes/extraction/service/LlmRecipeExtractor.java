@@ -32,10 +32,11 @@ public class LlmRecipeExtractor {
             - All quantities MUST use the %s system.
               - metric units to use: g, kg, ml, dl, l, msk (tablespoon), tsk (teaspoon), st (piece)
               - imperial units to use: oz, lb, tsp, tbsp, cup, fl oz
-            - If a quantity or unit is not stated, set them to null and add the corresponding ingredient name (or 'cookingTimeMinutes', 'portions') to uncertainFields.
-            - Do not invent values you cannot infer. Prefer null over guessing.
+            - If a quantity or unit is not stated in the source, ESTIMATE a sensible value from the dish, the cooking steps, and standard recipes for this kind of food, scaled to the portion count. Use common, rounded amounts a home cook expects (e.g. 2 dl, 1 msk, 1 st).
+            - Every value you ESTIMATED rather than read directly from the source MUST be listed in uncertainFields, by ingredient name (or 'cookingTimeMinutes' / 'portions'), so the user can review and confirm.
+            - Only leave a quantity or unit null if you genuinely cannot make a reasonable estimate even after considering the dish and steps.
             - cookingTimeMinutes: total active + passive minutes, integer. null if unknown.
-            - portions: integer count. null if unknown.
+            - portions: integer count. If not stated, assume 4, set portions to 4, and add 'portions' to uncertainFields. Scale all estimated ingredient amounts to this portion count.
             - title: short and descriptive, max 80 chars. No emoji.
             - steps: ordered list of plain-text instructions, max 15 steps, each max 400 chars. No numbering prefixes.
             - category: one of "breakfast", "lunch", "dinner", "dessert", "snack", "drink", "side", "other". null if unknown.
