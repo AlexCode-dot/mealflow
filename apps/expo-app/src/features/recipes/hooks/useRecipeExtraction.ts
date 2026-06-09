@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Platform } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import * as ImagePicker from 'expo-image-picker';
 import { extractionApi } from '@/src/features/recipes/api/extractionApi';
 import type { ExtractionJob, ExtractionStatus } from '@/src/features/recipes/types';
@@ -32,18 +33,6 @@ export type RecipeExtractionActions = {
   reset: () => void;
 };
 
-function detectLocale(): string {
-  try {
-    if (typeof Intl !== 'undefined' && Intl.DateTimeFormat) {
-      const tag = Intl.DateTimeFormat().resolvedOptions().locale;
-      if (tag) return tag;
-    }
-  } catch {
-    // ignore
-  }
-  return 'en-US';
-}
-
 function isTerminal(status: ExtractionStatus): boolean {
   return status === 'READY' || status === 'FAILED' || status === 'ACCEPTED';
 }
@@ -53,6 +42,7 @@ export function useRecipeExtraction(): {
   actions: RecipeExtractionActions;
 } {
   const { showError } = useGlobalToast();
+  const { i18n } = useTranslation();
   const [phase, setPhase] = useState<Phase>('idle');
   const [job, setJob] = useState<ExtractionJob | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -112,7 +102,9 @@ export function useRecipeExtraction(): {
       setPhase('uploading');
       cancelledRef.current = false;
       try {
-        const created = await extractionApi.start(formData, detectLocale());
+        // Send the user's active app language (auto-detected or manually overridden in Settings)
+        // so the extracted recipe is translated to the same language as the rest of the UI.
+        const created = await extractionApi.start(formData, i18n.language);
         if (cancelledRef.current) return;
         setJob(created);
         setPhase('processing');
@@ -127,7 +119,7 @@ export function useRecipeExtraction(): {
         showError({ kind: uiErr.kind, message });
       }
     },
-    [beginPolling, showError],
+    [beginPolling, showError, i18n],
   );
 
   const buildFormData = useCallback((uri: string, fileName: string, mimeType: string): FormData => {
