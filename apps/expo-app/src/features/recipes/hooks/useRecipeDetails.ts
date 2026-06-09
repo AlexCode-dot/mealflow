@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { recipesApi } from '@/src/features/recipes/api/recipesApi';
 import type { Recipe } from '@/src/features/recipes/types';
 import { toApiError } from '@/src/core/http/toApiError';
@@ -24,6 +25,7 @@ export type RecipeDetailsView = {
 };
 
 export function useRecipeDetails(id: string): RecipeDetailsView {
+  const { t } = useTranslation();
   const { showError } = useGlobalToast();
   const [recipe, setRecipe] = useState<Recipe | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -32,7 +34,7 @@ export function useRecipeDetails(id: string): RecipeDetailsView {
 
   const load = useCallback(async () => {
     if (!id) {
-      setError({ kind: 'unknown', message: 'Missing recipe id.' });
+      setError({ kind: 'unknown', message: t('errors.missingRecipeId') });
       setIsLoading(false);
       return;
     }
@@ -51,7 +53,7 @@ export function useRecipeDetails(id: string): RecipeDetailsView {
     } finally {
       setIsLoading(false);
     }
-  }, [id, showError]);
+  }, [id, showError, t]);
 
   useEffect(() => {
     load().catch(() => undefined);

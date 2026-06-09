@@ -1,32 +1,33 @@
 import type { ApiError } from '@/src/core/http/apiErrorTypes';
 import type { UiError } from '@/src/shared/errors/errorTypes';
+import i18n from '@/src/shared/i18n/i18n';
 
 // Convert backend validator messages to user-friendly copy.
 function normalizeAuthFieldMessage(field: string, raw: string): string {
   const msg = raw.trim().toLowerCase();
 
   if (field === 'email') {
-    if (msg.includes('well-formed')) return 'Please enter a valid email address.';
-    if (msg.includes('must not be blank')) return 'Email is required.';
-    return 'Please check your email address.';
+    if (msg.includes('well-formed')) return i18n.t('errors.emailInvalid');
+    if (msg.includes('must not be blank')) return i18n.t('errors.emailRequired');
+    return i18n.t('errors.emailCheck');
   }
 
   if (field === 'password') {
-    if (msg.includes('size must be between')) return 'Password must be at least 8 characters.';
-    if (msg.includes('must not be blank')) return 'Password is required.';
-    return 'Please check your password.';
+    if (msg.includes('size must be between')) return i18n.t('errors.passwordTooShort');
+    if (msg.includes('must not be blank')) return i18n.t('errors.passwordRequired');
+    return i18n.t('errors.passwordCheck');
   }
 
-  return raw.trim() || 'Please check this field.';
+  return raw.trim() || i18n.t('errors.fieldCheck');
 }
 
 export function mapAuthError(apiErr: ApiError): UiError {
   if (apiErr.kind === 'network') {
-    return { kind: 'network', message: 'Network error. Check your connection and try again.' };
+    return { kind: 'network', message: i18n.t('errors.networkRetry') };
   }
 
   if (apiErr.kind === 'unknown') {
-    return { kind: 'unknown', message: 'Something went wrong. Please try again.' };
+    return { kind: 'unknown', message: i18n.t('errors.generic') };
   }
 
   // kind === 'http'
@@ -34,7 +35,7 @@ export function mapAuthError(apiErr: ApiError): UiError {
 
   // Auth-safe login message (don’t leak whether email exists)
   if (status === 401) {
-    return { kind: 'auth', message: 'Invalid email or password.', status };
+    return { kind: 'auth', message: i18n.t('errors.invalidCredentials'), status };
   }
 
   if (status === 429) {
@@ -44,7 +45,7 @@ export function mapAuthError(apiErr: ApiError): UiError {
         : undefined;
     return {
       kind: 'rate_limit',
-      message: retry ? 'Too many requests.' : 'Too many requests. Try again in a moment.',
+      message: retry ? i18n.t('errors.tooManyRequests') : i18n.t('errors.tooManyRequestsRetry'),
       status,
       retryAfterSeconds: retry,
     };
@@ -52,7 +53,7 @@ export function mapAuthError(apiErr: ApiError): UiError {
 
   // Register conflict -> inline on email
   if (status === 409) {
-    const msg = 'An account with this email already exists.';
+    const msg = i18n.t('errors.emailExists');
     return {
       kind: 'conflict',
       message: msg,
@@ -79,7 +80,7 @@ export function mapAuthError(apiErr: ApiError): UiError {
 
     return {
       kind: 'validation',
-      message: firstFieldMsg ?? apiErr.detail ?? 'Please check your details and try again.',
+      message: firstFieldMsg ?? apiErr.detail ?? i18n.t('errors.checkDetails'),
       fieldErrors: normalizedFieldErrors,
       status,
     };
@@ -88,7 +89,7 @@ export function mapAuthError(apiErr: ApiError): UiError {
   // Fallback for other status codes
   return {
     kind: 'unknown',
-    message: apiErr.detail || 'Something went wrong. Please try again.',
+    message: apiErr.detail || i18n.t('errors.generic'),
     status,
   };
 }

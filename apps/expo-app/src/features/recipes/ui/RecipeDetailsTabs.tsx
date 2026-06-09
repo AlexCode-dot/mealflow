@@ -1,12 +1,8 @@
+import { useTranslation } from 'react-i18next';
 import { UnderlineTabsBar } from '@/src/shared/ui';
 import type { UnderlineTabsBarTab } from '@/src/shared/ui';
 
 export type RecipeDetailsTab = 'ingredients' | 'steps';
-
-const TABS: UnderlineTabsBarTab<RecipeDetailsTab>[] = [
-  { key: 'ingredients', label: 'Ingredients' },
-  { key: 'steps', label: 'Steps' },
-];
 
 type Props = {
   value: RecipeDetailsTab;
@@ -14,5 +10,10 @@ type Props = {
 };
 
 export function RecipeDetailsTabs({ value, onChange }: Props) {
-  return <UnderlineTabsBar tabs={TABS} value={value} onChange={onChange} variant="details" />;
+  const { t } = useTranslation();
+  const tabs: UnderlineTabsBarTab<RecipeDetailsTab>[] = [
+    { key: 'ingredients', label: t('recipes.tabIngredients') },
+    { key: 'steps', label: t('recipes.tabSteps') },
+  ];
+  return <UnderlineTabsBar tabs={tabs} value={value} onChange={onChange} variant="details" />;
 }

@@ -1,4 +1,5 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { Check, GripVertical } from 'lucide-react-native';
 import { type Theme, useTheme, useThemedStyles } from '@/src/shared/theme';
 
@@ -22,6 +23,7 @@ export function RecipeIngredientRow({
   onDrag,
   showHandle = false,
 }: Props) {
+  const { t } = useTranslation();
   const theme = useTheme();
   const styles = useThemedStyles(createStyles);
   const hasHandle = Boolean(onDrag) || showHandle;
@@ -41,7 +43,7 @@ export function RecipeIngredientRow({
         onDrag ? (
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel="Reorder ingredient"
+            accessibilityLabel={t('recipes.a11yReorderIngredient')}
             onLongPress={onDrag}
             hitSlop={8}
             style={styles.dragHandle}

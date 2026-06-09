@@ -7,6 +7,7 @@ import {
   Text,
   View,
 } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { type Theme, useThemedStyles } from '@/src/shared/theme';
 
 type Props = {
@@ -14,6 +15,7 @@ type Props = {
 };
 
 export function KeyboardDoneAccessory({ nativeID }: Props) {
+  const { t } = useTranslation();
   const styles = useThemedStyles(createStyles);
 
   if (Platform.OS !== 'ios') {
@@ -24,7 +26,7 @@ export function KeyboardDoneAccessory({ nativeID }: Props) {
     <InputAccessoryView nativeID={nativeID}>
       <View style={styles.accessory}>
         <Pressable onPress={Keyboard.dismiss} style={styles.button}>
-          <Text style={styles.label}>Done</Text>
+          <Text style={styles.label}>{t('common.done')}</Text>
         </Pressable>
       </View>
     </InputAccessoryView>

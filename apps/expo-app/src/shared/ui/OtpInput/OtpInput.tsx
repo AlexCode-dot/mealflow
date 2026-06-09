@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { type Theme, useThemedStyles } from '@/src/shared/theme';
 
 type Props = {
@@ -24,6 +25,7 @@ export function OtpInput({
   invalid = false,
   onSubmit,
 }: Props) {
+  const { t } = useTranslation();
   const styles = useThemedStyles(createStyles);
   const inputRef = useRef<TextInput | null>(null);
   const [isFocused, setIsFocused] = useState(false);
@@ -44,7 +46,7 @@ export function OtpInput({
   const focus = () => inputRef.current?.focus();
 
   return (
-    <Pressable accessibilityLabel="Verification code" onPress={focus} style={styles.row}>
+    <Pressable accessibilityLabel={t('auth.a11yVerificationCode')} onPress={focus} style={styles.row}>
       {digits.map((digit, idx) => {
         const showCursor = isFocused && idx === activeIndex && digit === '';
         return (
