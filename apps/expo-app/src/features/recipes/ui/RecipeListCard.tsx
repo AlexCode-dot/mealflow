@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { Image, Pressable, StyleSheet, Text, View, type ColorValue } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Bookmark } from 'lucide-react-native';
+import { useTranslation } from 'react-i18next';
 import { IconStat, Shimmer } from '@/src/shared/ui';
 import { type Theme, useTheme, useThemedStyles } from '@/src/shared/theme';
 import { RECIPE_IMAGE_FADE_MODE } from '@/src/features/recipes/constants/recipeUiConfig';
@@ -33,13 +34,15 @@ export function RecipeListCard({
   metaLeft,
   metaMiddle,
   onSave,
-  saveLabel = 'Save',
+  saveLabel,
   saveFilled = false,
   saveDisabled = false,
   savedBadge = false,
 }: Props) {
+  const { t } = useTranslation();
   const theme = useTheme();
   const styles = useThemedStyles(createStyles);
+  const resolvedSaveLabel = saveLabel ?? t('common.save');
   const leftMeta = metaLeft ?? null;
   const middleMeta = metaMiddle ?? null;
   const hasImage = Boolean(imageUrl);
@@ -67,7 +70,7 @@ export function RecipeListCard({
           )}
           {savedBadge ? (
             <View style={styles.savedBadge}>
-              <Text style={styles.savedBadgeText}>Saved</Text>
+              <Text style={styles.savedBadgeText}>{t('recipes.saved')}</Text>
             </View>
           ) : null}
           {hasImage ? (
@@ -112,7 +115,7 @@ export function RecipeListCard({
                       strokeWidth={2.4}
                     />
                   }
-                  label={saveLabel}
+                  label={resolvedSaveLabel}
                   labelStyle={saveFilled ? styles.saveLabelSaved : undefined}
                 />
               </Pressable>
@@ -127,7 +130,7 @@ export function RecipeListCard({
                       strokeWidth={2.4}
                     />
                   }
-                  label={saveLabel}
+                  label={resolvedSaveLabel}
                   labelStyle={saveFilled ? styles.saveLabelSaved : undefined}
                 />
               </View>

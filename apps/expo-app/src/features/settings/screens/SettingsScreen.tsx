@@ -100,7 +100,7 @@ export function SettingsScreen() {
         }
       >
         <View style={styles.list}>
-          <ProfileBanner onPress={actions.openProfileEdit} styles={styles} theme={theme} t={t} />
+          <ProfileBanner onPress={actions.openProfileEdit} styles={styles} theme={theme} />
 
           <SectionHeader title={t('settings.preferences')} styles={styles} />
           <View style={styles.sectionGroup}>
@@ -407,13 +407,12 @@ function ProfileBanner({
   onPress,
   styles,
   theme,
-  t,
 }: {
   onPress: () => void;
   styles: ReturnType<typeof createStyles>;
   theme: Theme;
-  t: (key: string) => string;
 }) {
+  const { t } = useTranslation();
   return (
     <Pressable onPress={onPress} style={({ pressed }) => (pressed ? styles.rowPressed : null)}>
       <View style={styles.profileCard}>

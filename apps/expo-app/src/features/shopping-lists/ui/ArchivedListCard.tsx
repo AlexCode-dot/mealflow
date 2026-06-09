@@ -1,4 +1,5 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { ChevronRight, Utensils } from 'lucide-react-native';
 import { type Theme, useTheme, useThemedStyles } from '@/src/shared/theme';
 import { formatRelativeTime } from '@/src/features/shopping-lists/utils/relativeTime';
@@ -11,6 +12,7 @@ type Props = {
 };
 
 export function ArchivedListCard({ title, updatedAt, itemCount, onPress }: Props) {
+  const { t } = useTranslation();
   const theme = useTheme();
   const styles = useThemedStyles(createStyles);
   const archivedLabel = formatRelativeTime(updatedAt);
@@ -23,10 +25,14 @@ export function ArchivedListCard({ title, updatedAt, itemCount, onPress }: Props
       <View style={styles.body}>
         <View style={styles.text}>
           <Text style={styles.title}>{title}</Text>
-          <Text style={styles.subtitle}>Archived {archivedLabel}</Text>
+          <Text style={styles.subtitle}>
+            {t('shoppingLists.archivedOn', { label: archivedLabel })}
+          </Text>
           <View style={styles.metaRow}>
             <Utensils size={14} color={theme.colors.textMuted} />
-            <Text style={styles.metaText}>{itemCount} items</Text>
+            <Text style={styles.metaText}>
+              {t('shoppingLists.itemCountLabel', { count: itemCount })}
+            </Text>
           </View>
         </View>
         <ChevronRight size={20} color={theme.colors.textMuted} />

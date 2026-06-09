@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { router, useLocalSearchParams } from 'expo-router';
 import { weeklyPlansApi } from '@/src/features/weekly-plans/api/weeklyPlansApi';
 import type { WeeklyPlan, WeeklyPlanListItem } from '@/src/features/weekly-plans/types';
@@ -68,6 +69,7 @@ export type WeeklyPlannerView = {
 };
 
 export function useWeeklyPlannerScreen(): WeeklyPlannerView {
+  const { t } = useTranslation();
   const params = useLocalSearchParams<{ openPlanId?: string; returnTo?: string }>();
   const { items, isLoading, error, load, refreshControl } = useWeeklyPlansList();
   const [tab, setTab] = useState<WeeklyPlannerTab>('recent');
@@ -101,13 +103,13 @@ export function useWeeklyPlannerScreen(): WeeklyPlannerView {
 
   const isCurrentWeek = weekOffset === 0;
   const weekTitle = useMemo(() => {
-    if (weekOffset === -1) return 'Previous week';
-    if (weekOffset === 1) return 'Next week';
+    if (weekOffset === -1) return t('weeklyPlans.previousWeek');
+    if (weekOffset === 1) return t('weeklyPlans.nextWeek');
     if (weekOffset !== 0) {
-      return `Week ${getIsoWeekNumber(selectedWeekStart)}`;
+      return t('weeklyPlans.weekLabel', { n: getIsoWeekNumber(selectedWeekStart) });
     }
-    return 'This Week';
-  }, [selectedWeekStart, weekOffset]);
+    return t('weeklyPlans.thisWeek');
+  }, [selectedWeekStart, weekOffset, t]);
 
   const activeDayKey = useMemo(() => {
     if (!isCurrentWeek) {
@@ -252,7 +254,7 @@ export function useWeeklyPlannerScreen(): WeeklyPlannerView {
       const isCurrent = item.weeklyStart === baseWeekStart;
       return {
         key: item.id,
-        title: isCurrent ? 'This week' : `Week ${weekNumber}`,
+        title: isCurrent ? t('weeklyPlans.thisWeekShort') : t('weeklyPlans.weekLabel', { n: weekNumber }),
         rangeLabel: formatWeekRange(item.weeklyStart),
         mealCount: item.entryCount,
         isCurrent,
@@ -275,16 +277,16 @@ export function useWeeklyPlannerScreen(): WeeklyPlannerView {
       const hasPlan = Boolean(item.id);
       return {
         key: `${item.weeklyStart}-${item.id ?? 'new'}`,
-        title: isCurrent ? 'This week' : `Week ${weekNumber}`,
+        title: isCurrent ? t('weeklyPlans.thisWeekShort') : t('weeklyPlans.weekLabel', { n: weekNumber }),
         rangeLabel: formatWeekRange(item.weeklyStart),
         isCurrent,
         mode: 'upcoming' as const,
-        statusLabel: hasPlan ? 'Planned' : 'Empty',
+        statusLabel: hasPlan ? t('weeklyPlans.planned') : t('weeklyPlans.empty'),
         hasPlan,
         onPress: () => handleOpenListWeek(item.weeklyStart, item.id),
       };
     });
-  }, [allCreatedItems, baseWeekStart, handleOpenListWeek, recentItems, tab, weekWindowItems]);
+  }, [allCreatedItems, baseWeekStart, handleOpenListWeek, recentItems, tab, weekWindowItems, t]);
 
   const state = useMemo<WeeklyPlannerState>(
     () => ({

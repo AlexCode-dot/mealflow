@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
   Pressable,
@@ -27,6 +28,7 @@ import { ArchivedListCard } from '@/src/features/shopping-lists/ui/ArchivedListC
 
 export default function ShoppingListOverviewScreen() {
   const theme = useTheme();
+  const { t } = useTranslation();
   const styles = useThemedStyles(createStyles);
   const view = useShoppingListOverviewScreen();
   const { state, data, actions, confirms, toast } = view;
@@ -39,20 +41,20 @@ export default function ShoppingListOverviewScreen() {
 
   const tabs = useMemo<UnderlineTab[]>(
     () => [
-      { key: 'current', label: 'Current List' },
-      { key: 'archived', label: `Archived (${data.archivedLists.length})` },
+      { key: 'current', label: t('shoppingLists.currentList') },
+      { key: 'archived', label: t('shoppingLists.archived', { count: data.archivedLists.length }) },
     ],
-    [data.archivedLists.length],
+    [data.archivedLists.length, t],
   );
 
   const stats = useMemo(() => {
     if (!data.activeList) return null;
     return [
-      { label: 'Total', value: data.totalCount },
-      { label: 'To Buy', value: data.uncheckedCount },
-      { label: 'Checked', value: data.checkedCount },
+      { label: t('shoppingLists.total'), value: data.totalCount },
+      { label: t('shoppingLists.toBuy'), value: data.uncheckedCount },
+      { label: t('shoppingLists.checked'), value: data.checkedCount },
     ];
-  }, [data.activeList, data.checkedCount, data.totalCount, data.uncheckedCount]);
+  }, [data.activeList, data.checkedCount, data.totalCount, data.uncheckedCount, t]);
 
   if (state.isLoading) {
     return <LoadingScreen />;
@@ -75,7 +77,7 @@ export default function ShoppingListOverviewScreen() {
   return (
     <View style={styles.root}>
       <Screen
-        title="Shopping List"
+        title={t('shoppingLists.title')}
         scroll
         refreshControl={
           <RefreshControl refreshing={state.isRefreshing} onRefresh={actions.handleRefresh} />
@@ -87,9 +89,13 @@ export default function ShoppingListOverviewScreen() {
         <Card style={styles.summaryCard} variant="premium">
           <View style={styles.summaryHeader}>
             <View style={styles.summaryText}>
-              <Text style={styles.summaryTitle}>{data.activeList?.title ?? 'Active List'}</Text>
+              <Text style={styles.summaryTitle}>
+                {data.activeList?.title ?? t('shoppingLists.activeList')}
+              </Text>
               <Text style={styles.summarySubtitle}>
-                {data.activeList?.weeklyPlanId ? 'Linked to a weekly plan' : 'Manual list'}
+                {data.activeList?.weeklyPlanId
+                  ? t('shoppingLists.linkedToWeeklyPlan')
+                  : t('shoppingLists.manualList')}
               </Text>
             </View>
           </View>
@@ -105,7 +111,7 @@ export default function ShoppingListOverviewScreen() {
 
           <View style={styles.progressBlock}>
             <View style={styles.progressHeader}>
-              <Text style={styles.progressLabel}>Progress</Text>
+              <Text style={styles.progressLabel}>{t('shoppingLists.progress')}</Text>
               <Text style={styles.progressValue}>{data.progress}%</Text>
             </View>
             <View style={styles.progressTrack}>
@@ -125,7 +131,7 @@ export default function ShoppingListOverviewScreen() {
             <View style={styles.openButtonRow}>
               <ShoppingBasket size={22} color={theme.colors.primary} strokeWidth={2.0} />
               <Text style={styles.openButtonText}>
-                {data.activeList ? 'Open List' : 'Create List'}
+                {data.activeList ? t('shoppingLists.openList') : t('shoppingLists.createList')}
               </Text>
             </View>
             <ChevronRight style={styles.openButtonChevron} size={20} color={theme.colors.primary} />
@@ -143,13 +149,13 @@ export default function ShoppingListOverviewScreen() {
         {state.tab === 'current' ? (
           <View style={styles.currentSection}>
             <Card style={styles.tipCard}>
-              <Text style={styles.tipTitle}>Your active list is above</Text>
+              <Text style={styles.tipTitle}>{t('shoppingLists.yourActiveListIsAbove')}</Text>
               <Text style={styles.tipSubtitle}>
                 Tap &quot;Open List&quot; to view and manage your shopping items.
               </Text>
             </Card>
             <Card style={styles.quickCard}>
-              <Text style={styles.quickTitle}>Quick Actions</Text>
+              <Text style={styles.quickTitle}>{t('shoppingLists.quickActions')}</Text>
               <Pressable
                 onPress={actions.requestGenerateFromCurrentWeek}
                 disabled={state.isGenerating}
@@ -162,7 +168,9 @@ export default function ShoppingListOverviewScreen() {
                 <View style={styles.quickRowContent}>
                   <CalendarDays size={18} color={theme.colors.primaryDark} />
                   <Text style={styles.quickLabel}>
-                    {state.isGenerating ? 'Generating...' : 'Generate from this week'}
+                    {state.isGenerating
+                      ? t('shoppingLists.generatingList')
+                      : t('shoppingLists.generateFromThisWeek')}
                   </Text>
                 </View>
                 <ChevronRight
@@ -181,8 +189,8 @@ export default function ShoppingListOverviewScreen() {
         {state.tab === 'archived' ? (
           data.archivedLists.length === 0 ? (
             <EmptyState
-              title="No archived lists"
-              description="Archived shopping lists will show up here."
+              title={t('shoppingLists.noArchivedLists')}
+              description={t('shoppingLists.archivedListsBody')}
             />
           ) : (
             <View style={styles.archivedList}>
@@ -210,7 +218,7 @@ export default function ShoppingListOverviewScreen() {
                   {state.isLoadingMoreArchived ? (
                     <ActivityIndicator color={theme.colors.primaryDark} />
                   ) : (
-                    <Text style={styles.loadMoreText}>Load more archived lists</Text>
+                    <Text style={styles.loadMoreText}>{t('shoppingLists.loadMoreArchived')}</Text>
                   )}
                 </Pressable>
               ) : null}
@@ -226,9 +234,9 @@ export default function ShoppingListOverviewScreen() {
 
       <ConfirmSheet
         visible={confirms.generateOpen}
-        title="Generate shopping list?"
+        title={t('shoppingLists.generateTitle')}
         description="This will replace your active list with items from the current week."
-        confirmLabel="Generate"
+        confirmLabel={t('shoppingLists.generate')}
         onConfirm={confirms.confirmGenerate}
         onCancel={() => confirms.setGenerateOpen(false)}
         disabled={state.isGenerating}

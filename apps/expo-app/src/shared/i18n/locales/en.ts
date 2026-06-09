@@ -53,6 +53,13 @@ export const en = {
     loggingIn: 'Logging in...',
     createAccount: 'Create account',
     creatingAccount: 'Creating account...',
+    sentTo: 'Sent to',
+    useADifferentEmail: 'Use a different email',
+    sendingCode: 'Sending…',
+    resendIn: 'Resend in {{seconds}}s',
+    resendCode: 'Resend code',
+    verifying: 'Verifying…',
+    verify: 'Verify',
   },
 
   overview: {
@@ -146,6 +153,7 @@ export const en = {
     deletingAccount: 'Deleting…',
     profileUpdated: 'Profile updated.',
     themeUpdated: 'Theme updated.',
+    selectThemePlaceholder: 'Select theme',
   },
 
   legal: {
@@ -271,6 +279,15 @@ export const en = {
     stepDescription: 'Step description',
     stepDescriptionPlaceholder: 'Description...',
     uploadingPhoto: 'Uploading…',
+    recipeNameLabel: 'Recipe Name',
+    descriptionLabel: 'Description',
+    descriptionPlaceholder: 'Write your recipe description...',
+    cookingTimeLabel: 'Cooking time',
+    categoryLabel: 'Category',
+    foodCategoryPlaceholder: 'Food category',
+    minPrefix: 'Min',
+    portPrefix: 'Port',
+    searchPlaceholder: 'Search for recipes...',
 
     addRecipeSheet: {
       title: 'Add a recipe',
@@ -386,6 +403,7 @@ export const en = {
     previousWeekLabel: 'Previous Week',
     nextWeekLabel: 'Next Week',
     weeklyPlan: 'Weekly Plan',
+    viewWeekDetails: 'View Week Details',
 
     days: {
       monday: 'Monday',
@@ -417,6 +435,8 @@ export const en = {
       portions: 'Portions',
       extraItems: 'Extra items',
       addExtraItem: 'Add extra item...',
+      sectionTitlePlaceholder: 'Section title...',
+      portPrefix: 'Port',
     },
 
     toasts: {
@@ -465,6 +485,7 @@ export const en = {
     noItemsYet: 'No items yet',
     addFirstItem: 'Add your first item...',
     noItemsHere: 'No items here yet',
+    noItems: 'No items',
     addSomething: 'Add something...',
     unchecked: 'Unchecked ({{count}})',
     checkedSection: 'Checked ({{count}})',
@@ -486,6 +507,19 @@ export const en = {
     deleteListBody: 'This will permanently delete the list.',
     activeListFallback: 'Active List',
     archivedListFallback: 'Archived List',
+    archivedOn: 'Archived {{label}}',
+    itemCountLabel_one: '{{count}} item',
+    itemCountLabel_other: '{{count}} items',
+
+    fields: {
+      listNameLabel: 'List name',
+      listNamePlaceholder: 'e.g. Week 45',
+      itemNameLabel: 'Item name',
+      itemNamePlaceholder: 'e.g. Tortilla',
+      quantityLabel: 'Quantity',
+      unitLabel: 'Unit',
+      optionalPlaceholder: 'Optional',
+    },
 
     toasts: {
       listArchived: 'List archived.',
@@ -505,4 +539,12 @@ export const en = {
   },
 } as const;
 
-export type Translations = typeof en;
+/**
+ * Recursively widens leaf literal types to `string` so locale files (e.g. sv.ts)
+ * can supply their own translated text. Without this, `typeof en` (which is `as const`)
+ * would require Swedish values to equal the English literals — e.g. `"Avbryt"` would have
+ * to match the literal type `"Cancel"`.
+ */
+type DeepWiden<T> = T extends string ? string : { [K in keyof T]: DeepWiden<T[K]> };
+
+export type Translations = DeepWiden<typeof en>;

@@ -55,6 +55,13 @@ export const sv: Translations = {
     loggingIn: 'Loggar in...',
     createAccount: 'Skapa konto',
     creatingAccount: 'Skapar konto...',
+    sentTo: 'Skickat till',
+    useADifferentEmail: 'Använd en annan e-postadress',
+    sendingCode: 'Skickar…',
+    resendIn: 'Skicka igen om {{seconds}}s',
+    resendCode: 'Skicka koden igen',
+    verifying: 'Verifierar…',
+    verify: 'Verifiera',
   },
 
   overview: {
@@ -148,6 +155,7 @@ export const sv: Translations = {
     deletingAccount: 'Tar bort…',
     profileUpdated: 'Profilen uppdaterades.',
     themeUpdated: 'Temat uppdaterades.',
+    selectThemePlaceholder: 'Välj tema',
   },
 
   legal: {
@@ -274,6 +282,15 @@ export const sv: Translations = {
     stepDescription: 'Stegbeskrivning',
     stepDescriptionPlaceholder: 'Beskrivning...',
     uploadingPhoto: 'Laddar upp…',
+    recipeNameLabel: 'Receptnamn',
+    descriptionLabel: 'Beskrivning',
+    descriptionPlaceholder: 'Skriv din receptbeskrivning...',
+    cookingTimeLabel: 'Tillagningstid',
+    categoryLabel: 'Kategori',
+    foodCategoryPlaceholder: 'Matkategori',
+    minPrefix: 'Min',
+    portPrefix: 'Port',
+    searchPlaceholder: 'Sök efter recept...',
 
     addRecipeSheet: {
       title: 'Lägg till recept',
@@ -389,6 +406,7 @@ export const sv: Translations = {
     previousWeekLabel: 'Föregående vecka',
     nextWeekLabel: 'Nästa vecka',
     weeklyPlan: 'Veckoplan',
+    viewWeekDetails: 'Visa veckodetaljer',
 
     days: {
       monday: 'Måndag',
@@ -420,6 +438,8 @@ export const sv: Translations = {
       portions: 'Portioner',
       extraItems: 'Extra artiklar',
       addExtraItem: 'Lägg till extra artikel...',
+      sectionTitlePlaceholder: 'Avsnittstitel...',
+      portPrefix: 'Port',
     },
 
     toasts: {
@@ -468,6 +488,7 @@ export const sv: Translations = {
     noItemsYet: 'Inga artiklar än',
     addFirstItem: 'Lägg till din första artikel...',
     noItemsHere: 'Inga artiklar här än',
+    noItems: 'Inga artiklar',
     addSomething: 'Lägg till något...',
     unchecked: 'Ej bockat ({{count}})',
     checkedSection: 'Bockat ({{count}})',
@@ -489,6 +510,19 @@ export const sv: Translations = {
     deleteListBody: 'Det här tar permanent bort listan.',
     activeListFallback: 'Aktiv lista',
     archivedListFallback: 'Arkiverad lista',
+    archivedOn: 'Arkiverad {{label}}',
+    itemCountLabel_one: '{{count}} vara',
+    itemCountLabel_other: '{{count}} varor',
+
+    fields: {
+      listNameLabel: 'Listnamn',
+      listNamePlaceholder: 't.ex. Vecka 45',
+      itemNameLabel: 'Varunamn',
+      itemNamePlaceholder: 't.ex. Tortilla',
+      quantityLabel: 'Antal',
+      unitLabel: 'Enhet',
+      optionalPlaceholder: 'Valfritt',
+    },
 
     toasts: {
       listArchived: 'Lista arkiverades.',

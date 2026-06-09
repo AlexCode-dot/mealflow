@@ -8,6 +8,7 @@ import {
   View,
   useWindowDimensions,
 } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { RecipeActionBar } from '@/src/features/recipes/ui/RecipeActionBar';
 import { useFocusedInputSheetAdjustment } from '@/src/shared/hooks/useFocusedInputSheetAdjustment';
 import { ScrollableFormSheet, TextField } from '@/src/shared/ui';
@@ -44,6 +45,7 @@ export function ShoppingListItemEditorSheet({
   disabled = false,
   formError,
 }: Props) {
+  const { t } = useTranslation();
   const styles = useThemedStyles(createStyles);
   const { height: screenHeight } = useWindowDimensions();
   const scrollRef = useRef<ScrollView | null>(null);
@@ -82,10 +84,10 @@ export function ShoppingListItemEditorSheet({
     >
       <TextField
         inputRef={nameInputRef}
-        label="Item name"
+        label={t('shoppingLists.fields.itemNameLabel')}
         value={name}
         onChangeText={onChangeName}
-        placeholder="e.g. Tortilla"
+        placeholder={t('shoppingLists.fields.itemNamePlaceholder')}
         onFocus={() => focusInput(nameInputRef, 24)}
         onBlur={clearFocus}
         returnKeyType="done"
@@ -95,10 +97,10 @@ export function ShoppingListItemEditorSheet({
         <View style={styles.rowItem}>
           <TextField
             inputRef={quantityInputRef}
-            label="Quantity"
+            label={t('shoppingLists.fields.quantityLabel')}
             value={quantity}
             onChangeText={onChangeQuantity}
-            placeholder="Optional"
+            placeholder={t('shoppingLists.fields.optionalPlaceholder')}
             keyboardType="numeric"
             onFocus={() => focusInput(quantityInputRef, 40)}
             onBlur={clearFocus}
@@ -109,10 +111,10 @@ export function ShoppingListItemEditorSheet({
         <View style={styles.rowItem}>
           <TextField
             inputRef={unitInputRef}
-            label="Unit"
+            label={t('shoppingLists.fields.unitLabel')}
             value={unit}
             onChangeText={onChangeUnit}
-            placeholder="Optional"
+            placeholder={t('shoppingLists.fields.optionalPlaceholder')}
             onFocus={() => focusInput(unitInputRef, 40)}
             onBlur={clearFocus}
             returnKeyType="done"

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { Dispatch, SetStateAction } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useWindowDimensions } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import { useIsFocused } from '@react-navigation/native';
@@ -197,6 +198,7 @@ const toEntryInput = (entry: WeeklyPlanEntry): WeeklyPlanEntryInput => ({
 });
 
 export function useWeeklyPlanDetailsScreen(): WeeklyPlanDetailsView {
+  const { t } = useTranslation();
   const theme = useTheme();
   const params = useLocalSearchParams<{
     id?: string;
@@ -263,7 +265,7 @@ export function useWeeklyPlanDetailsScreen(): WeeklyPlanDetailsView {
 
   const handleGenerateList = useCallback(async () => {
     if (!planId) {
-      showValidationError('Missing weekly plan.');
+      showValidationError(t('weeklyPlans.errors.missingWeeklyPlan'));
       return;
     }
 
@@ -277,11 +279,11 @@ export function useWeeklyPlanDetailsScreen(): WeeklyPlanDetailsView {
     } finally {
       setIsGenerating(false);
     }
-  }, [planId, showApiError, showValidationError]);
+  }, [planId, showApiError, showValidationError, t]);
 
   const requestGenerateList = useCallback(async () => {
     if (!planId) {
-      showValidationError('Missing weekly plan.');
+      showValidationError(t('weeklyPlans.errors.missingWeeklyPlan'));
       return;
     }
     try {
@@ -296,13 +298,13 @@ export function useWeeklyPlanDetailsScreen(): WeeklyPlanDetailsView {
       const uiErr = mapCommonError(toApiError(err));
       showApiError(uiErr, 'Generate failed');
     }
-  }, [handleGenerateList, planId, showApiError, showValidationError]);
+  }, [handleGenerateList, planId, showApiError, showValidationError, t]);
 
   const actionItems = useMemo(
     () => [
       {
         key: 'generate',
-        label: 'Generate List',
+        label: t('weeklyPlans.generateList'),
         icon: (
           <ShoppingBasket
             size={TAB_BAR.ICON_SIZE}
@@ -315,24 +317,24 @@ export function useWeeklyPlanDetailsScreen(): WeeklyPlanDetailsView {
       },
       {
         key: 'clear',
-        label: 'Clear Week',
+        label: t('weeklyPlans.clearWeekBtn'),
         icon: (
           <XCircle size={TAB_BAR.ICON_SIZE} color={theme.colors.tabBarAccent} strokeWidth={2.25} />
         ),
         onPress: () => setConfirmClearWeekOpen(true),
       },
     ],
-    [isGenerating, requestGenerateList, theme.colors.tabBarAccent],
+    [isGenerating, requestGenerateList, theme.colors.tabBarAccent, t],
   );
 
   const centerAction = useMemo(
     () => ({
-      label: 'Add Section',
+      label: t('weeklyPlans.addSection'),
       icon: <Plus color={theme.colors.tabBarAddButtonIcon} size={38} strokeWidth={2.75} />,
       onPress: () => setAddSectionOpen(true),
-      accessibilityLabel: 'Add Section',
+      accessibilityLabel: t('weeklyPlans.addSection'),
     }),
-    [setAddSectionOpen, theme.colors.tabBarAddButtonIcon],
+    [setAddSectionOpen, theme.colors.tabBarAddButtonIcon, t],
   );
 
   useBottomBarActions(actionItems, { mode: 'notched-actions', centerAction });
@@ -360,16 +362,16 @@ export function useWeeklyPlanDetailsScreen(): WeeklyPlanDetailsView {
   const isCurrentWeek = plan?.weeklyStart === currentWeekStartIso();
   const title = plan
     ? (() => {
-        if (isCurrentWeek) return 'Current Week';
+        if (isCurrentWeek) return t('weeklyPlans.currentWeek');
         const current = currentWeekStartIso();
         const currentDate = new Date(`${current}T00:00:00Z`);
         const planDate = new Date(`${plan.weeklyStart}T00:00:00Z`);
         const diffDays = Math.round((planDate.getTime() - currentDate.getTime()) / 86400000);
-        if (diffDays === 7) return 'Next Week';
-        if (diffDays === -7) return 'Previous Week';
+        if (diffDays === 7) return t('weeklyPlans.nextWeekLabel');
+        if (diffDays === -7) return t('weeklyPlans.previousWeekLabel');
         return formatWeekRange(plan.weeklyStart);
       })()
-    : 'Weekly Plan';
+    : t('weeklyPlans.weeklyPlan');
 
   const todayKey = useMemo(() => {
     if (!isCurrentWeek) return null;
@@ -476,32 +478,32 @@ export function useWeeklyPlanDetailsScreen(): WeeklyPlanDetailsView {
 
   const editDayLabel = useMemo(() => {
     const map: Record<string, string> = {
-      MON: 'Monday',
-      TUE: 'Tuesday',
-      WED: 'Wednesday',
-      THU: 'Thursday',
-      FRI: 'Friday',
-      SAT: 'Saturday',
-      SUN: 'Sunday',
+      MON: t('weeklyPlans.days.monday'),
+      TUE: t('weeklyPlans.days.tuesday'),
+      WED: t('weeklyPlans.days.wednesday'),
+      THU: t('weeklyPlans.days.thursday'),
+      FRI: t('weeklyPlans.days.friday'),
+      SAT: t('weeklyPlans.days.saturday'),
+      SUN: t('weeklyPlans.days.sunday'),
     };
     return map[editDay] ?? editDay;
-  }, [editDay]);
+  }, [editDay, t]);
 
   const editDayOptions = useMemo(() => {
     const map: Record<string, string> = {
-      MON: 'Monday',
-      TUE: 'Tuesday',
-      WED: 'Wednesday',
-      THU: 'Thursday',
-      FRI: 'Friday',
-      SAT: 'Saturday',
-      SUN: 'Sunday',
+      MON: t('weeklyPlans.days.monday'),
+      TUE: t('weeklyPlans.days.tuesday'),
+      WED: t('weeklyPlans.days.wednesday'),
+      THU: t('weeklyPlans.days.thursday'),
+      FRI: t('weeklyPlans.days.friday'),
+      SAT: t('weeklyPlans.days.saturday'),
+      SUN: t('weeklyPlans.days.sunday'),
     };
     return dayTabs.map((day) => ({
       label: map[day.key] ?? day.label,
       value: day.key,
     }));
-  }, [dayTabs]);
+  }, [dayTabs, t]);
 
   const editRecipe = useMemo(() => {
     if (!editEntry?.recipeId) return null;
@@ -584,11 +586,11 @@ export function useWeeklyPlanDetailsScreen(): WeeklyPlanDetailsView {
       });
       setPlan(updated);
       setAddSectionOpen(false);
-      toastState.show({ variant: 'success', message: 'Sections updated.' });
+      toastState.show({ variant: 'success', message: t('weeklyPlans.toasts.sectionsUpdated') });
     } finally {
       setIsSectionSaving(false);
     }
-  }, [buildNextSections, plan, setPlan, toastState]);
+  }, [buildNextSections, plan, setPlan, toastState, t]);
 
   const handleSectionDelete = useCallback(() => {
     if (!selectedSection) return;
@@ -752,7 +754,7 @@ export function useWeeklyPlanDetailsScreen(): WeeklyPlanDetailsView {
       const updated = await weeklyPlansApi.patch(plan.id, { entries: nextEntries });
       setPlan(updated);
       setEditOpen(false);
-      toastState.show({ variant: 'success', message: 'Meal updated.' });
+      toastState.show({ variant: 'success', message: t('weeklyPlans.toasts.mealUpdated') });
     } finally {
       setIsSaving(false);
     }
@@ -768,6 +770,7 @@ export function useWeeklyPlanDetailsScreen(): WeeklyPlanDetailsView {
     plan,
     setPlan,
     toastState,
+    t,
   ]);
 
   const handleEditDelete = useCallback(async () => {
@@ -780,11 +783,11 @@ export function useWeeklyPlanDetailsScreen(): WeeklyPlanDetailsView {
       const updated = await weeklyPlansApi.patch(plan.id, { entries: nextEntries });
       setPlan(updated);
       setEditOpen(false);
-      toastState.show({ variant: 'success', message: 'Meal removed.' });
+      toastState.show({ variant: 'success', message: t('weeklyPlans.toasts.mealRemoved') });
     } finally {
       setIsSaving(false);
     }
-  }, [editEntry, plan, setPlan, toastState]);
+  }, [editEntry, plan, setPlan, toastState, t]);
 
   const confirmEntryDelete = useCallback(async () => {
     setConfirmEntryDeleteOpen(false);
@@ -804,12 +807,12 @@ export function useWeeklyPlanDetailsScreen(): WeeklyPlanDetailsView {
         sections: DEFAULT_WEEKLY_SECTIONS,
       });
       setPlan(updated);
-      toastState.show({ variant: 'success', message: 'Week cleared.' });
+      toastState.show({ variant: 'success', message: t('weeklyPlans.toasts.weekCleared') });
     } finally {
       setIsSaving(false);
       setConfirmClearWeekOpen(false);
     }
-  }, [plan, setPlan, toastState]);
+  }, [plan, setPlan, toastState, t]);
 
   const confirmGenerate = useCallback(async () => {
     setConfirmGenerateOpen(false);
@@ -820,7 +823,7 @@ export function useWeeklyPlanDetailsScreen(): WeeklyPlanDetailsView {
     const items = [
       {
         key: 'cancel',
-        label: 'Cancel',
+        label: t('common.cancel'),
         icon: (
           <XCircle color={theme.colors.tabBarAccent} size={TAB_BAR.ICON_SIZE} strokeWidth={2.25} />
         ),
@@ -828,7 +831,7 @@ export function useWeeklyPlanDetailsScreen(): WeeklyPlanDetailsView {
       },
       {
         key: 'delete',
-        label: 'Delete',
+        label: t('common.delete'),
         icon: (
           <Trash2 color={theme.colors.tabBarAccent} size={TAB_BAR.ICON_SIZE} strokeWidth={2.25} />
         ),
@@ -873,7 +876,7 @@ export function useWeeklyPlanDetailsScreen(): WeeklyPlanDetailsView {
 
     items.push({
       key: 'save',
-      label: 'Save',
+      label: t('common.save'),
       icon: (
         <Download color={theme.colors.tabBarAccent} size={TAB_BAR.ICON_SIZE} strokeWidth={2.25} />
       ),
@@ -891,6 +894,7 @@ export function useWeeklyPlanDetailsScreen(): WeeklyPlanDetailsView {
     isSaving,
     plan,
     theme.colors.tabBarAccent,
+    t,
   ]);
 
   const sectionActionItems = useMemo(() => {
@@ -898,13 +902,13 @@ export function useWeeklyPlanDetailsScreen(): WeeklyPlanDetailsView {
     return [
       {
         key: 'delete',
-        label: 'Delete',
+        label: t('common.delete'),
         icon: (
           <Trash2 color={theme.colors.tabBarAccent} size={TAB_BAR.ICON_SIZE} strokeWidth={2.25} />
         ),
         onPress: () => {
           if (!selectedSection) {
-            toastState.show({ variant: 'info', message: 'Select a section to delete.' });
+            toastState.show({ variant: 'info', message: t('weeklyPlans.errors.selectSectionToDelete') });
             return;
           }
           handleSectionDelete();
@@ -913,7 +917,7 @@ export function useWeeklyPlanDetailsScreen(): WeeklyPlanDetailsView {
       },
       {
         key: 'save',
-        label: 'Save',
+        label: t('common.save'),
         icon: (
           <Download color={theme.colors.tabBarAccent} size={TAB_BAR.ICON_SIZE} strokeWidth={2.25} />
         ),
@@ -930,6 +934,7 @@ export function useWeeklyPlanDetailsScreen(): WeeklyPlanDetailsView {
     selectedSection,
     theme.colors.tabBarAccent,
     toastState,
+    t,
   ]);
 
   const handleSelectRecipe = useCallback((recipe: RecipeListItem) => {
@@ -941,11 +946,11 @@ export function useWeeklyPlanDetailsScreen(): WeeklyPlanDetailsView {
     setFormError(null);
 
     if (addTab === 'recipes' && !selectedRecipeId) {
-      setFormError('Select a recipe first.');
+      setFormError(t('weeklyPlans.errors.selectRecipeFirst'));
       return;
     }
     if (addTab === 'custom' && !customTitle.trim()) {
-      setFormError('Custom item needs a title.');
+      setFormError(t('weeklyPlans.errors.customItemNeedsTitle'));
       return;
     }
 
@@ -966,7 +971,7 @@ export function useWeeklyPlanDetailsScreen(): WeeklyPlanDetailsView {
       });
       setPlan(updated);
       setAddOpen(false);
-      toastState.show({ variant: 'success', message: 'Meal added.' });
+      toastState.show({ variant: 'success', message: t('weeklyPlans.toasts.mealAdded') });
     } catch (e) {
       setFormError('Could not save entry. Please try again.');
       const uiErr = mapCommonError(toApiError(e));
@@ -985,6 +990,7 @@ export function useWeeklyPlanDetailsScreen(): WeeklyPlanDetailsView {
     setPlan,
     showApiError,
     toastState,
+    t,
   ]);
 
   const contentPaddingBottom = TAB_BAR.BOX_HEIGHT + TAB_BAR.PADDING_TOP + 40;

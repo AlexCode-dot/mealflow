@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useLocalSearchParams, router } from 'expo-router';
 import { useFocusEffect, useIsFocused } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -65,6 +66,7 @@ export function useShoppingListOverviewScreen(): ShoppingListOverviewView {
   const isFocused = useIsFocused();
   const insets = useSafeAreaInsets();
   const toastState = useToastState();
+  const { t } = useTranslation();
   const { showApiError } = useGlobalToast();
   const [showToast, setShowToast] = useState(false);
   const { showError } = useGlobalToast();
@@ -130,10 +132,10 @@ export function useShoppingListOverviewScreen(): ShoppingListOverviewView {
     let timeoutId: ReturnType<typeof setTimeout> | null = null;
     timeoutId = setTimeout(() => {
       if (toastParam === 'archived') {
-        toastState.show({ variant: 'success', message: 'List archived.' });
+        toastState.show({ variant: 'success', message: t('shoppingLists.toasts.listArchived') });
       }
       if (toastParam === 'deleted') {
-        toastState.show({ variant: 'success', message: 'List deleted.' });
+        toastState.show({ variant: 'success', message: t('shoppingLists.toasts.listDeleted') });
       }
       router.setParams({ toast: undefined });
     }, 320);
@@ -141,7 +143,7 @@ export function useShoppingListOverviewScreen(): ShoppingListOverviewView {
     return () => {
       if (timeoutId) clearTimeout(timeoutId);
     };
-  }, [isFocused, toastParam, toastState]);
+  }, [isFocused, toastParam, toastState, t]);
 
   useEffect(() => {
     if (!toastState.toast || !isFocused) {
@@ -200,8 +202,8 @@ export function useShoppingListOverviewScreen(): ShoppingListOverviewView {
       if (!plan) {
         toastState.show({
           variant: 'info',
-          title: 'No weekly plan',
-          message: 'Create a weekly plan before generating a list.',
+          title: t('shoppingLists.errors.noWeeklyPlan'),
+          message: t('shoppingLists.errors.createWeeklyPlanFirst'),
         });
         return;
       }
@@ -213,7 +215,7 @@ export function useShoppingListOverviewScreen(): ShoppingListOverviewView {
     } finally {
       setIsGenerating(false);
     }
-  }, [showApiError, toastState]);
+  }, [showApiError, toastState, t]);
 
   const confirmGenerate = useCallback(async () => {
     setConfirmGenerateOpen(false);

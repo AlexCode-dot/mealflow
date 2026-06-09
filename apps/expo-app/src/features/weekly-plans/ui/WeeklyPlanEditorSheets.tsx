@@ -9,6 +9,7 @@ import {
   View,
   useWindowDimensions,
 } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import DraggableFlatList, { type RenderItemParams } from 'react-native-draggable-flatlist';
 import { Check, CalendarDays, GripVertical, List, Users, X } from 'lucide-react-native';
 import { RECIPE_PORTIONS_OPTIONS } from '@/src/features/recipes/constants/recipePickerOptions';
@@ -63,6 +64,7 @@ export function WeeklyPlanAddMealSheet({
   addSheet,
   data,
 }: AddMealSheetProps) {
+  const { t } = useTranslation();
   const styles = useThemedStyles(createStyles);
   const { height: screenHeight } = useWindowDimensions();
   const scrollRef = useRef<ScrollView | null>(null);
@@ -77,7 +79,7 @@ export function WeeklyPlanAddMealSheet({
   return (
     <ScrollableFormSheet
       visible={visible}
-      title="Add Meal"
+      title={t('weeklyPlans.editor.addMealTitle')}
       onClose={onClose}
       maxHeight={Math.min(520, screenHeight * 0.6)}
       extraHeight={extraHeight}
@@ -92,7 +94,7 @@ export function WeeklyPlanAddMealSheet({
           <RecipeActionBar
             onCancel={onClose}
             onSave={addSheet.handleSaveEntry}
-            saveLabel={isSaving ? 'Saving...' : 'Add Meal'}
+            saveLabel={isSaving ? t('weeklyPlans.editor.saving') : t('weeklyPlans.editor.addMealBtn')}
             disabled={isSaving}
           />
         </>
@@ -105,8 +107,8 @@ export function WeeklyPlanAddMealSheet({
 
       <SegmentedTabs
         tabs={[
-          { key: 'recipes', label: 'Recipes' },
-          { key: 'custom', label: 'Custom meal' },
+          { key: 'recipes', label: t('weeklyPlans.editor.recipes') },
+          { key: 'custom', label: t('weeklyPlans.editor.customMeal') },
         ]}
         value={addSheet.tab}
         onChange={(key) => addSheet.setTab(key as typeof addSheet.tab)}
@@ -117,15 +119,15 @@ export function WeeklyPlanAddMealSheet({
           <SearchField
             value={addSheet.recipeSearch}
             onChangeText={addSheet.setRecipeSearch}
-            placeholder="Search for recipes..."
+            placeholder={t('weeklyPlans.editor.searchRecipes')}
             variant="rounded"
           />
 
           {data.filteredRecipes.length === 0 ? (
             <Text style={styles.sheetHint}>
               {data.recipes.length === 0
-                ? 'No recipes yet. Create one first.'
-                : 'No recipes found.'}
+                ? t('weeklyPlans.editor.noRecipesYet')
+                : t('weeklyPlans.editor.noRecipesFound')}
             </Text>
           ) : (
             <View style={styles.recipeList}>
@@ -144,10 +146,10 @@ export function WeeklyPlanAddMealSheet({
         <View style={styles.sheetBlock}>
           <TextField
             inputRef={titleInputRef}
-            label="Title"
+            label={t('weeklyPlans.editor.titleLabel')}
             value={addSheet.customTitle}
             onChangeText={addSheet.setCustomTitle}
-            placeholder="Meal name..."
+            placeholder={t('weeklyPlans.editor.mealNamePlaceholder')}
             onFocus={() => focusInput(titleInputRef, 24)}
             onBlur={clearFocus}
             returnKeyType="done"
@@ -156,10 +158,10 @@ export function WeeklyPlanAddMealSheet({
 
           <InlineAddField
             inputRef={itemsInputRef}
-            label="Items"
+            label={t('weeklyPlans.editor.items')}
             value={addSheet.itemInput}
             onChangeText={addSheet.setItemInput}
-            placeholder="Add an item..."
+            placeholder={t('weeklyPlans.editor.addItemPlaceholder')}
             onAdd={addSheet.handleAddItem}
             onFocus={() => focusInput(itemsInputRef, 72)}
             onBlur={clearFocus}
@@ -178,6 +180,7 @@ export function WeeklyPlanAddMealSheet({
 }
 
 export function WeeklyPlanEditMealSheet({ visible, onClose, editSheet, data }: EditMealSheetProps) {
+  const { t } = useTranslation();
   const styles = useThemedStyles(createStyles);
   const theme = useTheme();
   const { height: screenHeight } = useWindowDimensions();
@@ -200,7 +203,7 @@ export function WeeklyPlanEditMealSheet({ visible, onClose, editSheet, data }: E
       return (
         <View style={styles.pickerOverlay}>
           <Pressable style={StyleSheet.absoluteFill} onPress={close} />
-          <PickerSheetOverlay title="Day" onClose={close} onDone={close}>
+          <PickerSheetOverlay title={t('weeklyPlans.editor.day')} onClose={close} onDone={close}>
             <PickerSelect
               value={editSheet.editDay}
               onChange={editSheet.setEditDay}
@@ -218,7 +221,7 @@ export function WeeklyPlanEditMealSheet({ visible, onClose, editSheet, data }: E
       return (
         <View style={styles.pickerOverlay}>
           <Pressable style={StyleSheet.absoluteFill} onPress={close} />
-          <PickerSheetOverlay title="Section" onClose={close} onDone={close}>
+          <PickerSheetOverlay title={t('weeklyPlans.editor.section')} onClose={close} onDone={close}>
             <PickerSelect
               value={editSheet.editSection}
               onChange={editSheet.setEditSection}
@@ -232,7 +235,7 @@ export function WeeklyPlanEditMealSheet({ visible, onClose, editSheet, data }: E
     return (
       <View style={styles.pickerOverlay}>
         <Pressable style={StyleSheet.absoluteFill} onPress={close} />
-        <PickerSheetOverlay title="Portions" onClose={close} onDone={close}>
+        <PickerSheetOverlay title={t('weeklyPlans.editor.portions')} onClose={close} onDone={close}>
           <PickerSelect
             value={editSheet.editPortions}
             onChange={editSheet.setEditPortions}
@@ -244,7 +247,7 @@ export function WeeklyPlanEditMealSheet({ visible, onClose, editSheet, data }: E
         </PickerSheetOverlay>
       </View>
     );
-  }, [data.sectionOptions, editSheet, styles.pickerOverlay]);
+  }, [data.sectionOptions, editSheet, styles.pickerOverlay, t]);
 
   return (
     <ScrollableFormSheet
@@ -272,14 +275,14 @@ export function WeeklyPlanEditMealSheet({ visible, onClose, editSheet, data }: E
         <View style={styles.sheetBlock}>
           <RecipeSelectField
             icon={<Users color={theme.colors.textMuted} size={18} strokeWidth={2.5} />}
-            prefix="Port"
+            prefix={t('weeklyPlans.editor.portPrefix')}
             value={editSheet.editPortions || '0'}
             onPress={() => editSheet.setEditPickerOpen('portions')}
           />
 
           <View style={styles.sheetRow}>
             <View style={styles.sheetRowItem}>
-              <Text style={styles.sheetLabel}>Day</Text>
+              <Text style={styles.sheetLabel}>{t('weeklyPlans.editor.day')}</Text>
               <RecipeSelectField
                 icon={<CalendarDays color={theme.colors.textMuted} size={18} strokeWidth={2.5} />}
                 value={editSheet.editDayLabel}
@@ -287,7 +290,7 @@ export function WeeklyPlanEditMealSheet({ visible, onClose, editSheet, data }: E
               />
             </View>
             <View style={styles.sheetRowItem}>
-              <Text style={styles.sheetLabel}>Section</Text>
+              <Text style={styles.sheetLabel}>{t('weeklyPlans.editor.section')}</Text>
               <RecipeSelectField
                 icon={<List color={theme.colors.textMuted} size={18} strokeWidth={2.5} />}
                 value={editSheet.editSection}
@@ -298,10 +301,10 @@ export function WeeklyPlanEditMealSheet({ visible, onClose, editSheet, data }: E
 
           <InlineAddField
             inputRef={extrasInputRef}
-            label="Extra items"
+            label={t('weeklyPlans.editor.extraItems')}
             value={editSheet.editExtraInput}
             onChangeText={editSheet.setEditExtraInput}
-            placeholder="Add extra item..."
+            placeholder={t('weeklyPlans.editor.addExtraItem')}
             onAdd={editSheet.handleEditExtraAdd}
             onFocus={() => focusInput(extrasInputRef, 72)}
             onBlur={clearFocus}
@@ -320,7 +323,7 @@ export function WeeklyPlanEditMealSheet({ visible, onClose, editSheet, data }: E
         <View style={styles.sheetBlock}>
           <View style={styles.sheetRow}>
             <View style={styles.sheetRowItem}>
-              <Text style={styles.sheetLabel}>Day</Text>
+              <Text style={styles.sheetLabel}>{t('weeklyPlans.editor.day')}</Text>
               <RecipeSelectField
                 icon={<CalendarDays color={theme.colors.textMuted} size={18} strokeWidth={2.5} />}
                 value={editSheet.editDayLabel}
@@ -328,7 +331,7 @@ export function WeeklyPlanEditMealSheet({ visible, onClose, editSheet, data }: E
               />
             </View>
             <View style={styles.sheetRowItem}>
-              <Text style={styles.sheetLabel}>Section</Text>
+              <Text style={styles.sheetLabel}>{t('weeklyPlans.editor.section')}</Text>
               <RecipeSelectField
                 icon={<List color={theme.colors.textMuted} size={18} strokeWidth={2.5} />}
                 value={editSheet.editSection}
@@ -339,10 +342,10 @@ export function WeeklyPlanEditMealSheet({ visible, onClose, editSheet, data }: E
 
           <TextField
             inputRef={titleInputRef}
-            label="Title"
+            label={t('weeklyPlans.editor.titleLabel')}
             value={editSheet.editTitle}
             onChangeText={editSheet.setEditTitle}
-            placeholder="Meal name..."
+            placeholder={t('weeklyPlans.editor.mealNamePlaceholder')}
             onFocus={() => focusInput(titleInputRef, 24)}
             onBlur={clearFocus}
             returnKeyType="done"
@@ -351,10 +354,10 @@ export function WeeklyPlanEditMealSheet({ visible, onClose, editSheet, data }: E
 
           <InlineAddField
             inputRef={itemsInputRef}
-            label="Items"
+            label={t('weeklyPlans.editor.items')}
             value={editSheet.editItemInput}
             onChangeText={editSheet.setEditItemInput}
-            placeholder="Add an item..."
+            placeholder={t('weeklyPlans.editor.addItemPlaceholder')}
             onAdd={editSheet.handleEditItemAdd}
             onFocus={() => focusInput(itemsInputRef, 72)}
             onBlur={clearFocus}
@@ -377,6 +380,7 @@ export function WeeklyPlanSectionEditorSheet({
   onClose,
   sectionSheet,
 }: SectionEditorSheetProps) {
+  const { t } = useTranslation();
   const styles = useThemedStyles(createStyles);
   const theme = useTheme();
   const { height: screenHeight } = useWindowDimensions();
@@ -391,7 +395,7 @@ export function WeeklyPlanSectionEditorSheet({
   return (
     <ScrollableFormSheet
       visible={visible}
-      title="Add Section"
+      title={t('weeklyPlans.editor.addSectionTitle')}
       onClose={onClose}
       maxHeight={Math.min(520, screenHeight * 0.6)}
       extraHeight={extraHeight}
@@ -405,10 +409,10 @@ export function WeeklyPlanSectionEditorSheet({
     >
       <TextField
         inputRef={titleInputRef}
-        label="Title"
+        label={t('weeklyPlans.editor.titleLabel')}
         value={sectionSheet.newSectionTitle}
         onChangeText={sectionSheet.setNewSectionTitle}
-        placeholder="Section title..."
+        placeholder={t('weeklyPlans.editor.sectionTitlePlaceholder')}
         onFocus={() => focusInput(titleInputRef, 24)}
         onBlur={clearFocus}
         returnKeyType="done"
@@ -416,7 +420,7 @@ export function WeeklyPlanSectionEditorSheet({
       />
 
       <View style={styles.sectionListHeader}>
-        <Text style={styles.sectionListTitle}>Section List</Text>
+        <Text style={styles.sectionListTitle}>{t('weeklyPlans.editor.sectionList')}</Text>
         <View style={styles.sectionListDivider} />
       </View>
 

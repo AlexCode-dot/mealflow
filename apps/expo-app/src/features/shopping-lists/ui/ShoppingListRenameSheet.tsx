@@ -8,6 +8,7 @@ import {
   View,
   useWindowDimensions,
 } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { RecipeActionBar } from '@/src/features/recipes/ui/RecipeActionBar';
 import { useFocusedInputSheetAdjustment } from '@/src/shared/hooks/useFocusedInputSheetAdjustment';
 import { ScrollableFormSheet, TextField } from '@/src/shared/ui';
@@ -36,6 +37,7 @@ export function ShoppingListRenameSheet({
   disabled = false,
   formError,
 }: Props) {
+  const { t } = useTranslation();
   const styles = useThemedStyles(createStyles);
   const { height: screenHeight } = useWindowDimensions();
   const scrollRef = useRef<ScrollView | null>(null);
@@ -72,10 +74,10 @@ export function ShoppingListRenameSheet({
     >
       <TextField
         inputRef={inputRef}
-        label="List name"
+        label={t('shoppingLists.fields.listNameLabel')}
         value={value}
         onChangeText={onChangeText}
-        placeholder="e.g. Week 45"
+        placeholder={t('shoppingLists.fields.listNamePlaceholder')}
         onFocus={() => focusInput(inputRef, 8)}
         onBlur={clearFocus}
         returnKeyType="done"

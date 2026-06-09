@@ -1,4 +1,5 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { SlidersHorizontal } from 'lucide-react-native';
 import { SearchField, UnderlineTabs } from '@/src/shared/ui';
 import { type Theme, useTheme, useThemedStyles } from '@/src/shared/theme';
@@ -29,6 +30,7 @@ export function RecipeListHeader({
   activeFilterCount,
   hint,
 }: Props) {
+  const { t } = useTranslation();
   const theme = useTheme();
   const styles = useThemedStyles(createStyles);
   return (
@@ -40,7 +42,7 @@ export function RecipeListHeader({
           <SearchField
             value={query}
             onChangeText={onQueryChange}
-            placeholder="Search for recipes..."
+            placeholder={t('recipes.searchPlaceholder')}
             variant="rounded"
           />
         </View>

@@ -124,6 +124,9 @@ jobs:
         env:
           IDENTITY_BASE_URL: http://localhost:8081
           APP_API_BASE_URL: http://localhost:8082
+          # Dev profile (no Resend key) logs the OTP verification code here instead of emailing it;
+          # the E2E test reads it to complete the verify-email step. Path is relative to this module.
+          IDENTITY_LOG_PATH: ../identity-service/identity.log
         run: |
           set -e
           ./mvnw -B -Pe2e verify
