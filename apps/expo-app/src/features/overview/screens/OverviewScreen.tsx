@@ -423,7 +423,7 @@ const createStyles = (theme: Theme) =>
     },
     carouselImageFallback: {
       flex: 1,
-      backgroundColor: theme.colors.surfaceAlt,
+      backgroundColor: theme.colors.surface,
     },
     carouselFade: {
       ...StyleSheet.absoluteFillObject,
@@ -496,7 +496,7 @@ const createStyles = (theme: Theme) =>
       width: 34,
       height: 34,
       borderRadius: 17,
-      backgroundColor: theme.colors.surfaceAlt,
+      backgroundColor: theme.colors.surface,
       alignItems: 'center',
       justifyContent: 'center',
     },
@@ -518,7 +518,7 @@ const createStyles = (theme: Theme) =>
       color: theme.colors.textMuted,
     },
     weekBadge: {
-      backgroundColor: theme.colors.surfaceAlt,
+      backgroundColor: theme.colors.surface,
       borderRadius: 12,
       paddingHorizontal: 10,
       paddingVertical: 6,

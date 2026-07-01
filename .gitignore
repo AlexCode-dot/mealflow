@@ -31,3 +31,8 @@ target
 services/identity-service/.secrets/
 services/identity-service/*.pem
 services/identity-service/**/*.pem
+
+# Production deploy secrets (Hetzner)
+infra/.env.prod
+infra/secrets/
+infra/**/*.pem
