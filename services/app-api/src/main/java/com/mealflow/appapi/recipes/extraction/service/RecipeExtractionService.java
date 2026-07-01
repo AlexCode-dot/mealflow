@@ -3,12 +3,12 @@ package com.mealflow.appapi.recipes.extraction.service;
 import com.mealflow.appapi.recipes.domain.Ingredient;
 import com.mealflow.appapi.recipes.domain.Recipe;
 import com.mealflow.appapi.recipes.extraction.config.ExtractionAsyncConfig;
+import com.mealflow.appapi.recipes.extraction.config.ExtractionProperties;
 import com.mealflow.appapi.recipes.extraction.domain.ExtractionJob;
 import com.mealflow.appapi.recipes.extraction.domain.ExtractionSourceType;
 import com.mealflow.appapi.recipes.extraction.domain.ExtractionStatus;
 import com.mealflow.appapi.recipes.extraction.repository.ExtractionJobRepository;
 import com.mealflow.appapi.recipes.service.RecipeService;
-import java.nio.file.Path;
 import java.time.Clock;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,6 +27,7 @@ public class RecipeExtractionService {
     private final ExtractionJobProcessor jobProcessor;
     private final RecipeService recipeService;
     private final ExtractionThumbnailService thumbnailService;
+    private final ExtractionProperties properties;
     private final TaskExecutor extractionExecutor;
     private final Clock clock;
 
@@ -38,6 +39,7 @@ public class RecipeExtractionService {
             ExtractionJobProcessor jobProcessor,
             RecipeService recipeService,
             ExtractionThumbnailService thumbnailService,
+            ExtractionProperties properties,
             @Qualifier(ExtractionAsyncConfig.EXECUTOR_BEAN) TaskExecutor extractionExecutor,
             Clock clock) {
         this.jobRepository = jobRepository;
@@ -47,11 +49,15 @@ public class RecipeExtractionService {
         this.jobProcessor = jobProcessor;
         this.recipeService = recipeService;
         this.thumbnailService = thumbnailService;
+        this.properties = properties;
         this.extractionExecutor = extractionExecutor;
         this.clock = clock;
     }
 
-    public ExtractionJob enqueue(String userId, MultipartFile file, String locale) {
+    public ExtractionJob enqueue(String userId, List<MultipartFile> files, String locale) {
+        if (files == null || files.isEmpty()) {
+            throw new ExtractionValidationException("Please choose a file to upload.");
+        }
         quotaService.enforce(userId);
 
         ExtractionLocaleResolver.Resolved resolved = localeResolver.resolve(locale);
@@ -67,26 +73,42 @@ public class RecipeExtractionService {
                 clock.instant());
         job = jobRepository.save(job);
 
-        StoredMedia stored;
+        List<StoredMedia> stored = new ArrayList<>();
         try {
-            stored = mediaIngest.store(file, job.getId());
+            // Store the first file to learn whether this is an image or video upload.
+            stored.add(mediaIngest.store(files.get(0), job.getId(), 0));
+
+            // A recipe can span several photos (ingredients on one, steps on another). For image
+            // uploads we keep up to maxImageCount of them; video is always a single upload.
+            if (stored.get(0).sourceType() == ExtractionSourceType.IMAGE) {
+                int count = Math.min(files.size(), properties.getMaxImageCount());
+                for (int i = 1; i < count; i++) {
+                    MultipartFile f = files.get(i);
+                    if (f != null && !f.isEmpty()) {
+                        stored.add(mediaIngest.store(f, job.getId(), i));
+                    }
+                }
+            }
         } catch (RuntimeException ex) {
+            stored.forEach(mediaIngest::cleanup);
             jobRepository.deleteById(job.getId());
             throw ex;
         }
 
-        job.setSourceType(stored.sourceType());
-        job.setContentType(stored.contentType());
-        job.setSizeBytes(stored.sizeBytes());
+        StoredMedia primary = stored.get(0);
+        long totalBytes = stored.stream().mapToLong(StoredMedia::sizeBytes).sum();
+        job.setSourceType(primary.sourceType());
+        job.setContentType(primary.contentType());
+        job.setSizeBytes(totalBytes);
         job.setStatus(ExtractionStatus.PROCESSING);
         job.setUpdatedAt(clock.instant());
         jobRepository.save(job);
 
         String jobId = job.getId();
-        Path mediaPath = stored.path();
+        List<StoredMedia> media = List.copyOf(stored);
         String languageName = resolved.languageName();
         String unitSystem = resolved.unitSystem();
-        extractionExecutor.execute(() -> jobProcessor.process(jobId, mediaPath, languageName, unitSystem));
+        extractionExecutor.execute(() -> jobProcessor.process(jobId, media, languageName, unitSystem));
         return job;
     }
 

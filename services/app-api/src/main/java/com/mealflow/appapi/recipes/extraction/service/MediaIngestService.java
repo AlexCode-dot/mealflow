@@ -30,6 +30,10 @@ public class MediaIngestService {
     }
 
     public StoredMedia store(MultipartFile file, String jobId) {
+        return store(file, jobId, 0);
+    }
+
+    public StoredMedia store(MultipartFile file, String jobId, int index) {
         if (file == null || file.isEmpty()) {
             throw new ExtractionValidationException("Please choose a file to upload.");
         }
@@ -47,7 +51,8 @@ public class MediaIngestService {
         }
 
         try {
-            Path target = workspaceRoot.resolve(jobId + suffixFor(contentType));
+            // Index keeps multiple images for one job from overwriting each other on disk.
+            Path target = workspaceRoot.resolve(jobId + "-" + index + suffixFor(contentType));
             try (InputStream in = file.getInputStream()) {
                 Files.copy(in, target, StandardCopyOption.REPLACE_EXISTING);
             }

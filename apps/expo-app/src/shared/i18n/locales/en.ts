@@ -337,7 +337,7 @@ export const en = {
       title: 'Add a recipe',
       writeItYourself: 'Write it yourself',
       fromAPhoto: 'From a photo',
-      fromAPhotoSubtitle: 'Screenshot of a recipe',
+      fromAPhotoSubtitle: 'One or more photos of a recipe',
       fromAVideo: 'From a video',
       fromAVideoSubtitle: 'TikTok, Reel or short clip',
     },
