@@ -40,35 +40,39 @@ public class ExtractionJobProcessor {
         this.clock = clock;
     }
 
-    public void process(String jobId, Path mediaPath, String languageName, String unitSystem) {
+    public void process(String jobId, List<StoredMedia> media, String languageName, String unitSystem) {
         ExtractionJob job = jobRepository.findById(jobId).orElse(null);
         if (job == null) {
+            media.forEach(mediaIngest::cleanup);
             return;
         }
 
         Path framesDir = null;
-        StoredMedia tempMedia =
-                new StoredMedia(mediaPath, job.getSourceType(), job.getContentType(), job.getSizeBytes());
+        StoredMedia primary = media.get(0);
 
         try {
             List<ExtractedFrame> frames;
             if (job.getSourceType() == ExtractionSourceType.IMAGE) {
-                frames = List.of(new ExtractedFrame(mediaPath, imageMediaType(job.getContentType())));
+                // One frame per uploaded image — a recipe can span several photos, and the LLM
+                // reads them together (in upload order) in a single request.
+                frames = media.stream()
+                        .map(m -> new ExtractedFrame(m.path(), imageMediaType(m.contentType())))
+                        .toList();
             } else {
                 framesDir = mediaIngest.workspaceFor(jobId + "_frames");
-                frames = frameExtractor.extract(mediaPath, framesDir);
+                frames = frameExtractor.extract(primary.path(), framesDir);
             }
 
             RecipeDraft draft = llmExtractor.extract(frames, languageName, unitSystem);
             job.setDraft(draft);
 
-            // For image sources we auto-upload the source image as a thumbnail (the user can
+            // For image sources we auto-upload the first image as a thumbnail (the user can
             // change it on the review screen if they want). For video sources we upload nothing
             // here — the client picks a frame on-device after extraction completes and uploads
             // only that one frame via the regular image-upload endpoint.
             if (job.getSourceType() == ExtractionSourceType.IMAGE) {
                 ImageKitUploadResult uploaded =
-                        thumbnailService.uploadThumbnail(job.getUserId(), jobId, job.getSourceType(), mediaPath);
+                        thumbnailService.uploadThumbnail(job.getUserId(), jobId, job.getSourceType(), primary.path());
                 if (uploaded != null) {
                     job.setThumbnailUrl(uploaded.url());
                     job.setThumbnailFileId(uploaded.fileId());
@@ -92,7 +96,7 @@ public class ExtractionJobProcessor {
             job.setUpdatedAt(clock.instant());
             jobRepository.save(job);
         } finally {
-            mediaIngest.cleanup(tempMedia);
+            media.forEach(mediaIngest::cleanup);
             if (framesDir != null) {
                 mediaIngest.cleanupDirectory(framesDir);
             }

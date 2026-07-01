@@ -17,6 +17,9 @@ public class ExtractionProperties {
     @Min(1)
     private long maxVideoBytes = 100L * 1024 * 1024; // 100 MB
 
+    @Min(1)
+    private int maxImageCount = 5; // max images per image-based extraction
+
     @Min(0)
     private int maxPerDay = 10;
 
@@ -56,6 +59,14 @@ public class ExtractionProperties {
 
     public void setMaxVideoBytes(long maxVideoBytes) {
         this.maxVideoBytes = maxVideoBytes;
+    }
+
+    public int getMaxImageCount() {
+        return maxImageCount;
+    }
+
+    public void setMaxImageCount(int maxImageCount) {
+        this.maxImageCount = maxImageCount;
     }
 
     public int getMaxPerDay() {

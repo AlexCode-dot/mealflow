@@ -10,6 +10,7 @@ import com.mealflow.appapi.recipes.web.mapper.RecipeMapper;
 import com.mealflow.appapi.security.config.CurrentUser;
 import jakarta.validation.Valid;
 import java.net.URI;
+import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -46,11 +47,11 @@ public class ExtractionController {
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ExtractionJobResponse> create(
-            @RequestPart("file") MultipartFile file,
+            @RequestPart("file") List<MultipartFile> files,
             @RequestParam(value = "locale", required = false) String locale,
             Authentication auth) {
         String userId = currentUser.userId(auth);
-        ExtractionJob job = service.enqueue(userId, file, locale);
+        ExtractionJob job = service.enqueue(userId, files, locale);
         ExtractionJobResponse response = extractionMapper.toResponse(job);
         return ResponseEntity.status(HttpStatus.ACCEPTED)
                 .location(URI.create("/api/recipes/extract/" + job.getId()))

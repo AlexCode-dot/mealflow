@@ -340,7 +340,7 @@ export const sv: Translations = {
       title: 'Lägg till recept',
       writeItYourself: 'Skriv det själv',
       fromAPhoto: 'Från ett foto',
-      fromAPhotoSubtitle: 'Skärmbild av ett recept',
+      fromAPhotoSubtitle: 'Ett eller flera foton av ett recept',
       fromAVideo: 'Från en video',
       fromAVideoSubtitle: 'TikTok, Reel eller kort klipp',
     },

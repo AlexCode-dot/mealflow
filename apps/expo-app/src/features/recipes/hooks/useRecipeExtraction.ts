@@ -12,6 +12,9 @@ const POLL_INTERVAL_MS = 1500;
 const POLL_TIMEOUT_MS = 90 * 1000;
 const MAX_IMAGE_BYTES = 10 * 1024 * 1024;
 const MAX_VIDEO_BYTES = 100 * 1024 * 1024;
+// A recipe can span several photos (ingredients on one, steps on another). Keep this in
+// sync with the backend `app.extraction.max-image-count`.
+const MAX_IMAGES = 5;
 
 type Phase = 'idle' | 'uploading' | 'processing' | 'ready' | 'failed';
 
@@ -136,12 +139,28 @@ export function useRecipeExtraction(): {
     return formData;
   }, []);
 
-  const pickWebFile = useCallback((accept: string): Promise<File | null> => {
+  const buildImagesFormData = useCallback(
+    (images: { uri: string; name: string; type: string }[]): FormData => {
+      const formData = new FormData();
+      images.forEach((img) => {
+        formData.append('file', {
+          uri: img.uri,
+          name: img.name,
+          type: img.type,
+        } as unknown as Blob);
+      });
+      return formData;
+    },
+    [],
+  );
+
+  const pickWebFiles = useCallback((accept: string, multiple: boolean): Promise<File[]> => {
     return new Promise((resolve) => {
       const input = document.createElement('input');
       input.type = 'file';
       input.accept = accept;
-      input.onchange = () => resolve(input.files?.[0] ?? null);
+      input.multiple = multiple;
+      input.onchange = () => resolve(input.files ? Array.from(input.files) : []);
       input.click();
     });
   }, []);
@@ -149,23 +168,25 @@ export function useRecipeExtraction(): {
   const startFromWeb = useCallback(
     async (kind: 'image' | 'video') => {
       const accept = kind === 'image' ? 'image/*' : 'video/*';
-      const file = await pickWebFile(accept);
-      if (!file) return;
+      const picked = await pickWebFiles(accept, kind === 'image');
+      if (!picked.length) return;
+      const files = kind === 'image' ? picked.slice(0, MAX_IMAGES) : picked.slice(0, 1);
 
       const max = kind === 'image' ? MAX_IMAGE_BYTES : MAX_VIDEO_BYTES;
-      if (file.size > max) {
-        const message =
-          kind === 'image'
-            ? 'Image is too large. Please choose a smaller photo.'
-            : 'Video is too large (max 100 MB).';
-        showError({ kind: 'unknown', message });
+      if (files.some((f) => f.size > max)) {
+        showError({
+          kind: 'unknown',
+          message: kind === 'image' ? t('recipes.imageTooLarge') : t('recipes.videoTooLarge'),
+        });
         return;
       }
       const formData = new FormData();
-      formData.append('file', file, file.name || `recipe.${kind === 'image' ? 'jpg' : 'mp4'}`);
+      files.forEach((f, idx) => {
+        formData.append('file', f, f.name || `recipe-${idx}.${kind === 'image' ? 'jpg' : 'mp4'}`);
+      });
       await startUpload(formData);
     },
-    [pickWebFile, showError, startUpload],
+    [pickWebFiles, showError, startUpload, t],
   );
 
   const startFromImage = useCallback(async () => {
@@ -188,21 +209,23 @@ export function useRecipeExtraction(): {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes,
       quality: 0.9,
+      allowsMultipleSelection: true,
+      selectionLimit: MAX_IMAGES,
     });
     if (result.canceled || !result.assets?.length) return;
-    const asset = result.assets[0];
-    if (asset.fileSize && asset.fileSize > MAX_IMAGE_BYTES) {
-      showError({
-        kind: 'unknown',
-        message: t('recipes.imageTooLarge'),
-      });
+    const assets = result.assets.slice(0, MAX_IMAGES);
+    if (assets.some((a) => a.fileSize && a.fileSize > MAX_IMAGE_BYTES)) {
+      showError({ kind: 'unknown', message: t('recipes.imageTooLarge') });
       return;
     }
-    const fileName = asset.fileName ?? `recipe-${Date.now()}.jpg`;
-    const mime = asset.mimeType ?? 'image/jpeg';
-    const formData = buildFormData(asset.uri, fileName, mime);
+    const images = assets.map((a, idx) => ({
+      uri: a.uri,
+      name: a.fileName ?? `recipe-${Date.now()}-${idx}.jpg`,
+      type: a.mimeType ?? 'image/jpeg',
+    }));
+    const formData = buildImagesFormData(images);
     await startUpload(formData);
-  }, [buildFormData, showError, startFromWeb, startUpload, t]);
+  }, [buildImagesFormData, showError, startFromWeb, startUpload, t]);
 
   const startFromVideo = useCallback(async () => {
     if (Platform.OS === 'web') {
