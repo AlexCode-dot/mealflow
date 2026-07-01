@@ -1,0 +1,18 @@
+# MealFlow reverse proxy. Caddy provisions and renews TLS certificates
+# automatically via Let's Encrypt for the two subdomains below.
+#
+# DOMAIN and ACME_EMAIL are injected from the environment (see docker-compose.prod.yml).
+
+{
+	email {$ACME_EMAIL}
+}
+
+# Identity Service — auth, JWKS, account management
+identity.{$DOMAIN} {
+	reverse_proxy identity-service:8081
+}
+
+# App API — recipes, weekly plans, shopping lists, extraction, inspiration
+api.{$DOMAIN} {
+	reverse_proxy app-api:8082
+}

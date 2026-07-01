@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { Linking, Pressable, StyleSheet, Text, View } from 'react-native';
 import * as Clipboard from 'expo-clipboard';
 import Constants from 'expo-constants';
@@ -5,7 +6,7 @@ import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { ChevronRight, FileText, Mail, ShieldCheck, Trash2 } from 'lucide-react-native';
 import { Card, Screen, useGlobalToast } from '@/src/shared/ui';
-import { type Theme, useThemedStyles } from '@/src/shared/theme';
+import { type Theme, useTheme, useThemedStyles } from '@/src/shared/theme';
 
 type LegalConfig = {
   privacyUrl?: string;
@@ -154,10 +155,12 @@ function LegalRow({
   onPress,
 }: {
   label: string;
-  icon: JSX.Element;
+  icon: ReactNode;
   iconBg: string;
   onPress: () => void;
 }) {
+  const styles = useThemedStyles(createStyles);
+  const theme = useTheme();
   return (
     <Pressable onPress={onPress}>
       <View style={styles.row}>
