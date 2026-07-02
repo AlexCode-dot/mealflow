@@ -156,9 +156,36 @@ class AuthControllerIT extends MongoTestContainerConfig {
         assertThat(response.statusCode(), is(202));
     }
 
+    @Test
+    void me_returnsEmail_whenAuthenticated_and401_whenNot() throws Exception {
+        String email = "me.test@mealflow.dev";
+        String password = "VeryStrongPass123!";
+        assertThat(post("/auth/register", jsonRegister(email, password)).statusCode(), is(201));
+        forceVerifyEmail(email);
+        Tokens tokens =
+                extractTokens(post("/auth/login", jsonLogin(email, password)).body());
+
+        HttpResponse<String> me = getWithBearer("/auth/me", tokens.accessToken());
+        assertThat(me.statusCode(), is(200));
+        assertThat(JsonPath.read(me.body(), "$.email").toString(), is(email));
+
+        HttpResponse<String> unauth = getWithBearer("/auth/me", null);
+        assertThat(unauth.statusCode(), is(401));
+    }
+
     // -------------------------
     // HTTP helpers
     // -------------------------
+
+    private HttpResponse<String> getWithBearer(String path, String token) throws Exception {
+        HttpRequest.Builder b = HttpRequest.newBuilder()
+                .uri(URI.create("http://localhost:" + port + path))
+                .GET();
+        if (token != null) {
+            b.header(HttpHeaders.AUTHORIZATION, "Bearer " + token);
+        }
+        return http.send(b.build(), HttpResponse.BodyHandlers.ofString());
+    }
 
     private HttpResponse<String> post(String path, String json) throws Exception {
         HttpRequest req = HttpRequest.newBuilder()

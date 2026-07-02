@@ -14,6 +14,8 @@ import jakarta.validation.Valid;
 import java.util.Map;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -132,6 +134,12 @@ public class AuthController {
                     Map.of("reason", "email_not_verified"));
             throw e;
         }
+    }
+
+    @GetMapping("/me")
+    public MeResponse me(@AuthenticationPrincipal Jwt jwt) {
+        String userId = jwt.getSubject();
+        return new MeResponse(userId, authService.getUserEmail(userId));
     }
 
     @PostMapping("/refresh")

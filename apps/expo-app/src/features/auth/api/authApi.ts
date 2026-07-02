@@ -17,4 +17,8 @@ export const authApi = {
   resendVerification(email: string): Promise<void> {
     return httpClient.identity.post<void>('/auth/resend-verification', { email });
   },
+
+  me(): Promise<{ userId: string; email: string }> {
+    return httpClient.identity.get<{ userId: string; email: string }>('/auth/me');
+  },
 };

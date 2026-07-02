@@ -47,6 +47,8 @@ public class SecurityConfig {
                         .permitAll()
                         .requestMatchers("/auth/integrations", "/auth/integrations/**")
                         .authenticated()
+                        .requestMatchers(HttpMethod.GET, "/auth/me")
+                        .authenticated()
                         .requestMatchers("/auth/**", "/.well-known/jwks.json")
                         .permitAll()
                         .requestMatchers(HttpMethod.DELETE, "/account")
