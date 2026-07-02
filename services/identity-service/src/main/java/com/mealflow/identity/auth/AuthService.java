@@ -2,6 +2,7 @@ package com.mealflow.identity.auth;
 
 import com.mealflow.identity.auth.error.EmailAlreadyInUseException;
 import com.mealflow.identity.auth.error.InvalidCredentialsException;
+import com.mealflow.identity.auth.reset.PasswordResetService;
 import com.mealflow.identity.auth.verification.EmailVerificationService;
 import com.mealflow.identity.auth.verification.error.EmailNotVerifiedException;
 import com.mealflow.identity.security.jwt.AccessTokenService;
@@ -22,6 +23,7 @@ public class AuthService {
     private final AccessTokenService accessTokenService;
     private final RefreshTokenService refreshTokenService;
     private final EmailVerificationService emailVerificationService;
+    private final PasswordResetService passwordResetService;
     private final Clock clock;
 
     public AuthService(
@@ -30,12 +32,14 @@ public class AuthService {
             AccessTokenService accessTokenService,
             RefreshTokenService refreshTokenService,
             EmailVerificationService emailVerificationService,
+            PasswordResetService passwordResetService,
             Clock clock) {
         this.userRepository = userRepository;
         this.passwordService = passwordService;
         this.accessTokenService = accessTokenService;
         this.refreshTokenService = refreshTokenService;
         this.emailVerificationService = emailVerificationService;
+        this.passwordResetService = passwordResetService;
         this.clock = clock;
     }
 
@@ -92,6 +96,14 @@ public class AuthService {
 
     public void resendVerification(String email) {
         emailVerificationService.resendFor(normalizeEmail(email));
+    }
+
+    public void requestPasswordReset(String email) {
+        passwordResetService.request(normalizeEmail(email));
+    }
+
+    public void resetPassword(String email, String code, String newPassword) {
+        passwordResetService.reset(normalizeEmail(email), code, newPassword);
     }
 
     public String getUserEmail(String userId) {

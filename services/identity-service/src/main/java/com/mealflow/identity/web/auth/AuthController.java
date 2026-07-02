@@ -97,6 +97,35 @@ public class AuthController {
                 Map.of());
     }
 
+    @PostMapping("/forgot-password")
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    public void forgotPassword(@Valid @RequestBody ForgotPasswordRequest body, HttpServletRequest request) {
+        authService.requestPasswordReset(body.email());
+        // Always 202, no userId attribution — must not reveal whether the email exists.
+        auditService.log(
+                AuditEventType.PASSWORD_RESET_REQUESTED,
+                AuditEventType.OUTCOME_SUCCESS,
+                null,
+                null,
+                null,
+                request,
+                Map.of());
+    }
+
+    @PostMapping("/reset-password")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void resetPassword(@Valid @RequestBody ResetPasswordRequest body, HttpServletRequest request) {
+        authService.resetPassword(body.email(), body.code(), body.newPassword());
+        auditService.log(
+                AuditEventType.PASSWORD_RESET_COMPLETED,
+                AuditEventType.OUTCOME_SUCCESS,
+                null,
+                null,
+                null,
+                request,
+                Map.of());
+    }
+
     @PostMapping("/login")
     public AuthResponse login(@Valid @RequestBody LoginRequest body, HttpServletRequest request) {
         try {

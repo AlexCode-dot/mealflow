@@ -34,6 +34,12 @@ public class RateLimitProperties {
     private int resendVerificationPerMinute = 5;
 
     @Min(1)
+    private int forgotPasswordPerMinute = 5;
+
+    @Min(1)
+    private int resetPasswordPerMinute = 10;
+
+    @Min(1)
     private int bucketTtlMinutes = 15;
 
     @Min(100)
@@ -97,6 +103,22 @@ public class RateLimitProperties {
 
     public int getResendVerificationPerMinute() {
         return resendVerificationPerMinute;
+    }
+
+    public int getForgotPasswordPerMinute() {
+        return forgotPasswordPerMinute;
+    }
+
+    public void setForgotPasswordPerMinute(int forgotPasswordPerMinute) {
+        this.forgotPasswordPerMinute = forgotPasswordPerMinute;
+    }
+
+    public int getResetPasswordPerMinute() {
+        return resetPasswordPerMinute;
+    }
+
+    public void setResetPasswordPerMinute(int resetPasswordPerMinute) {
+        this.resetPasswordPerMinute = resetPasswordPerMinute;
     }
 
     public void setResendVerificationPerMinute(int resendVerificationPerMinute) {

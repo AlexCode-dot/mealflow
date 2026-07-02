@@ -21,4 +21,12 @@ export const authApi = {
   me(): Promise<{ userId: string; email: string }> {
     return httpClient.identity.get<{ userId: string; email: string }>('/auth/me');
   },
+
+  forgotPassword(email: string): Promise<void> {
+    return httpClient.identity.post<void>('/auth/forgot-password', { email });
+  },
+
+  resetPassword(email: string, code: string, newPassword: string): Promise<void> {
+    return httpClient.identity.post<void>('/auth/reset-password', { email, code, newPassword });
+  },
 };

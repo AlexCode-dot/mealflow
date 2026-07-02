@@ -9,6 +9,12 @@ export const routes = {
       pathname: '/verify-email',
       params: { email },
     }) as unknown as Href,
+  forgotPassword: '/forgot-password' as Href,
+  resetPassword: (email: string) =>
+    ({
+      pathname: '/reset-password',
+      params: { email },
+    }) as unknown as Href,
 
   // Tabs
   overview: '/overview' as const,
