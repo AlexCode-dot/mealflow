@@ -48,6 +48,10 @@ export const useLogin = (): LoginView => {
       } catch (e) {
         const apiErr = toApiError(e);
         if (apiErr.kind === 'http' && apiErr.code === 'EMAIL_NOT_VERIFIED') {
+          // Login never issues a verification code, so proactively (re)send one — otherwise the
+          // user lands on the verify screen with no fresh code. Ignore failures (e.g. resend
+          // cooldown): the previously issued code is still usable in that case.
+          await authApi.resendVerification(email.trim()).catch(() => {});
           return { kind: 'verification-required', email: email.trim() };
         }
         const uiErr = mapAuthError(apiErr);
