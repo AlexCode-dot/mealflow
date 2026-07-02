@@ -94,6 +94,13 @@ public class AuthService {
         emailVerificationService.resendFor(normalizeEmail(email));
     }
 
+    public String getUserEmail(String userId) {
+        return userRepository
+                .findById(userId)
+                .map(User::getEmail)
+                .orElseThrow(() -> new InvalidCredentialsException("User not found"));
+    }
+
     public AuthTokens refresh(String refreshTokenRaw) {
         IssuedRefreshToken rotated = refreshTokenService.rotate(refreshTokenRaw);
         String accessToken = accessTokenService.issue(rotated.userId());

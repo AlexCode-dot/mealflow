@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Check, ChevronRight, UserRound, XCircle } from 'lucide-react-native';
 import { useIsFocused } from '@react-navigation/native';
 import { useProfileEditScreen } from '@/src/features/profile/hooks/useProfileEditScreen';
+import { useAccountEmail } from '@/src/features/profile/hooks/useAccountEmail';
 import { ThemePickerSheet } from '@/src/features/settings/ui/ThemePickerSheet';
 import {
   Card,
@@ -25,6 +26,7 @@ export function ProfileEditScreen() {
   const theme = useTheme();
   const styles = useThemedStyles(createStyles);
   const view = useProfileEditScreen();
+  const accountEmail = useAccountEmail();
   const { state, form, data, actions, toast } = view;
   const [themeOpen, setThemeOpen] = useState(false);
   const isFocused = useIsFocused();
@@ -105,7 +107,7 @@ export function ProfileEditScreen() {
           <View style={styles.readOnlyBlock}>
             <Text style={styles.label}>{t('profile.emailLabel')}</Text>
             <View style={styles.readOnlyField}>
-              <Text style={styles.readOnlyText}>{t('profile.notAvailable')}</Text>
+              <Text style={styles.readOnlyText}>{accountEmail ?? t('profile.notAvailable')}</Text>
             </View>
           </View>
 

@@ -11,30 +11,32 @@ import { parseResponseBody, request } from './request';
 type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 
 async function authedRequest<T>(
+  baseUrl: string,
   path: string,
   method: HttpMethod,
   options?: { body?: unknown; accessTokenOverride?: string },
 ): Promise<T> {
   const token = options?.accessTokenOverride ?? tokenStore.getAccessToken();
 
-  return request<T>(ENV.APP_API_BASE_URL, path, method, {
+  return request<T>(baseUrl, path, method, {
     body: options?.body,
     headers: token ? { Authorization: `Bearer ${token}` } : undefined,
   });
 }
 
 async function requestWithAutoRefresh<T>(
+  baseUrl: string,
   path: string,
   method: HttpMethod,
   options?: { body?: unknown },
 ): Promise<T> {
   try {
-    return await authedRequest<T>(path, method, { body: options?.body });
+    return await authedRequest<T>(baseUrl, path, method, { body: options?.body });
   } catch (err) {
     if (err instanceof HttpError && err.status === 401) {
       try {
         const newAccess = await refreshSession();
-        return await authedRequest<T>(path, method, {
+        return await authedRequest<T>(baseUrl, path, method, {
           body: options?.body,
           accessTokenOverride: newAccess,
         });
@@ -110,14 +112,20 @@ export const httpClient = {
   identity: {
     post: <T>(path: string, body: unknown) =>
       request<T>(ENV.IDENTITY_BASE_URL, path, 'POST', { body }),
+    // Authenticated GET against identity (e.g. /auth/me) — attaches the access token and
+    // retries once after a refresh on 401, same as app-api calls.
+    get: <T>(path: string) => requestWithAutoRefresh<T>(ENV.IDENTITY_BASE_URL, path, 'GET'),
   },
 
   appApi: {
-    get: <T>(path: string) => requestWithAutoRefresh<T>(path, 'GET'),
-    post: <T>(path: string, body: unknown) => requestWithAutoRefresh<T>(path, 'POST', { body }),
-    put: <T>(path: string, body: unknown) => requestWithAutoRefresh<T>(path, 'PUT', { body }),
-    patch: <T>(path: string, body: unknown) => requestWithAutoRefresh<T>(path, 'PATCH', { body }),
-    delete: <T>(path: string) => requestWithAutoRefresh<T>(path, 'DELETE'),
+    get: <T>(path: string) => requestWithAutoRefresh<T>(ENV.APP_API_BASE_URL, path, 'GET'),
+    post: <T>(path: string, body: unknown) =>
+      requestWithAutoRefresh<T>(ENV.APP_API_BASE_URL, path, 'POST', { body }),
+    put: <T>(path: string, body: unknown) =>
+      requestWithAutoRefresh<T>(ENV.APP_API_BASE_URL, path, 'PUT', { body }),
+    patch: <T>(path: string, body: unknown) =>
+      requestWithAutoRefresh<T>(ENV.APP_API_BASE_URL, path, 'PATCH', { body }),
+    delete: <T>(path: string) => requestWithAutoRefresh<T>(ENV.APP_API_BASE_URL, path, 'DELETE'),
     upload: <T>(path: string, formData: FormData) => multipartWithAutoRefresh<T>(path, formData),
   },
 };

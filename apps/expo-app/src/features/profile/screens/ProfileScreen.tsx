@@ -17,6 +17,7 @@ import {
 import * as Clipboard from 'expo-clipboard';
 import Constants from 'expo-constants';
 import { useProfileScreen } from '@/src/features/profile/hooks/useProfileScreen';
+import { useAccountEmail } from '@/src/features/profile/hooks/useAccountEmail';
 import { Card, LoadingScreen, Screen, ToastBanner, useGlobalToast } from '@/src/shared/ui';
 import { type Theme, useTheme, useThemedStyles } from '@/src/shared/theme';
 
@@ -30,6 +31,7 @@ export function ProfileScreen({ showBack = false }: Props) {
   const styles = useThemedStyles(createStyles);
   const view = useProfileScreen();
   const { state, data, actions, toast } = view;
+  const accountEmail = useAccountEmail();
   const { toast: globalToast, showValidationError, show } = useGlobalToast();
   const legal = Constants.expoConfig?.extra?.legal as
     | { privacyUrl?: string; termsUrl?: string }
@@ -147,7 +149,7 @@ export function ProfileScreen({ showBack = false }: Props) {
           <View style={styles.infoDivider} />
           <InfoRow
             label={t('profile.emailLabel')}
-            value={t('profile.notAvailable')}
+            value={accountEmail ?? t('profile.notAvailable')}
             icon={<Mail size={20} color="#2463EB" strokeWidth={2.4} />}
             iconBg="#E6EEFF"
             styles={styles}
