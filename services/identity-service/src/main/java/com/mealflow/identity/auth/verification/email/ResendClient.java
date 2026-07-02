@@ -5,6 +5,8 @@ import java.time.Duration;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.env.Environment;
+import org.springframework.core.env.Profiles;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
@@ -24,8 +26,16 @@ public class ResendClient {
     private final ResendProperties properties;
     private final RestClient restClient;
 
-    public ResendClient(ResendProperties properties) {
+    /**
+     * True in environments where email delivery is expected (prod/staging). In dev/test we log
+     * codes instead of sending, so a missing Resend key is normal there; in prod it's a real
+     * incident and must be logged loudly.
+     */
+    private final boolean deliveryExpected;
+
+    public ResendClient(ResendProperties properties, Environment environment) {
         this.properties = properties;
+        this.deliveryExpected = environment.acceptsProfiles(Profiles.of("prod", "staging"));
         SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
         factory.setConnectTimeout((int) Duration.ofSeconds(5).toMillis());
         factory.setReadTimeout(
@@ -43,11 +53,20 @@ public class ResendClient {
      */
     public boolean send(String toEmail, String subject, String htmlBody, String textBody) {
         if (!properties.isConfigured()) {
-            log.warn(
-                    "Resend is not configured. Email to <{}> with subject '{}' was not sent. Text body:\n{}",
-                    toEmail,
-                    subject,
-                    textBody);
+            if (deliveryExpected) {
+                // Misconfiguration in prod/staging — users won't get their codes. Scream.
+                log.error(
+                        "Resend is not configured but email delivery is expected. Email to <{}> "
+                                + "with subject '{}' was NOT sent.",
+                        toEmail,
+                        subject);
+            } else {
+                log.warn(
+                        "Resend is not configured. Email to <{}> with subject '{}' was not sent. Text body:\n{}",
+                        toEmail,
+                        subject,
+                        textBody);
+            }
             return false;
         }
         try {
@@ -66,12 +85,14 @@ public class ResendClient {
                     .retrieve()
                     .body(SendResponse.class);
             if (response == null || response.id == null) {
-                log.warn("Resend send to <{}> returned empty response", toEmail);
+                // Resend is configured, so an empty response is a real delivery failure.
+                log.error("Resend send to <{}> returned empty response — email not delivered", toEmail);
                 return false;
             }
             return true;
         } catch (RestClientException ex) {
-            log.warn("Failed to send email via Resend to <{}>: {}", toEmail, ex.getMessage());
+            // Resend is configured, so a transport error is a real delivery failure.
+            log.error("Failed to send email via Resend to <{}>: {}", toEmail, ex.getMessage());
             return false;
         }
     }
