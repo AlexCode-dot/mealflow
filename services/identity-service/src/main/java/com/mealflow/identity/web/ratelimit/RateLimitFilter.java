@@ -98,6 +98,12 @@ public class RateLimitFilter extends OncePerRequestFilter {
             if ("/auth/resend-verification".equals(path)) {
                 return new RateLimit("resend-verification", props.getResendVerificationPerMinute());
             }
+            if ("/auth/forgot-password".equals(path)) {
+                return new RateLimit("forgot-password", props.getForgotPasswordPerMinute());
+            }
+            if ("/auth/reset-password".equals(path)) {
+                return new RateLimit("reset-password", props.getResetPasswordPerMinute());
+            }
         }
 
         if ("GET".equalsIgnoreCase(method) && "/.well-known/jwks.json".equals(path)) {

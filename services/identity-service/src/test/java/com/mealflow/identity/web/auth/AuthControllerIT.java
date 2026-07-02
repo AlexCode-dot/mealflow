@@ -5,6 +5,7 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 import com.jayway.jsonpath.JsonPath;
+import com.mealflow.identity.auth.verification.VerificationCodeService;
 import com.mealflow.identity.support.MongoTestContainerConfig;
 import com.mealflow.identity.support.TestRsaKeysConfig;
 import com.mealflow.identity.token.repository.RefreshTokenRepository;
@@ -17,6 +18,7 @@ import java.net.http.HttpResponse;
 import java.time.Instant;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
@@ -25,6 +27,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
@@ -36,6 +39,9 @@ class AuthControllerIT extends MongoTestContainerConfig {
 
     private final UserRepository userRepository;
     private final RefreshTokenRepository refreshTokenRepository;
+
+    @MockitoSpyBean
+    private VerificationCodeService codeService;
 
     private final HttpClient http = HttpClient.newHttpClient();
 
@@ -173,6 +179,43 @@ class AuthControllerIT extends MongoTestContainerConfig {
         assertThat(unauth.statusCode(), is(401));
     }
 
+    @Test
+    void forgotPassword_returns202_evenWhenEmailDoesNotExist() throws Exception {
+        HttpResponse<String> response = post("/auth/forgot-password", "{\"email\":\"nobody@example.com\"}");
+        assertThat(response.statusCode(), is(202));
+    }
+
+    @Test
+    void forgotPassword_thenReset_shouldChangePasswordAndRevokeSessions() throws Exception {
+        String email = "reset.me@mealflow.dev";
+        String password = "VeryStrongPass123!";
+        String newPassword = "BrandNewPass456!";
+
+        assertThat(post("/auth/register", jsonRegister(email, password)).statusCode(), is(201));
+        forceVerifyEmail(email);
+
+        // Pin the next generated code so we can complete the reset in the test.
+        Mockito.doReturn("654321").when(codeService).generate();
+        assertThat(
+                post("/auth/forgot-password", "{\"email\":\"" + email + "\"}").statusCode(), is(202));
+
+        // Wrong code is rejected.
+        assertThat(
+                post("/auth/reset-password", jsonReset(email, "000000", newPassword))
+                        .statusCode(),
+                is(400));
+
+        // Correct code resets the password.
+        assertThat(
+                post("/auth/reset-password", jsonReset(email, "654321", newPassword))
+                        .statusCode(),
+                is(204));
+
+        // Old password no longer works; new one does.
+        assertThat(post("/auth/login", jsonLogin(email, password)).statusCode(), is(401));
+        assertThat(post("/auth/login", jsonLogin(email, newPassword)).statusCode(), is(200));
+    }
+
     // -------------------------
     // HTTP helpers
     // -------------------------
@@ -215,6 +258,10 @@ class AuthControllerIT extends MongoTestContainerConfig {
 
     private static String jsonVerify(String email, String code) {
         return "{\"email\":\"" + email + "\",\"code\":\"" + code + "\"}";
+    }
+
+    private static String jsonReset(String email, String code, String newPassword) {
+        return "{\"email\":\"" + email + "\",\"code\":\"" + code + "\",\"newPassword\":\"" + newPassword + "\"}";
     }
 
     private void forceVerifyEmail(String email) {

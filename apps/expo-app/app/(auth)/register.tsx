@@ -1,5 +1,6 @@
 import { useRouter } from 'expo-router';
 import { View, StyleSheet } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { AuthScreen, AuthBottomCta } from '@/src/shared/ui';
 import { RegisterForm } from '@/src/features/auth/ui/RegisterForm';
 import { useRegister } from '@/src/features/auth/hooks/useRegister';
@@ -7,6 +8,7 @@ import { type Theme, useThemedStyles } from '@/src/shared/theme';
 import { routes } from '@/src/core/navigation/routes';
 
 export default function RegisterScreen() {
+  const { t } = useTranslation();
   const styles = useThemedStyles(createStyles);
   const router = useRouter();
   const view = useRegister();
@@ -22,8 +24,8 @@ export default function RegisterScreen() {
       variant="register"
       bottomCta={
         <AuthBottomCta
-          text="Already have an account?"
-          buttonTitle="Log in"
+          text={t('auth.alreadyHaveAccount')}
+          buttonTitle={t('auth.login')}
           onPress={() => router.push(routes.login)}
         />
       }
