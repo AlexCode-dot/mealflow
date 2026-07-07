@@ -353,10 +353,27 @@ export const sv: Translations = {
     addRecipeSheet: {
       title: 'Lägg till recept',
       writeItYourself: 'Skriv det själv',
+      speakIt: 'Tala in det',
+      speakItSubtitle: 'Beskriv receptet med rösten',
       fromAPhoto: 'Från ett foto',
       fromAPhotoSubtitle: 'Ett eller flera foton av ett recept',
       fromAVideo: 'Från en video',
       fromAVideoSubtitle: 'TikTok, Reel eller kort klipp',
+    },
+
+    voice: {
+      title: 'Tala in ett recept',
+      hint: 'Säg namnet, ingredienserna och hur man gör. Prata som du vill.',
+      tapToStart: 'Tryck för att börja',
+      tapToStop: 'Tryck för att stoppa',
+      listening: 'Lyssnar',
+      transcriptPlaceholder: 'Det du säger dyker upp här…',
+      redo: 'Gör om',
+      createRecipe: 'Skapa recept',
+      building: 'Bygger ditt recept…',
+      permissionDenied: 'Mikrofon- eller talåtkomst är av. Slå på det i Inställningar för att tala in ett recept.',
+      openSettings: 'Öppna inställningar',
+      genericError: 'Vi hörde dig inte. Försök igen.',
     },
 
     thumbnailPicker: {

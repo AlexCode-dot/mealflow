@@ -350,10 +350,27 @@ export const en = {
     addRecipeSheet: {
       title: 'Add a recipe',
       writeItYourself: 'Write it yourself',
+      speakIt: 'Speak it',
+      speakItSubtitle: 'Describe the recipe out loud',
       fromAPhoto: 'From a photo',
       fromAPhotoSubtitle: 'One or more photos of a recipe',
       fromAVideo: 'From a video',
       fromAVideoSubtitle: 'TikTok, Reel or short clip',
+    },
+
+    voice: {
+      title: 'Speak a recipe',
+      hint: 'Say the name, the ingredients, and how to make it. Speak naturally.',
+      tapToStart: 'Tap to start',
+      tapToStop: 'Tap to stop',
+      listening: 'Listening',
+      transcriptPlaceholder: 'What you say will appear here…',
+      redo: 'Redo',
+      createRecipe: 'Create recipe',
+      building: 'Building your recipe…',
+      permissionDenied: 'Microphone or speech access is off. Turn it on in Settings to speak a recipe.',
+      openSettings: 'Open settings',
+      genericError: "We couldn't hear you. Try again.",
     },
 
     thumbnailPicker: {

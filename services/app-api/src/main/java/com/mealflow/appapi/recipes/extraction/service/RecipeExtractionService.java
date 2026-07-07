@@ -112,6 +112,33 @@ public class RecipeExtractionService {
         return job;
     }
 
+    public ExtractionJob enqueueText(String userId, String transcript, String locale) {
+        if (transcript == null || transcript.isBlank()) {
+            throw new ExtractionValidationException("Please say something to build a recipe from.");
+        }
+        quotaService.enforce(userId);
+
+        ExtractionLocaleResolver.Resolved resolved = localeResolver.resolve(locale);
+
+        ExtractionJob job = new ExtractionJob(
+                userId,
+                ExtractionSourceType.TEXT,
+                ExtractionStatus.PROCESSING,
+                "text/plain",
+                (long) transcript.length(),
+                resolved.languageCode(),
+                resolved.unitSystem(),
+                clock.instant());
+        job = jobRepository.save(job);
+
+        String jobId = job.getId();
+        String text = transcript;
+        String languageName = resolved.languageName();
+        String unitSystem = resolved.unitSystem();
+        extractionExecutor.execute(() -> jobProcessor.processText(jobId, text, languageName, unitSystem));
+        return job;
+    }
+
     public ExtractionJob getJob(String userId, String jobId) {
         return jobRepository
                 .findByIdAndUserId(jobId, userId)

@@ -33,6 +33,7 @@ export type RecipeExtractionState = {
 export type RecipeExtractionActions = {
   startFromImage: () => Promise<void>;
   startFromVideo: () => Promise<void>;
+  startFromText: (transcript: string) => Promise<void>;
   reset: () => void;
 };
 
@@ -262,6 +263,30 @@ export function useRecipeExtraction(): {
     await startUpload(formData);
   }, [buildFormData, showError, startFromWeb, startUpload, t]);
 
+  const startFromText = useCallback(
+    async (transcript: string) => {
+      setError(null);
+      // No upload phase — the transcript is tiny, so go straight to processing.
+      setPhase('processing');
+      cancelledRef.current = false;
+      try {
+        const created = await extractionApi.startText(transcript, i18n.language);
+        if (cancelledRef.current) return;
+        setJob(created);
+        await beginPolling(created.jobId);
+      } catch (err) {
+        if (cancelledRef.current) return;
+        const apiErr = toApiError(err);
+        const uiErr = mapCommonError(apiErr);
+        const message = apiErr.kind === 'http' && apiErr.detail ? apiErr.detail : uiErr.message;
+        setError(message);
+        setPhase('failed');
+        showError({ kind: uiErr.kind, message });
+      }
+    },
+    [beginPolling, i18n, showError],
+  );
+
   const state = useMemo<RecipeExtractionState>(
     () => ({ phase, job, error, videoUri, videoDurationMs }),
     [phase, job, error, videoUri, videoDurationMs],
@@ -271,9 +296,10 @@ export function useRecipeExtraction(): {
     () => ({
       startFromImage,
       startFromVideo,
+      startFromText,
       reset,
     }),
-    [reset, startFromImage, startFromVideo],
+    [reset, startFromImage, startFromVideo, startFromText],
   );
 
   return { state, actions };
