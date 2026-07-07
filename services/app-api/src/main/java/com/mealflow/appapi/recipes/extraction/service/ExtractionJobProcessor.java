@@ -103,6 +103,34 @@ public class ExtractionJobProcessor {
         }
     }
 
+    public void processText(String jobId, String transcript, String languageName, String unitSystem) {
+        ExtractionJob job = jobRepository.findById(jobId).orElse(null);
+        if (job == null) {
+            return;
+        }
+        try {
+            RecipeDraft draft = llmExtractor.extractFromText(transcript, languageName, unitSystem);
+            job.setDraft(draft);
+            // No source image for spoken recipes — the user can add a photo on the review screen.
+            job.setStatus(ExtractionStatus.READY);
+            job.setUpdatedAt(clock.instant());
+            jobRepository.save(job);
+        } catch (ExtractionValidationException ex) {
+            job.setStatus(ExtractionStatus.FAILED);
+            job.setErrorCode("VALIDATION");
+            job.setErrorMessage(ex.getMessage());
+            job.setUpdatedAt(clock.instant());
+            jobRepository.save(job);
+        } catch (RuntimeException ex) {
+            log.warn("Text extraction job {} failed: {}", jobId, ex.getMessage(), ex);
+            job.setStatus(ExtractionStatus.FAILED);
+            job.setErrorCode("INTERNAL");
+            job.setErrorMessage("Extraction failed. Please try again.");
+            job.setUpdatedAt(clock.instant());
+            jobRepository.save(job);
+        }
+    }
+
     private String imageMediaType(String contentType) {
         if (contentType == null) {
             return "image/jpeg";

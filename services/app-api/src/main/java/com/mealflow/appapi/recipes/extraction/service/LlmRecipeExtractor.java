@@ -24,9 +24,7 @@ public class LlmRecipeExtractor {
 
     private static final Logger log = LoggerFactory.getLogger(LlmRecipeExtractor.class);
 
-    private static final String SYSTEM_PROMPT = """
-            You are a recipe extractor. The user has provided one or more images from a cooking video or a recipe photo.
-
+    private static final String EXTRACTION_RULES = """
             OUTPUT REQUIREMENTS:
             - All text fields (title, description, ingredient names, steps, category) MUST be in %s, regardless of the source language. Translate if needed.
             - All quantities MUST use the %s system.
@@ -57,6 +55,16 @@ public class LlmRecipeExtractor {
               "languageDetected": string
             }
             """;
+
+    private static final String SYSTEM_PROMPT =
+            "You are a recipe extractor. The user has provided one or more images from a cooking video or a recipe photo.\n\n"
+                    + EXTRACTION_RULES;
+
+    private static final String TEXT_SYSTEM_PROMPT =
+            "You are a recipe extractor. The user dictated a recipe out loud; the text below is a transcript of what they"
+                    + " said. It may be casual and conversational, in any language, and contain filler words or asides —"
+                    + " ignore anything that isn't part of the recipe.\n\n"
+                    + EXTRACTION_RULES;
 
     private final AnthropicClient anthropicClient;
     private final AnthropicProperties anthropicProperties;
@@ -92,6 +100,29 @@ public class LlmRecipeExtractor {
         String text = response.firstText();
         if (text == null || text.isBlank()) {
             throw new ExtractionValidationException("Could not read recipe from media. Try a clearer source.");
+        }
+        return parse(text);
+    }
+
+    public RecipeDraft extractFromText(String transcript, String outputLanguageName, String unitSystem) {
+        if (transcript == null || transcript.isBlank()) {
+            throw new ExtractionValidationException("No transcript to build a recipe from.");
+        }
+
+        List<ContentBlock> userBlocks = List.of(ContentBlock.text("Transcript:\n" + transcript
+                + "\n\nBuild the recipe from this transcript according to the rules. Output JSON only."));
+
+        AnthropicMessageRequest request = new AnthropicMessageRequest(
+                anthropicProperties.getModel(),
+                anthropicProperties.getMaxTokens(),
+                String.format(Locale.ROOT, TEXT_SYSTEM_PROMPT, outputLanguageName, unitSystem),
+                List.of(new AnthropicMessageRequest.Message("user", userBlocks)),
+                0.0);
+
+        AnthropicMessageResponse response = anthropicClient.createMessage(request);
+        String text = response.firstText();
+        if (text == null || text.isBlank()) {
+            throw new ExtractionValidationException("Could not build a recipe from what you said. Try again.");
         }
         return parse(text);
     }

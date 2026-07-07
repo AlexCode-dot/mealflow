@@ -7,6 +7,10 @@ export const extractionApi = {
     return httpClient.appApi.upload<ExtractionJob>(`/api/recipes/extract${query}`, formData);
   },
 
+  startText(transcript: string, locale?: string): Promise<ExtractionJob> {
+    return httpClient.appApi.post<ExtractionJob>('/api/recipes/extract/text', { transcript, locale });
+  },
+
   get(jobId: string): Promise<ExtractionJob> {
     return httpClient.appApi.get<ExtractionJob>(`/api/recipes/extract/${jobId}`);
   },

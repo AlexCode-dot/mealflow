@@ -1,7 +1,7 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { ChevronRight, Image as ImageIcon, PenLine, Video } from 'lucide-react-native';
+import { ChevronRight, Image as ImageIcon, Mic, PenLine, Video } from 'lucide-react-native';
 import { ModalSheet } from '@/src/shared/ui/ModalSheet';
 import { type Theme, useTheme, useThemedStyles } from '@/src/shared/theme';
 import { routes } from '@/src/core/navigation/routes';
@@ -14,7 +14,7 @@ type Props = {
 };
 
 type Row = {
-  key: 'manual' | 'photo' | 'video';
+  key: 'manual' | 'voice' | 'photo' | 'video';
   titleKey: ParseKeys;
   subtitleKey?: ParseKeys;
   icon: (color: string) => React.ReactNode;
@@ -27,6 +27,13 @@ const ROWS: Row[] = [
     titleKey: 'recipes.addRecipeSheet.writeItYourself',
     icon: (color) => <PenLine color={color} size={20} strokeWidth={2.25} />,
     href: routes.recipeNew,
+  },
+  {
+    key: 'voice',
+    titleKey: 'recipes.addRecipeSheet.speakIt',
+    subtitleKey: 'recipes.addRecipeSheet.speakItSubtitle',
+    icon: (color) => <Mic color={color} size={20} strokeWidth={2.25} />,
+    href: routes.recipeVoice,
   },
   {
     key: 'photo',

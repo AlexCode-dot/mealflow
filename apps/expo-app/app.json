@@ -54,7 +54,14 @@
       "expo-secure-store",
       "expo-font",
       "expo-web-browser",
-      "expo-localization"
+      "expo-localization",
+      [
+        "expo-speech-recognition",
+        {
+          "microphonePermission": "Allow MealFlow to use the microphone so you can speak a recipe.",
+          "speechRecognitionPermission": "Allow MealFlow to recognize speech so it can turn what you say into a recipe."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,
