@@ -577,8 +577,7 @@ export const en = {
 
     categories: {
       produce: 'Fruit & veg',
-      meat: 'Meat & deli',
-      fish: 'Fish & seafood',
+      meat: 'Meat & fish',
       dairy: 'Dairy & eggs',
       bread: 'Bread',
       pantry: 'Pantry',

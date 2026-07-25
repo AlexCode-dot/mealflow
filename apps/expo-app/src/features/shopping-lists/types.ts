@@ -2,7 +2,6 @@
 export const SHOPPING_CATEGORIES = [
   'produce',
   'meat',
-  'fish',
   'dairy',
   'bread',
   'pantry',

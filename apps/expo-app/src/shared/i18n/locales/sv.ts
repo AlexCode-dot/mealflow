@@ -580,8 +580,7 @@ export const sv: Translations = {
 
     categories: {
       produce: 'Frukt & grönt',
-      meat: 'Kött & chark',
-      fish: 'Fisk & skaldjur',
+      meat: 'Kött & fisk',
       dairy: 'Mejeri & ägg',
       bread: 'Bröd',
       pantry: 'Skafferi',

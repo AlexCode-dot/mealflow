@@ -23,7 +23,6 @@ import { type Theme, useTheme, useThemedStyles } from '@/src/shared/theme';
 const CATEGORY_LABEL_KEYS: Record<ShoppingCategory, ParseKeys> = {
   produce: 'shoppingLists.categories.produce',
   meat: 'shoppingLists.categories.meat',
-  fish: 'shoppingLists.categories.fish',
   dairy: 'shoppingLists.categories.dairy',
   bread: 'shoppingLists.categories.bread',
   pantry: 'shoppingLists.categories.pantry',

@@ -9,7 +9,6 @@ import java.util.Locale;
 public enum ShoppingItemCategory {
     PRODUCE,
     MEAT,
-    FISH,
     DAIRY,
     BREAD,
     PANTRY,
@@ -26,8 +25,13 @@ public enum ShoppingItemCategory {
         if (raw == null || raw.isBlank()) {
             return OTHER;
         }
+        String normalized = raw.trim().toUpperCase(Locale.ROOT);
+        // Fish used to be its own aisle; it now lives with meat.
+        if ("FISH".equals(normalized)) {
+            return MEAT;
+        }
         try {
-            return valueOf(raw.trim().toUpperCase(Locale.ROOT));
+            return valueOf(normalized);
         } catch (IllegalArgumentException ex) {
             return OTHER;
         }

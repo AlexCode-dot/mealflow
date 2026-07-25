@@ -38,8 +38,7 @@ public class LlmItemCategorizer {
 
             Allowed categories:
             - "produce" — fruit, vegetables, fresh herbs
-            - "meat" — meat, poultry, charcuterie, sausage
-            - "fish" — fish and seafood
+            - "meat" — meat, poultry, charcuterie, sausage, fish and seafood
             - "dairy" — milk, cream, butter, cheese, yoghurt, eggs
             - "bread" — bread and bakery
             - "pantry" — dry goods, tins, spices, oil, sauces, baking, snacks

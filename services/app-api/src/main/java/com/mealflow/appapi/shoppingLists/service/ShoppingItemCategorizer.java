@@ -163,11 +163,7 @@ public class ShoppingItemCategorizer {
                 "sausage",
                 "ham",
                 "turkey",
-                "lamb");
-
-        put(
-                map,
-                ShoppingItemCategory.FISH,
+                "lamb",
                 "lax",
                 "torsk",
                 "sej",
