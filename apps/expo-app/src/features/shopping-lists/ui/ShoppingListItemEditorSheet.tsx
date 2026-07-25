@@ -1,6 +1,7 @@
 import { useRef } from 'react';
 import {
   Keyboard,
+  Pressable,
   ScrollView,
   StyleSheet,
   Text,
@@ -9,10 +10,24 @@ import {
   useWindowDimensions,
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import type { ParseKeys } from 'i18next';
+import { SHOPPING_CATEGORIES, type ShoppingCategory } from '@/src/features/shopping-lists/types';
 import { RecipeActionBar } from '@/src/features/recipes/ui/RecipeActionBar';
 import { useFocusedInputSheetAdjustment } from '@/src/shared/hooks/useFocusedInputSheetAdjustment';
 import { ScrollableFormSheet, TextField } from '@/src/shared/ui';
 import { type Theme, useThemedStyles } from '@/src/shared/theme';
+
+/** Explicit map so the chip labels stay type-checked (no dynamic t() keys). */
+const CATEGORY_LABEL_KEYS: Record<ShoppingCategory, ParseKeys> = {
+  produce: 'shoppingLists.categories.produce',
+  meat: 'shoppingLists.categories.meat',
+  dairy: 'shoppingLists.categories.dairy',
+  bread: 'shoppingLists.categories.bread',
+  pantry: 'shoppingLists.categories.pantry',
+  frozen: 'shoppingLists.categories.frozen',
+  drinks: 'shoppingLists.categories.drinks',
+  other: 'shoppingLists.categories.other',
+};
 
 type Props = {
   visible: boolean;
@@ -28,6 +43,9 @@ type Props = {
   saveLabel: string;
   disabled?: boolean;
   formError?: string | null;
+  /** Optional aisle picker — shown when editing an existing item so a wrong guess can be fixed. */
+  category?: ShoppingCategory;
+  onChangeCategory?: (value: ShoppingCategory) => void;
 };
 
 export function ShoppingListItemEditorSheet({
@@ -44,6 +62,8 @@ export function ShoppingListItemEditorSheet({
   saveLabel,
   disabled = false,
   formError,
+  category,
+  onChangeCategory,
 }: Props) {
   const { t } = useTranslation();
   const styles = useThemedStyles(createStyles);
@@ -122,6 +142,35 @@ export function ShoppingListItemEditorSheet({
           />
         </View>
       </View>
+
+      {onChangeCategory ? (
+        <View style={styles.categoryBlock}>
+          <Text style={styles.categoryLabel}>{t('shoppingLists.fields.categoryLabel')}</Text>
+          <View style={styles.categoryChips}>
+            {SHOPPING_CATEGORIES.map((value) => {
+              const selected = value === category;
+              return (
+                <Pressable
+                  key={value}
+                  onPress={() => onChangeCategory(value)}
+                  style={[styles.categoryChip, selected ? styles.categoryChipSelected : null]}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected }}
+                >
+                  <Text
+                    style={[
+                      styles.categoryChipText,
+                      selected ? styles.categoryChipTextSelected : null,
+                    ]}
+                  >
+                    {t(CATEGORY_LABEL_KEYS[value])}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+        </View>
+      ) : null}
     </ScrollableFormSheet>
   );
 }
@@ -136,6 +185,41 @@ const createStyles = (theme: Theme) =>
     row: {
       flexDirection: 'row',
       gap: theme.spacing.s3,
+    },
+    categoryBlock: {
+      gap: theme.spacing.s2,
+      marginTop: theme.spacing.s3,
+    },
+    categoryLabel: {
+      color: theme.colors.textMuted,
+      fontSize: 13,
+      fontWeight: '600',
+    },
+    categoryChips: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: theme.spacing.s2,
+    },
+    categoryChip: {
+      paddingHorizontal: theme.spacing.s3,
+      paddingVertical: 8,
+      borderRadius: theme.radius.sm,
+      borderWidth: 1,
+      borderColor: theme.colors.borderNeutral,
+      backgroundColor: theme.colors.bgLight,
+    },
+    categoryChipSelected: {
+      borderColor: theme.colors.primary,
+      backgroundColor: theme.colors.primaryLight,
+    },
+    categoryChipText: {
+      fontSize: 13,
+      fontWeight: '600',
+      color: theme.colors.textMuted,
+    },
+    categoryChipTextSelected: {
+      color: theme.colors.primaryDark,
+      fontWeight: '700',
     },
     rowItem: {
       flex: 1,

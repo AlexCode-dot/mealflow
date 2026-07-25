@@ -7,4 +7,5 @@ public record UpdateShoppingListItemRequest(
         @Size(max = 80) String name,
         @PositiveOrZero Double quantity,
         @Size(max = 20) String unit,
-        Boolean checked) {}
+        Boolean checked,
+        @Size(max = 20) String category) {}

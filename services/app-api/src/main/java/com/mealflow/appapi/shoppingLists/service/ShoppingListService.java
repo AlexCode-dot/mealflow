@@ -2,6 +2,7 @@ package com.mealflow.appapi.shoppingLists.service;
 
 import com.mealflow.appapi.recipes.domain.Recipe;
 import com.mealflow.appapi.recipes.repository.RecipeRepository;
+import com.mealflow.appapi.shoppingLists.domain.ShoppingItemCategory;
 import com.mealflow.appapi.shoppingLists.domain.ShoppingList;
 import com.mealflow.appapi.shoppingLists.domain.ShoppingListItem;
 import com.mealflow.appapi.shoppingLists.domain.ShoppingListStatus;
@@ -34,6 +35,7 @@ public class ShoppingListService {
     private final WeeklyPlanRepository weeklyPlanRepository;
     private final RecipeRepository recipeRepository;
     private final ShoppingListGenerator generator;
+    private final ItemCategoryResolver categoryResolver;
     private final Clock clock;
 
     public ShoppingListService(
@@ -41,11 +43,13 @@ public class ShoppingListService {
             WeeklyPlanRepository weeklyPlanRepository,
             RecipeRepository recipeRepository,
             ShoppingListGenerator generator,
+            ItemCategoryResolver categoryResolver,
             Clock clock) {
         this.shoppingListRepository = shoppingListRepository;
         this.weeklyPlanRepository = weeklyPlanRepository;
         this.recipeRepository = recipeRepository;
         this.generator = generator;
+        this.categoryResolver = categoryResolver;
         this.clock = clock;
     }
 
@@ -101,6 +105,8 @@ public class ShoppingListService {
                 ? normalizedTitle
                 : currentTitle != null ? currentTitle : defaultTitleForPlan(plan.getWeeklyStart());
         List<ShoppingListItem> mergedItems = generator.mergePlan(baseItems, plan, loadRecipes(plan, userId));
+        // Keywords for the common groceries, one batched LLM call for the rest.
+        categoryResolver.applyCategories(mergedItems);
         active.setItems(mergedItems);
         active.setWeeklyPlanId(weeklyPlanId);
         active.setTitle(nextTitle);
@@ -140,8 +146,14 @@ public class ShoppingListService {
         }
         String normalizedUnit = normalizeUnit(unit);
 
-        ShoppingListItem item =
-                new ShoppingListItem(UUID.randomUUID().toString(), normalizedName, quantity, normalizedUnit, false);
+        // Keyword lookup only — an item added by hand must land in its section immediately.
+        ShoppingListItem item = new ShoppingListItem(
+                UUID.randomUUID().toString(),
+                normalizedName,
+                quantity,
+                normalizedUnit,
+                false,
+                categoryResolver.resolveFromKeywords(normalizedName));
 
         List<ShoppingListItem> items = new ArrayList<>(list.getItems());
         items.add(item);
@@ -151,7 +163,14 @@ public class ShoppingListService {
     }
 
     public ShoppingList updateItem(
-            String userId, String listId, String itemId, String name, Double quantity, String unit, Boolean checked) {
+            String userId,
+            String listId,
+            String itemId,
+            String name,
+            Double quantity,
+            String unit,
+            Boolean checked,
+            ShoppingItemCategory category) {
         ShoppingList list = getForUser(userId, listId);
         ShoppingListItem item = findItem(list, itemId);
 
@@ -160,7 +179,16 @@ public class ShoppingListService {
             if (normalizedName.isBlank()) {
                 throw new ShoppingListValidationException("name must not be blank");
             }
+            boolean renamed = !normalizedName.equalsIgnoreCase(item.getName());
             item.setName(normalizedName);
+            // Re-derive the aisle on rename, unless the caller is setting one explicitly.
+            if (renamed && category == null) {
+                item.setCategory(categoryResolver.resolveFromKeywords(normalizedName));
+            }
+        }
+
+        if (category != null) {
+            item.setCategory(category);
         }
 
         if (unit != null) {

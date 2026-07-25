@@ -571,6 +571,20 @@ export const en = {
     addSomething: 'Add something...',
     addFirstItemSubtitle: 'Add your first item to get started.',
     addSomethingSubtitle: 'Add something to keep the list moving.',
+    allFilter: 'All ({{count}})',
+    sectionWithCount: '{{label}} ({{count}})',
+    removeItemConfirm: 'Remove {{name}} from the list?',
+
+    categories: {
+      produce: 'Fruit & veg',
+      meat: 'Meat & fish',
+      dairy: 'Dairy & eggs',
+      bread: 'Bread',
+      pantry: 'Pantry',
+      frozen: 'Frozen',
+      drinks: 'Drinks',
+      other: 'Other',
+    },
     unchecked: 'Unchecked ({{count}})',
     checkedSection: 'Checked ({{count}})',
     addItem: 'Add Item',
@@ -602,6 +616,7 @@ export const en = {
       itemNamePlaceholder: 'e.g. Tortilla',
       quantityLabel: 'Quantity',
       unitLabel: 'Unit',
+      categoryLabel: 'Category',
       optionalPlaceholder: 'Optional',
     },
 

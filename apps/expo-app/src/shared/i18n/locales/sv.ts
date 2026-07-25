@@ -574,6 +574,20 @@ export const sv: Translations = {
     addSomething: 'Lägg till något...',
     addFirstItemSubtitle: 'Lägg till din första vara för att komma igång.',
     addSomethingSubtitle: 'Lägg till något för att hålla listan igång.',
+    allFilter: 'Alla ({{count}})',
+    sectionWithCount: '{{label}} ({{count}})',
+    removeItemConfirm: 'Ta bort {{name}} från listan?',
+
+    categories: {
+      produce: 'Frukt & grönt',
+      meat: 'Kött & fisk',
+      dairy: 'Mejeri & ägg',
+      bread: 'Bröd',
+      pantry: 'Skafferi',
+      frozen: 'Fryst',
+      drinks: 'Dryck',
+      other: 'Övrigt',
+    },
     unchecked: 'Ej bockat ({{count}})',
     checkedSection: 'Bockat ({{count}})',
     addItem: 'Lägg till artikel',
@@ -605,6 +619,7 @@ export const sv: Translations = {
       itemNamePlaceholder: 't.ex. Tortilla',
       quantityLabel: 'Antal',
       unitLabel: 'Enhet',
+      categoryLabel: 'Kategori',
       optionalPlaceholder: 'Valfritt',
     },
 
