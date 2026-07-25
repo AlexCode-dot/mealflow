@@ -5,7 +5,12 @@ import { useIsFocused } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ListX, MoreVertical, Plus } from 'lucide-react-native';
 import { shoppingListsApi } from '@/src/features/shopping-lists/api/shoppingListsApi';
-import type { ShoppingList, ShoppingListItem } from '@/src/features/shopping-lists/types';
+import {
+  SHOPPING_CATEGORIES,
+  type ShoppingCategory,
+  type ShoppingList,
+  type ShoppingListItem,
+} from '@/src/features/shopping-lists/types';
 import { mapCommonError } from '@/src/shared/errors/mapCommonError';
 import type { UiError } from '@/src/shared/errors/errorTypes';
 import { toApiError } from '@/src/core/http/toApiError';
@@ -29,6 +34,12 @@ export type ShoppingListDetailsState = {
   contentPaddingBottom: number;
 };
 
+/** One aisle's worth of items, ready to render as a section. */
+export type CategorySection = {
+  category: ShoppingCategory;
+  items: ShoppingListItem[];
+};
+
 export type ShoppingListDetailsData = {
   list: ShoppingList | null;
   totalCount: number;
@@ -38,6 +49,7 @@ export type ShoppingListDetailsData = {
   uncheckedItems: ShoppingListItem[];
   checkedItems: ShoppingListItem[];
   visibleItems: ShoppingListItem[];
+  categorySections: CategorySection[];
 };
 
 export type ShoppingListDetailsActions = {
@@ -82,6 +94,8 @@ export type ShoppingListDetailsEditSheet = {
   setQuantity: (value: string) => void;
   unit: string;
   setUnit: (value: string) => void;
+  category: ShoppingCategory;
+  setCategory: (value: ShoppingCategory) => void;
   handleSave: () => Promise<void>;
 };
 
@@ -153,6 +167,7 @@ export function useShoppingListDetailsScreen(): ShoppingListDetailsView {
   const [editName, setEditName] = useState('');
   const [editQuantity, setEditQuantity] = useState('');
   const [editUnit, setEditUnit] = useState('');
+  const [editCategory, setEditCategory] = useState<ShoppingCategory>('other');
   const [renameOpen, setRenameOpen] = useState(false);
   const [renameTitle, setRenameTitle] = useState('');
   const [renameError, setRenameError] = useState<string | null>(null);
@@ -261,6 +276,7 @@ export function useShoppingListDetailsScreen(): ShoppingListDetailsView {
         name,
         quantity,
         unit,
+        category: editCategory,
       });
       setList(updated);
       setEditOpen(false);
@@ -273,6 +289,7 @@ export function useShoppingListDetailsScreen(): ShoppingListDetailsView {
       setIsSaving(false);
     }
   }, [
+    editCategory,
     editItem,
     editName,
     editQuantity,
@@ -310,6 +327,7 @@ export function useShoppingListDetailsScreen(): ShoppingListDetailsView {
     setEditName(item.name);
     setEditQuantity(item.quantity == null ? '' : String(item.quantity));
     setEditUnit(item.unit ?? '');
+    setEditCategory(item.category ?? 'other');
     setEditOpen(true);
   }, []);
 
@@ -493,6 +511,30 @@ export function useShoppingListDetailsScreen(): ShoppingListDetailsView {
     return list?.items ?? [];
   }, [checkedItems, filter, list, uncheckedItems]);
 
+  /**
+   * Group whatever is visible by aisle, in store order. Checked items sink to the bottom of their
+   * own section so what's left to buy stays on top — the list never jumps to a different section
+   * when you tick something off.
+   */
+  const categorySections = useMemo<CategorySection[]>(() => {
+    const byCategory = new Map<ShoppingCategory, ShoppingListItem[]>();
+    for (const item of visibleItems) {
+      const raw = item.category ?? 'other';
+      const key = (SHOPPING_CATEGORIES as readonly string[]).includes(raw)
+        ? (raw as ShoppingCategory)
+        : 'other';
+      const bucket = byCategory.get(key);
+      if (bucket) bucket.push(item);
+      else byCategory.set(key, [item]);
+    }
+    return SHOPPING_CATEGORIES.filter((category) => byCategory.has(category)).map((category) => ({
+      category,
+      items: [...(byCategory.get(category) ?? [])].sort(
+        (a, b) => Number(a.checked) - Number(b.checked),
+      ),
+    }));
+  }, [visibleItems]);
+
   const totalCount = list?.items.length ?? 0;
   const checkedCount = checkedItems.length;
   const uncheckedCount = uncheckedItems.length;
@@ -598,6 +640,7 @@ export function useShoppingListDetailsScreen(): ShoppingListDetailsView {
       uncheckedItems,
       checkedItems,
       visibleItems,
+      categorySections,
     }),
     [
       checkedCount,
@@ -608,6 +651,7 @@ export function useShoppingListDetailsScreen(): ShoppingListDetailsView {
       uncheckedCount,
       uncheckedItems,
       visibleItems,
+      categorySections,
     ],
   );
 
@@ -670,9 +714,11 @@ export function useShoppingListDetailsScreen(): ShoppingListDetailsView {
       setQuantity: setEditQuantity,
       unit: editUnit,
       setUnit: setEditUnit,
+      category: editCategory,
+      setCategory: setEditCategory,
       handleSave: handleSaveEdit,
     }),
-    [editItem, editName, editOpen, editQuantity, editUnit, handleSaveEdit],
+    [editCategory, editItem, editName, editOpen, editQuantity, editUnit, handleSaveEdit],
   );
 
   const renameSheet = useMemo(

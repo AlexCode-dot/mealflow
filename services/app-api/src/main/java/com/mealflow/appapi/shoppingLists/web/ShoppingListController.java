@@ -109,7 +109,8 @@ public class ShoppingListController {
                 args.name(),
                 args.quantity(),
                 args.unit(),
-                args.checked()));
+                args.checked(),
+                args.category()));
     }
 
     @DeleteMapping("/{id}/items/{itemId}")

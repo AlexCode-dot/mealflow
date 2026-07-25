@@ -5,7 +5,8 @@ import { Archive, CheckCircle2, ListMinus, PencilLine, Trash2 } from 'lucide-rea
 import { ShoppingListItemRow } from '@/src/features/shopping-lists/ui/ShoppingListItemRow';
 import { ShoppingListItemEditorSheet } from '@/src/features/shopping-lists/ui/ShoppingListItemEditorSheet';
 import { ShoppingListRenameSheet } from '@/src/features/shopping-lists/ui/ShoppingListRenameSheet';
-import type { ShoppingListItem } from '@/src/features/shopping-lists/types';
+import type { ShoppingCategory, ShoppingListItem } from '@/src/features/shopping-lists/types';
+import type { ParseKeys } from 'i18next';
 import { useShoppingListDetailsScreen } from '@/src/features/shopping-lists/hooks/useShoppingListDetailsScreen';
 import {
   ConfirmSheet,
@@ -18,6 +19,19 @@ import {
 } from '@/src/shared/ui';
 import { type Theme, useTheme, useThemedStyles } from '@/src/shared/theme';
 
+/** Explicit map so the section labels stay type-checked (no dynamic t() keys). */
+const CATEGORY_LABEL_KEYS: Record<ShoppingCategory, ParseKeys> = {
+  produce: 'shoppingLists.categories.produce',
+  meat: 'shoppingLists.categories.meat',
+  fish: 'shoppingLists.categories.fish',
+  dairy: 'shoppingLists.categories.dairy',
+  bread: 'shoppingLists.categories.bread',
+  pantry: 'shoppingLists.categories.pantry',
+  frozen: 'shoppingLists.categories.frozen',
+  drinks: 'shoppingLists.categories.drinks',
+  other: 'shoppingLists.categories.other',
+};
+
 export default function ShoppingListDetailsScreen() {
   const theme = useTheme();
   const { t } = useTranslation();
@@ -27,7 +41,7 @@ export default function ShoppingListDetailsScreen() {
   const { toast: globalToast } = useGlobalToast();
   const filterTabs = useMemo(
     () => [
-      { key: 'all', label: `All (${data.totalCount})` },
+      { key: 'all', label: t('shoppingLists.allFilter', { count: data.totalCount }) },
       { key: 'unchecked', label: t('shoppingLists.unchecked', { count: data.uncheckedCount }) },
       { key: 'checked', label: t('shoppingLists.checkedSection', { count: data.checkedCount }) },
     ],
@@ -89,44 +103,33 @@ export default function ShoppingListDetailsScreen() {
           onChange={(value) => actions.setFilter(value as typeof state.filter)}
         />
 
-        {state.filter === 'all' ? (
-          data.totalCount === 0 ? (
-            <View style={styles.emptyBlock}>
-              <Text style={styles.emptyTitle}>{t('shoppingLists.noItemsYet')}</Text>
-              <Text style={styles.emptySubtitle}>{t('shoppingLists.addFirstItemSubtitle')}</Text>
-            </View>
-          ) : (
-            <View style={styles.sections}>
-              <SectionBlock
-                title={t('shoppingLists.unchecked', { count: data.uncheckedCount })}
-                items={data.uncheckedItems}
-                onEdit={actions.openEditSheet}
-                onToggle={actions.toggleItem}
-                onDelete={actions.requestDelete}
-              />
-              <SectionBlock
-                title={t('shoppingLists.checkedSection', { count: data.checkedCount })}
-                items={data.checkedItems}
-                onEdit={actions.openEditSheet}
-                onToggle={actions.toggleItem}
-                onDelete={actions.requestDelete}
-              />
-            </View>
-          )
-        ) : data.visibleItems.length === 0 ? (
+        {data.visibleItems.length === 0 ? (
           <View style={styles.emptyBlock}>
-            <Text style={styles.emptyTitle}>{t('shoppingLists.noItemsHere')}</Text>
-            <Text style={styles.emptySubtitle}>{t('shoppingLists.addSomethingSubtitle')}</Text>
+            <Text style={styles.emptyTitle}>
+              {state.filter === 'all'
+                ? t('shoppingLists.noItemsYet')
+                : t('shoppingLists.noItemsHere')}
+            </Text>
+            <Text style={styles.emptySubtitle}>
+              {state.filter === 'all'
+                ? t('shoppingLists.addFirstItemSubtitle')
+                : t('shoppingLists.addSomethingSubtitle')}
+            </Text>
           </View>
         ) : (
-          <View style={styles.list}>
-            {data.visibleItems.map((item) => (
-              <ShoppingListItemRow
-                key={item.id}
-                item={item}
-                onToggle={() => actions.toggleItem(item)}
-                onEdit={() => actions.openEditSheet(item)}
-                onDelete={() => actions.requestDelete(item)}
+          /* Grouped by aisle, in store order — checked items sink within their own section. */
+          <View style={styles.sections}>
+            {data.categorySections.map((section) => (
+              <SectionBlock
+                key={section.category}
+                title={t('shoppingLists.sectionWithCount', {
+                  label: t(CATEGORY_LABEL_KEYS[section.category]),
+                  count: section.items.length,
+                })}
+                items={section.items}
+                onEdit={actions.openEditSheet}
+                onToggle={actions.toggleItem}
+                onDelete={actions.requestDelete}
               />
             ))}
           </View>
@@ -164,6 +167,8 @@ export default function ShoppingListDetailsScreen() {
         onCancel={() => editSheet.setOpen(false)}
         saveLabel={state.isSaving ? t('shoppingLists.saving') : t('shoppingLists.saveChanges')}
         disabled={state.isSaving}
+        category={editSheet.category}
+        onChangeCategory={editSheet.setCategory}
       />
 
       <ShoppingListRenameSheet
@@ -181,7 +186,7 @@ export default function ShoppingListDetailsScreen() {
       <ConfirmSheet
         visible={confirms.deleteOpen}
         title={t('shoppingLists.deleteItem')}
-        description={`Remove ${confirms.deleteLabel} from the list?`}
+        description={t('shoppingLists.removeItemConfirm', { name: confirms.deleteLabel })}
         confirmLabel={t('common.delete')}
         onCancel={() => confirms.setDeleteOpen(false)}
         onConfirm={confirms.confirmDelete}

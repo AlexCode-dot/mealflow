@@ -1,5 +1,6 @@
 package com.mealflow.appapi.shoppingLists.web.mapper;
 
+import com.mealflow.appapi.shoppingLists.domain.ShoppingItemCategory;
 import com.mealflow.appapi.shoppingLists.domain.ShoppingList;
 import com.mealflow.appapi.shoppingLists.domain.ShoppingListItem;
 import com.mealflow.appapi.shoppingLists.domain.ShoppingListStatus;
@@ -51,7 +52,9 @@ public class ShoppingListMapper {
             String userId, String listId, String itemId, UpdateShoppingListItemRequest body) {
         String name = body.name() == null ? null : body.name().trim();
         String unit = body.unit() == null ? null : body.unit().trim();
-        return new UpdateItemArgs(userId, listId, itemId, name, body.quantity(), unit, body.checked());
+        ShoppingItemCategory category =
+                body.category() == null ? null : ShoppingItemCategory.fromValue(body.category());
+        return new UpdateItemArgs(userId, listId, itemId, name, body.quantity(), unit, body.checked(), category);
     }
 
     public ShoppingListResponse toResponse(ShoppingList list) {
@@ -82,7 +85,12 @@ public class ShoppingListMapper {
 
     private ShoppingListItemResponse toResponse(ShoppingListItem item) {
         return new ShoppingListItemResponse(
-                item.getId(), item.getName(), item.getQuantity(), item.getUnit(), item.isChecked());
+                item.getId(),
+                item.getName(),
+                item.getQuantity(),
+                item.getUnit(),
+                item.isChecked(),
+                item.getCategory().value());
     }
 
     public record CreateArgs(String userId, String weeklyPlanId, String title) {}
@@ -92,5 +100,12 @@ public class ShoppingListMapper {
     public record AddItemArgs(String userId, String listId, String name, Double quantity, String unit) {}
 
     public record UpdateItemArgs(
-            String userId, String listId, String itemId, String name, Double quantity, String unit, Boolean checked) {}
+            String userId,
+            String listId,
+            String itemId,
+            String name,
+            Double quantity,
+            String unit,
+            Boolean checked,
+            ShoppingItemCategory category) {}
 }
