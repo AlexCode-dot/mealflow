@@ -9,6 +9,7 @@ import com.mealflow.appapi.recipes.image.ImageKitUploadResult;
 import java.nio.file.Path;
 import java.time.Clock;
 import java.util.List;
+import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -104,14 +105,25 @@ public class ExtractionJobProcessor {
     }
 
     public void processText(String jobId, String transcript, String languageName, String unitSystem) {
+        runDraftJob(jobId, () -> llmExtractor.extractFromText(transcript, languageName, unitSystem));
+    }
+
+    public void processSearch(String jobId, String dishName, String languageName, String unitSystem) {
+        runDraftJob(jobId, () -> llmExtractor.searchByName(dishName, languageName, unitSystem));
+    }
+
+    /**
+     * Shared job handling for the media-less sources (spoken and searched recipes): build the draft,
+     * mark the job ready, and record a failure the review screen can show. There is no source image
+     * for these — the user can add a photo on the review screen.
+     */
+    private void runDraftJob(String jobId, Supplier<RecipeDraft> draftSupplier) {
         ExtractionJob job = jobRepository.findById(jobId).orElse(null);
         if (job == null) {
             return;
         }
         try {
-            RecipeDraft draft = llmExtractor.extractFromText(transcript, languageName, unitSystem);
-            job.setDraft(draft);
-            // No source image for spoken recipes — the user can add a photo on the review screen.
+            job.setDraft(draftSupplier.get());
             job.setStatus(ExtractionStatus.READY);
             job.setUpdatedAt(clock.instant());
             jobRepository.save(job);
@@ -122,7 +134,7 @@ public class ExtractionJobProcessor {
             job.setUpdatedAt(clock.instant());
             jobRepository.save(job);
         } catch (RuntimeException ex) {
-            log.warn("Text extraction job {} failed: {}", jobId, ex.getMessage(), ex);
+            log.warn("Extraction job {} failed: {}", jobId, ex.getMessage(), ex);
             job.setStatus(ExtractionStatus.FAILED);
             job.setErrorCode("INTERNAL");
             job.setErrorMessage("Extraction failed. Please try again.");

@@ -11,6 +11,10 @@ export const extractionApi = {
     return httpClient.appApi.post<ExtractionJob>('/api/recipes/extract/text', { transcript, locale });
   },
 
+  startSearch(query: string, locale?: string): Promise<ExtractionJob> {
+    return httpClient.appApi.post<ExtractionJob>('/api/recipes/extract/search', { query, locale });
+  },
+
   get(jobId: string): Promise<ExtractionJob> {
     return httpClient.appApi.get<ExtractionJob>(`/api/recipes/extract/${jobId}`);
   },

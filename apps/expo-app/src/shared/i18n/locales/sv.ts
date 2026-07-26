@@ -355,10 +355,23 @@ export const sv: Translations = {
       writeItYourself: 'Skriv det själv',
       speakIt: 'Tala in det',
       speakItSubtitle: 'Beskriv receptet med rösten',
+      searchForIt: 'Sök efter det',
+      searchForItSubtitle: 'Hitta en maträtt på namn',
       fromAPhoto: 'Från ett foto',
       fromAPhotoSubtitle: 'Ett eller flera foton av ett recept',
       fromAVideo: 'Från en video',
       fromAVideoSubtitle: 'TikTok, Reel eller kort klipp',
+    },
+
+    search: {
+      title: 'Sök efter ett recept',
+      hint: 'Hört talas om en maträtt? Skriv namnet så skriver vi receptet åt dig.',
+      dishLabel: 'Maträttens namn',
+      placeholder: 't.ex. Marry Me Chicken',
+      cta: 'Hitta recept',
+      searching: 'Letar upp receptet…',
+      disclaimer:
+        'Skrivet av AI utifrån vad den känner till om rätten — mängderna är uppskattningar, så kontrollera dem innan du sparar.',
     },
 
     voice: {

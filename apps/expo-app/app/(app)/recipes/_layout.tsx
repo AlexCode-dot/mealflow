@@ -7,6 +7,7 @@ export default function RecipesLayout() {
       <Stack.Screen name="index" />
       <Stack.Screen name="new" />
       <Stack.Screen name="voice" />
+      <Stack.Screen name="search" />
       <Stack.Screen name="import" />
       <Stack.Screen name="import/[jobId]" />
       <Stack.Screen name="[id]" />
