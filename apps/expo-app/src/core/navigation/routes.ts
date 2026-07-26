@@ -44,6 +44,7 @@ export const routes = {
     }) as Href,
   recipeNew: '/recipes/new' as const,
   recipeVoice: '/recipes/voice' as Href,
+  recipeSearch: '/recipes/search' as Href,
   recipeImport: '/recipes/import' as Href,
   recipeImportReview: (jobId: string, videoUri?: string, videoDurationMs?: number) =>
     ({

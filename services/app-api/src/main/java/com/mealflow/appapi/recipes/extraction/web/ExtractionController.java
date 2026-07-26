@@ -6,6 +6,7 @@ import com.mealflow.appapi.recipes.extraction.service.RecipeExtractionService;
 import com.mealflow.appapi.recipes.extraction.web.dto.AcceptExtractionRequest;
 import com.mealflow.appapi.recipes.extraction.web.dto.ExtractTextRequest;
 import com.mealflow.appapi.recipes.extraction.web.dto.ExtractionJobResponse;
+import com.mealflow.appapi.recipes.extraction.web.dto.SearchRecipeRequest;
 import com.mealflow.appapi.recipes.web.dto.RecipeResponse;
 import com.mealflow.appapi.recipes.web.mapper.RecipeMapper;
 import com.mealflow.appapi.security.config.CurrentUser;
@@ -64,6 +65,17 @@ public class ExtractionController {
             @Valid @RequestBody ExtractTextRequest body, Authentication auth) {
         String userId = currentUser.userId(auth);
         ExtractionJob job = service.enqueueText(userId, body.transcript(), body.locale());
+        ExtractionJobResponse response = extractionMapper.toResponse(job);
+        return ResponseEntity.status(HttpStatus.ACCEPTED)
+                .location(URI.create("/api/recipes/extract/" + job.getId()))
+                .body(response);
+    }
+
+    @PostMapping("/search")
+    public ResponseEntity<ExtractionJobResponse> createFromSearch(
+            @Valid @RequestBody SearchRecipeRequest body, Authentication auth) {
+        String userId = currentUser.userId(auth);
+        ExtractionJob job = service.enqueueSearch(userId, body.query(), body.locale());
         ExtractionJobResponse response = extractionMapper.toResponse(job);
         return ResponseEntity.status(HttpStatus.ACCEPTED)
                 .location(URI.create("/api/recipes/extract/" + job.getId()))
