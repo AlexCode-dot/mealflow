@@ -6,6 +6,7 @@ import com.mealflow.appapi.recipes.extraction.domain.ExtractionStatus;
 import com.mealflow.appapi.recipes.extraction.domain.RecipeDraft;
 import com.mealflow.appapi.recipes.extraction.repository.ExtractionJobRepository;
 import com.mealflow.appapi.recipes.image.ImageKitUploadResult;
+import com.mealflow.appapi.recipes.image.PexelsClient;
 import java.nio.file.Path;
 import java.time.Clock;
 import java.util.List;
@@ -24,6 +25,7 @@ public class ExtractionJobProcessor {
     private final VideoFrameExtractor frameExtractor;
     private final LlmRecipeExtractor llmExtractor;
     private final ExtractionThumbnailService thumbnailService;
+    private final PexelsClient pexelsClient;
     private final Clock clock;
 
     public ExtractionJobProcessor(
@@ -32,12 +34,14 @@ public class ExtractionJobProcessor {
             VideoFrameExtractor frameExtractor,
             LlmRecipeExtractor llmExtractor,
             ExtractionThumbnailService thumbnailService,
+            PexelsClient pexelsClient,
             Clock clock) {
         this.jobRepository = jobRepository;
         this.mediaIngest = mediaIngest;
         this.frameExtractor = frameExtractor;
         this.llmExtractor = llmExtractor;
         this.thumbnailService = thumbnailService;
+        this.pexelsClient = pexelsClient;
         this.clock = clock;
     }
 
@@ -114,8 +118,8 @@ public class ExtractionJobProcessor {
 
     /**
      * Shared job handling for the media-less sources (spoken and searched recipes): build the draft,
-     * mark the job ready, and record a failure the review screen can show. There is no source image
-     * for these — the user can add a photo on the review screen.
+     * look up an illustrative photo for it, mark the job ready, and record a failure the review
+     * screen can show. The user can still swap the photo out on the review screen.
      */
     private void runDraftJob(String jobId, Supplier<RecipeDraft> draftSupplier) {
         ExtractionJob job = jobRepository.findById(jobId).orElse(null);
@@ -123,7 +127,9 @@ public class ExtractionJobProcessor {
             return;
         }
         try {
-            job.setDraft(draftSupplier.get());
+            RecipeDraft draft = draftSupplier.get();
+            job.setDraft(draft);
+            job.setThumbnailUrl(findIllustrativePhoto(draft));
             job.setStatus(ExtractionStatus.READY);
             job.setUpdatedAt(clock.instant());
             jobRepository.save(job);
@@ -141,6 +147,20 @@ public class ExtractionJobProcessor {
             job.setUpdatedAt(clock.instant());
             jobRepository.save(job);
         }
+    }
+
+    /**
+     * A stock photo of the kind of dish, for recipes with no picture of their own. Deliberately
+     * best-effort: the recipe is worth saving without a photo, so a miss just leaves it image-less.
+     *
+     * <p>No thumbnailFileId is set — the image is hosted by Pexels rather than uploaded to
+     * ImageKit, so there is nothing of ours to clean up if the user replaces it.
+     */
+    private String findIllustrativePhoto(RecipeDraft draft) {
+        if (draft == null) {
+            return null;
+        }
+        return pexelsClient.findPhotoUrl(draft.getPhotoQuery());
     }
 
     private String imageMediaType(String contentType) {

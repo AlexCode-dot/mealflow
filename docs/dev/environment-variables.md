@@ -82,6 +82,10 @@ Defined in `services/app-api/src/main/resources/application.properties`.
 | `APP_IMAGES_MAX_PER_DAY` | No | Max image uploads per user per day | `20` |
 | `APP_IMAGES_ALLOWED_TYPES` | No | Comma-separated allowed MIME types | `image/jpeg,image/png,image/webp,image/heic` |
 | `APP_IMAGES_MAX_UPLOAD_SIZE` | No | Multipart limit (e.g. `10MB`) | `10MB` |
+| `APP_IMAGES_EXTERNAL_ALLOWED_HOSTS` | No | Hosts a recipe may reference an image on directly. Must include `images.pexels.com` for spoken/searched recipe photos to save | `www.themealdb.com,images.pexels.com` |
+| `PEXELS_API_KEY` | Yes (for spoken/searched recipe photos) | Pexels API key. Unset = those recipes are saved without a photo | none |
+| `PEXELS_BASE_URL` | No | Pexels API base URL | `https://api.pexels.com` |
+| `PEXELS_REQUEST_TIMEOUT_SECONDS` | No | Timeout for the photo lookup; a slow reply is abandoned rather than delaying the draft | `5` |
 | `IMAGEKIT_PRIVATE_KEY` | Yes (for uploads) | ImageKit private API key | none |
 | `IMAGEKIT_PUBLIC_KEY` | Yes (for uploads) | ImageKit public API key | none |
 | `IMAGEKIT_URL_ENDPOINT` | Yes (for uploads) | ImageKit URL endpoint (cdn) | none |

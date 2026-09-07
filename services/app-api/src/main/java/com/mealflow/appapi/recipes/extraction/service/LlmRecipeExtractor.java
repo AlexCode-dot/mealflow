@@ -56,6 +56,20 @@ public class LlmRecipeExtractor {
             }
             """;
 
+    /**
+     * Only the media-less flows ask for this. Photo and video extractions already have a real
+     * picture of the user's own dish, so a stock photo would replace something better.
+     */
+    private static final String PHOTO_QUERY_RULE =
+            "\n\nIn ADDITION to the fields in the schema above, include one more field:\n"
+                    + "  \"photoQuery\": string\n"
+                    + "It is a stock-photo search phrase for the FINISHED dish, used to illustrate the recipe.\n"
+                    + "- Always write it in ENGLISH, whatever language the recipe itself is in.\n"
+                    + "- Describe what the plated dish looks like, not its name: 3-6 words naming the main"
+                    + " ingredient and form (e.g. \"creamy sun-dried tomato chicken skillet\","
+                    + " \"swedish meatballs with mashed potatoes\", \"sticky chocolate cake slice\").\n"
+                    + "- Do not include brand names, people, quantities or the word \"recipe\".";
+
     private static final String SYSTEM_PROMPT =
             "You are a recipe extractor. The user has provided one or more images from a cooking video or a recipe photo.\n\n"
                     + EXTRACTION_RULES;
@@ -70,13 +84,15 @@ public class LlmRecipeExtractor {
                     + " as an estimate: set \"estimated\" to true on every ingredient and list each ingredient"
                     + " name, plus 'cookingTimeMinutes' and 'portions', in uncertainFields. The user reviews and"
                     + " corrects the result before saving.\n\n"
-                    + EXTRACTION_RULES;
+                    + EXTRACTION_RULES
+                    + PHOTO_QUERY_RULE;
 
     private static final String TEXT_SYSTEM_PROMPT =
             "You are a recipe extractor. The user dictated a recipe out loud; the text below is a transcript of what they"
                     + " said. It may be casual and conversational, in any language, and contain filler words or asides —"
                     + " ignore anything that isn't part of the recipe.\n\n"
-                    + EXTRACTION_RULES;
+                    + EXTRACTION_RULES
+                    + PHOTO_QUERY_RULE;
 
     private final AnthropicClient anthropicClient;
     private final AnthropicProperties anthropicProperties;
@@ -183,6 +199,7 @@ public class LlmRecipeExtractor {
             draft.setPortions(intOrNull(root.path("portions")));
             draft.setCategory(textOrNull(root.path("category")));
             draft.setLanguage(textOrNull(root.path("languageDetected")));
+            draft.setPhotoQuery(textOrNull(root.path("photoQuery")));
             draft.setSteps(stringList(root.path("steps")));
             draft.setUncertainFields(stringList(root.path("uncertainFields")));
 
