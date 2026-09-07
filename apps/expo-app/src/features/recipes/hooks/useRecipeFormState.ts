@@ -15,6 +15,7 @@ type Values = {
   time: string;
   portions: string;
   category: string;
+  tags: string[];
 };
 
 type ApiValues = {
@@ -25,6 +26,7 @@ type ApiValues = {
   cookingTimeMinutes: number | null;
   portions: number | null;
   category: string | null;
+  tags: string[];
 };
 
 export function useRecipeFormState(initial?: Partial<Values>) {
@@ -35,6 +37,7 @@ export function useRecipeFormState(initial?: Partial<Values>) {
   const [time, setTime] = useState(initial?.time ?? '');
   const [portions, setPortions] = useState(initial?.portions ?? '');
   const [category, setCategory] = useState(initial?.category ?? '');
+  const [tags, setTags] = useState<string[]>(initial?.tags ?? []);
   const [touched, setTouched] = useState<Touched>({ title: false, description: false });
 
   const errors = useMemo(() => validateRecipeBasics(title, description), [title, description]);
@@ -59,6 +62,7 @@ export function useRecipeFormState(initial?: Partial<Values>) {
     if (next.time !== undefined) setTime(next.time);
     if (next.portions !== undefined) setPortions(next.portions);
     if (next.category !== undefined) setCategory(next.category);
+    if (next.tags !== undefined) setTags(next.tags);
     if (resetTouched) setTouched({ title: false, description: false });
   }, []);
 
@@ -79,6 +83,7 @@ export function useRecipeFormState(initial?: Partial<Values>) {
               ? String(recipe.portions)
               : '',
           category: recipe.category ?? '',
+          tags: recipe.tags ?? [],
         },
         true,
       );
@@ -102,8 +107,9 @@ export function useRecipeFormState(initial?: Partial<Values>) {
       cookingTimeMinutes: Number.isNaN(cookingTimeMinutes) ? null : cookingTimeMinutes,
       portions: Number.isNaN(portionsValue) ? null : portionsValue,
       category: category ? category : null,
+      tags,
     };
-  }, [category, description, imageFileId, imageUrl, portions, time, title]);
+  }, [category, description, imageFileId, imageUrl, portions, tags, time, title]);
 
   return {
     title,
@@ -120,6 +126,8 @@ export function useRecipeFormState(initial?: Partial<Values>) {
     setPortions,
     category,
     setCategory,
+    tags,
+    setTags,
     touched,
     setTouched,
     errors,

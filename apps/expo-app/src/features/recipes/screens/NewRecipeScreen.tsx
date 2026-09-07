@@ -35,6 +35,8 @@ import {
   RecipeEditorPickers,
 } from '@/src/features/recipes/ui';
 import { Plus, Download, XCircle } from 'lucide-react-native';
+import { RecipeTagEditor } from '@/src/features/recipes/ui/RecipeTagEditor';
+import { useRecipeTagSuggestions } from '@/src/features/recipes/hooks/useRecipeTagSuggestions';
 import { TAB_BAR } from '@/src/shared/ui/layout/tabBar';
 import { routes } from '@/src/core/navigation/routes';
 import { normalizePath } from '@/src/core/navigation/normalizePath';
@@ -49,6 +51,7 @@ export function NewRecipeScreen() {
   const view = useCreateRecipe();
   const { state, form, data, actions } = view;
   const editorState = useRecipeEditorUiState();
+  const tagSuggestions = useRecipeTagSuggestions();
   const [showRemoveImage, setShowRemoveImage] = useState(false);
   const isKeyboardOpen = useKeyboardOpen();
   const { pickImage, isUploading } = useRecipeImagePicker({
@@ -196,7 +199,8 @@ export function NewRecipeScreen() {
           <RecipeEditorShell tab={editorState.tab} onTabChange={editorState.setTab}>
             {state.serverError ? <ErrorText>{state.serverError}</ErrorText> : null}
             {editorState.tab === 'basic' ? (
-              <RecipeEditorBasics
+              <>
+                <RecipeEditorBasics
                 title={form.title}
                 onTitleChange={(v) => form.setTitle(v)}
                 titleInputRef={titleInputRef}
@@ -218,6 +222,12 @@ export function NewRecipeScreen() {
                 category={form.category}
                 onOpenPicker={editorState.setPickerOpen}
               />
+                <RecipeTagEditor
+                  tags={form.tags}
+                  onChange={form.setTags}
+                  suggestions={tagSuggestions}
+                />
+            </>
             ) : null}
 
             {editorState.tab === 'ingredients' ? (

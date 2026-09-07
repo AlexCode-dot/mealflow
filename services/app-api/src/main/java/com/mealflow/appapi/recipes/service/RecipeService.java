@@ -7,7 +7,10 @@ import com.mealflow.appapi.recipes.repository.RecipeRepository;
 import java.net.URI;
 import java.time.Clock;
 import java.time.Instant;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -16,6 +19,8 @@ import org.springframework.stereotype.Service;
 public class RecipeService {
     private static final int DEFAULT_PAGE_LIMIT = 24;
     private static final int MAX_PAGE_LIMIT = 100;
+    private static final int MAX_TAG_LENGTH = 40;
+    private static final int MAX_TAGS_PER_RECIPE = 10;
 
     private final RecipeRepository recipeRepository;
     private final RecipeImageService imageService;
@@ -72,33 +77,7 @@ public class RecipeService {
             Integer cookingTimeMinutes,
             Integer portions,
             String category,
-            boolean fromExternal) {
-        return create(
-                userId,
-                title,
-                description,
-                imageUrl,
-                imageFileId,
-                ingredients,
-                steps,
-                cookingTimeMinutes,
-                portions,
-                category,
-                fromExternal,
-                null);
-    }
-
-    public Recipe create(
-            String userId,
-            String title,
-            String description,
-            String imageUrl,
-            String imageFileId,
-            List<Ingredient> ingredients,
-            List<String> steps,
-            Integer cookingTimeMinutes,
-            Integer portions,
-            String category,
+            List<String> tags,
             boolean fromExternal,
             String language) {
 
@@ -120,6 +99,7 @@ public class RecipeService {
                 language,
                 now,
                 now);
+        recipe.setTags(normalizeTags(tags));
 
         return recipeRepository.save(recipe);
     }
@@ -136,35 +116,7 @@ public class RecipeService {
             Integer cookingTimeMinutes,
             Integer portions,
             String category,
-            Boolean fromExternal) {
-        return patch(
-                userId,
-                recipeId,
-                title,
-                description,
-                imageUrl,
-                imageFileId,
-                ingredients,
-                steps,
-                cookingTimeMinutes,
-                portions,
-                category,
-                fromExternal,
-                null);
-    }
-
-    public Recipe patch(
-            String userId,
-            String recipeId,
-            String title,
-            String description,
-            String imageUrl,
-            String imageFileId,
-            List<Ingredient> ingredients,
-            List<String> steps,
-            Integer cookingTimeMinutes,
-            Integer portions,
-            String category,
+            List<String> tags,
             Boolean fromExternal,
             String language) {
 
@@ -187,6 +139,7 @@ public class RecipeService {
                 cookingTimeMinutes,
                 portions,
                 category,
+                tags == null ? null : normalizeTags(tags),
                 fromExternal,
                 language,
                 clock.instant());
@@ -294,5 +247,42 @@ public class RecipeService {
         if (host == null || allowedHosts.stream().noneMatch(allowed -> allowed.equalsIgnoreCase(host))) {
             throw new RecipeValidationException("External image host is not allowed.");
         }
+    }
+
+    /**
+     * Clean up user-entered tags: trim, drop blanks, de-duplicate case-insensitively (keeping the
+     * first spelling the user typed) and cap the count so one recipe can't collect hundreds.
+     */
+    private List<String> normalizeTags(List<String> tags) {
+        if (tags == null) {
+            return List.of();
+        }
+        Map<String, String> byLowercase = new LinkedHashMap<>();
+        for (String raw : tags) {
+            if (raw == null) {
+                continue;
+            }
+            String trimmed = raw.trim();
+            if (trimmed.isEmpty() || trimmed.length() > MAX_TAG_LENGTH) {
+                continue;
+            }
+            byLowercase.putIfAbsent(trimmed.toLowerCase(Locale.ROOT), trimmed);
+        }
+        return byLowercase.values().stream().limit(MAX_TAGS_PER_RECIPE).toList();
+    }
+
+    /** Every distinct tag this user has used, for filter options and input suggestions. */
+    public List<String> listTagsForUser(String userId) {
+        Map<String, String> byLowercase = new LinkedHashMap<>();
+        for (Recipe recipe : recipeRepository.findAllByUserIdOrderByCreatedAtDesc(userId)) {
+            for (String tag : recipe.getTags()) {
+                if (tag != null && !tag.isBlank()) {
+                    byLowercase.putIfAbsent(tag.toLowerCase(Locale.ROOT), tag.trim());
+                }
+            }
+        }
+        return byLowercase.values().stream()
+                .sorted(String.CASE_INSENSITIVE_ORDER)
+                .toList();
     }
 }

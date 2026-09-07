@@ -28,6 +28,9 @@ public class Recipe {
     private Integer portions;
     private String category;
 
+    /** User-defined labels (e.g. "vegetariskt", "barnmat") — free-form, several per recipe. */
+    private List<String> tags = new ArrayList<>();
+
     private boolean fromExternal = false;
 
     private String language;
@@ -79,6 +82,7 @@ public class Recipe {
             Integer cookingTimeMinutes,
             Integer portions,
             String category,
+            List<String> tags,
             Boolean fromExternal,
             String language,
             Instant now) {
@@ -108,6 +112,9 @@ public class Recipe {
         }
         if (category != null) {
             this.category = category;
+        }
+        if (tags != null) {
+            this.tags = tags;
         }
         if (fromExternal != null) {
             this.fromExternal = fromExternal;
@@ -202,6 +209,15 @@ public class Recipe {
 
     public void setCategory(String category) {
         this.category = category;
+    }
+
+    /** Never null — recipes stored before tags existed read back as an empty list. */
+    public List<String> getTags() {
+        return tags == null ? new ArrayList<>() : tags;
+    }
+
+    public void setTags(List<String> tags) {
+        this.tags = tags != null ? tags : new ArrayList<>();
     }
 
     public boolean isFromExternal() {

@@ -16,4 +16,5 @@ public record CreateRecipeRequest(
         @Min(0) Integer cookingTimeMinutes,
         @Min(0) Integer portions,
         @Size(max = 80) String category,
+        List<@NotBlank @Size(max = 40) String> tags,
         Boolean fromExternal) {}

@@ -350,6 +350,13 @@ export const sv: Translations = {
     extractionNotReady: 'Extraheringen är inte klar än.',
     extractionNoDraft: 'Extraheringen har inget utkast.',
 
+    tags: {
+      label: 'Taggar',
+      placeholder: 't.ex. vegetariskt, barnmat',
+      suggestions: 'Taggar du har använt',
+      filterTitle: 'Taggar',
+    },
+
     addRecipeSheet: {
       title: 'Lägg till recept',
       writeItYourself: 'Skriv det själv',

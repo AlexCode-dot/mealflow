@@ -39,6 +39,7 @@ public class RecipeMapper {
                 body.cookingTimeMinutes(),
                 body.portions(),
                 category,
+                body.tags(),
                 fromExternal);
     }
 
@@ -65,6 +66,7 @@ public class RecipeMapper {
                 body.cookingTimeMinutes(),
                 body.portions(),
                 category,
+                body.tags(),
                 body.fromExternal());
     }
 
@@ -80,6 +82,7 @@ public class RecipeMapper {
                 r.getCookingTimeMinutes(),
                 r.getPortions(),
                 r.getCategory(),
+                r.getTags(),
                 r.isFromExternal(),
                 r.getLanguage(),
                 r.getCreatedAt(),
@@ -102,6 +105,7 @@ public class RecipeMapper {
                 r.getPortions(),
                 ingredientNames,
                 r.getCategory(),
+                r.getTags(),
                 r.isFromExternal());
     }
 
@@ -126,6 +130,7 @@ public class RecipeMapper {
             Integer cookingTimeMinutes,
             Integer portions,
             String category,
+            List<String> tags,
             boolean fromExternal) {}
 
     public record PatchArgs(
@@ -140,5 +145,6 @@ public class RecipeMapper {
             Integer cookingTimeMinutes,
             Integer portions,
             String category,
+            List<String> tags,
             Boolean fromExternal) {}
 }

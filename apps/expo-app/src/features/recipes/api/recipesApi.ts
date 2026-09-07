@@ -8,10 +8,16 @@ import type {
 } from '@/src/features/recipes/types';
 
 export const recipesApi = {
-  list(params?: { limit?: number; offset?: number }): Promise<RecipeListItem[]> {
+  /** Distinct tags the user has used — for filter options and input suggestions. */
+  tags(): Promise<string[]> {
+    return httpClient.appApi.get<string[]>('/api/recipes/tags');
+  },
+
+  list(params?: { limit?: number; offset?: number; tags?: string[] }): Promise<RecipeListItem[]> {
     const search = new URLSearchParams();
     if (params?.limit != null) search.set('limit', String(params.limit));
     if (params?.offset != null) search.set('offset', String(params.offset));
+    params?.tags?.forEach((tag) => search.append('tag', tag));
     const query = search.toString();
     return httpClient.appApi.get<RecipeListItem[]>(`/api/recipes${query ? `?${query}` : ''}`);
   },

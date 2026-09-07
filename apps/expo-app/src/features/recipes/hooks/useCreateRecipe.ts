@@ -27,6 +27,8 @@ export type CreateRecipeForm = {
   setPortions: (value: string) => void;
   category: string;
   setCategory: (value: string) => void;
+  tags: string[];
+  setTags: (value: string[]) => void;
   touched: ReturnType<typeof useRecipeFormState>['touched'];
   setTouched: ReturnType<typeof useRecipeFormState>['setTouched'];
   errors: ReturnType<typeof useRecipeFormState>['errors'];
@@ -73,6 +75,8 @@ export function useCreateRecipe(): CreateRecipeView {
     setPortions,
     category,
     setCategory,
+    tags,
+    setTags,
     touched,
     setTouched,
     errors,
@@ -140,6 +144,8 @@ export function useCreateRecipe(): CreateRecipeView {
       setPortions,
       category,
       setCategory,
+      tags,
+      setTags,
       touched,
       setTouched,
       errors,
@@ -159,6 +165,8 @@ export function useCreateRecipe(): CreateRecipeView {
       setPortions,
       category,
       setCategory,
+      tags,
+      setTags,
       touched,
       setTouched,
       errors,

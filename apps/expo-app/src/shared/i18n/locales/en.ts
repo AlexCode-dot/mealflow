@@ -347,6 +347,13 @@ export const en = {
     extractionNotReady: 'Extraction is not ready yet.',
     extractionNoDraft: 'Extraction has no draft.',
 
+    tags: {
+      label: 'Tags',
+      placeholder: 'e.g. vegetarian, kid-friendly',
+      suggestions: 'Tags you have used',
+      filterTitle: 'Tags',
+    },
+
     addRecipeSheet: {
       title: 'Add a recipe',
       writeItYourself: 'Write it yourself',

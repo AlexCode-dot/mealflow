@@ -17,6 +17,7 @@ export type RecipeListItem = {
   portions?: number | null;
   ingredientNames?: string[] | null;
   category?: string | null;
+  tags?: string[] | null;
   fromExternal: boolean;
 };
 
@@ -31,6 +32,8 @@ export type Recipe = {
   cookingTimeMinutes?: number | null;
   portions?: number | null;
   category?: string | null;
+  /** User-defined labels, e.g. "vegetariskt", "barnmat". */
+  tags?: string[] | null;
   fromExternal: boolean;
   createdAt: string;
   updatedAt: string;
@@ -46,6 +49,7 @@ export type CreateRecipeRequest = {
   cookingTimeMinutes?: number | null;
   portions?: number | null;
   category?: string | null;
+  tags?: string[];
   fromExternal?: boolean;
 };
 
@@ -59,6 +63,7 @@ export type UpdateRecipeRequest = {
   cookingTimeMinutes?: number | null;
   portions?: number | null;
   category?: string | null;
+  tags?: string[];
   fromExternal?: boolean | null;
 };
 

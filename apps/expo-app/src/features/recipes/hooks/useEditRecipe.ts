@@ -30,6 +30,8 @@ export type EditRecipeForm = {
   setPortions: (value: string) => void;
   category: string;
   setCategory: (value: string) => void;
+  tags: string[];
+  setTags: (value: string[]) => void;
   touched: ReturnType<typeof useRecipeFormState>['touched'];
   setTouched: ReturnType<typeof useRecipeFormState>['setTouched'];
   errors: ReturnType<typeof useRecipeFormState>['errors'];
@@ -75,6 +77,7 @@ export function useEditRecipe(id: string): EditRecipeView {
     time,
     portions,
     category,
+    tags,
     errors,
     touched,
     setTouched,
@@ -85,6 +88,7 @@ export function useEditRecipe(id: string): EditRecipeView {
     setTime,
     setPortions,
     setCategory,
+    setTags,
   } = form;
   const [ingredients, setIngredients] = useState<IngredientDto[]>([]);
   const [steps, setSteps] = useState<string[]>([]);
@@ -199,6 +203,8 @@ export function useEditRecipe(id: string): EditRecipeView {
       setPortions,
       category,
       setCategory,
+      tags,
+      setTags,
       touched,
       setTouched,
       errors,
@@ -218,6 +224,8 @@ export function useEditRecipe(id: string): EditRecipeView {
       setPortions,
       category,
       setCategory,
+      tags,
+      setTags,
       touched,
       setTouched,
       errors,

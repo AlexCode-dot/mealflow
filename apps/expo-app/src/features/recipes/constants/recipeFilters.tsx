@@ -22,6 +22,12 @@ export const buildSavedFilters = (theme: Theme, t: TFunction): FilterSection[] =
     ],
   },
   {
+    key: 'tags',
+    title: t('recipes.tags.filterTitle'),
+    type: 'tags',
+    placeholder: t('recipes.tags.placeholder'),
+  },
+  {
     key: 'ingredients',
     title: t('recipes.filters.ingredients'),
     type: 'tags',

@@ -68,6 +68,15 @@ export function useRecipeListView({ savedItems }: Args) {
       });
     }
 
+    // Recipe must carry every selected tag (case-insensitive).
+    const tagFilters = (savedFilters.tags ?? []).map((tag) => tag.toLowerCase());
+    if (tagFilters.length) {
+      filtered = filtered.filter((r) => {
+        const owned = (r.tags ?? []).map((tag) => tag.toLowerCase());
+        return tagFilters.every((tag) => owned.includes(tag));
+      });
+    }
+
     const timeFilter = savedFilters.time?.[0];
     if (timeFilter && timeFilter !== '0') {
       const targetMinutes = Number(timeFilter);
