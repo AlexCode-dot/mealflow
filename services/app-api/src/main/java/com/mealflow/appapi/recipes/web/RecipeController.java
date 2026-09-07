@@ -43,6 +43,12 @@ public class RecipeController {
                 .toList();
     }
 
+    /** Distinct tags the user has used — powers the filter options and input suggestions. */
+    @GetMapping("/tags")
+    public List<String> tags(Authentication auth) {
+        return recipeService.listTagsForUser(currentUser.userId(auth));
+    }
+
     @GetMapping("/{id}")
     public RecipeResponse get(@PathVariable String id, Authentication auth) {
         String userId = currentUser.userId(auth);
@@ -65,7 +71,9 @@ public class RecipeController {
                 args.cookingTimeMinutes(),
                 args.portions(),
                 args.category(),
-                args.fromExternal());
+                args.tags(),
+                args.fromExternal(),
+                null);
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .location(URI.create("/api/recipes/" + created.getId()))
@@ -90,7 +98,9 @@ public class RecipeController {
                 args.cookingTimeMinutes(),
                 args.portions(),
                 args.category(),
-                args.fromExternal());
+                args.tags(),
+                args.fromExternal(),
+                null);
 
         return mapper.toResponse(updated);
     }

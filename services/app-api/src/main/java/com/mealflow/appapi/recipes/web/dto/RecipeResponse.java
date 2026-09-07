@@ -14,6 +14,7 @@ public record RecipeResponse(
         Integer cookingTimeMinutes,
         Integer portions,
         String category,
+        List<String> tags,
         boolean fromExternal,
         String language,
         Instant createdAt,

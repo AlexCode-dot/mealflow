@@ -10,4 +10,5 @@ public record RecipeListItemResponse(
         Integer portions,
         java.util.List<String> ingredientNames,
         String category,
+        java.util.List<String> tags,
         boolean fromExternal) {}

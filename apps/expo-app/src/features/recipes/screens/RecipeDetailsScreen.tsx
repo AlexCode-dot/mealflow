@@ -7,6 +7,7 @@ import { Clock3, ShoppingBasket, Utensils, Users, Pencil, Trash2 } from 'lucide-
 import {
   Screen,
   Shimmer,
+  Chip,
   IconStatRow,
   ConfirmSheet,
   ToastBanner,
@@ -347,6 +348,14 @@ export function RecipeDetailsScreen() {
                   {t('recipes.noDescriptionYet')}
                 </Text>
               )}
+
+              {state.recipe?.tags?.length ? (
+                <View style={styles.tagRow}>
+                  {state.recipe.tags.map((tag) => (
+                    <Chip key={tag} label={tag} variant="recipes" size="compact" />
+                  ))}
+                </View>
+              ) : null}
             </View>
 
             <View style={styles.panel}>
@@ -488,6 +497,13 @@ const createStyles = (theme: Theme) =>
       color: theme.colors.primaryDark,
       fontSize: 12,
       fontWeight: '700',
+    },
+    tagRow: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      justifyContent: 'center',
+      gap: theme.spacing.s2,
+      marginTop: theme.spacing.s2,
     },
     summary: {
       padding: theme.spacing.s4,

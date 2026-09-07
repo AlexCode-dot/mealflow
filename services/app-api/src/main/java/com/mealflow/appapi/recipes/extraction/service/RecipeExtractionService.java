@@ -201,6 +201,7 @@ public class RecipeExtractionService {
                 request.cookingTimeMinutes(),
                 request.portions(),
                 request.category(),
+                List.of(),
                 true,
                 job.getLocale());
 

@@ -33,6 +33,8 @@ import {
   RecipeEditorPickers,
 } from '@/src/features/recipes/ui';
 import { Plus, Download, XCircle } from 'lucide-react-native';
+import { RecipeTagEditor } from '@/src/features/recipes/ui/RecipeTagEditor';
+import { useRecipeTagSuggestions } from '@/src/features/recipes/hooks/useRecipeTagSuggestions';
 import { TAB_BAR } from '@/src/shared/ui/layout/tabBar';
 import { routes } from '@/src/core/navigation/routes';
 
@@ -53,6 +55,7 @@ export function EditRecipeScreen() {
 
   const [refreshing, setRefreshing] = useState(false);
   const editorState = useRecipeEditorUiState();
+  const tagSuggestions = useRecipeTagSuggestions();
 
   const ingredientRows = useMemo(() => data.ingredients ?? [], [data.ingredients]);
   const stepRows = useMemo(() => data.steps ?? [], [data.steps]);
@@ -187,7 +190,8 @@ export function EditRecipeScreen() {
             {state.saveError ? <ErrorText>{state.saveError}</ErrorText> : null}
 
             {editorState.tab === 'basic' ? (
-              <RecipeEditorBasics
+              <>
+                <RecipeEditorBasics
                 title={form.title}
                 onTitleChange={(v) => form.setTitle(v)}
                 onTitleBlur={() => form.setTouched((prev) => ({ ...prev, title: true }))}
@@ -203,6 +207,12 @@ export function EditRecipeScreen() {
                 category={form.category}
                 onOpenPicker={editorState.setPickerOpen}
               />
+                <RecipeTagEditor
+                  tags={form.tags}
+                  onChange={form.setTags}
+                  suggestions={tagSuggestions}
+                />
+            </>
             ) : null}
 
             {editorState.tab === 'ingredients' ? (
