@@ -34,6 +34,7 @@ export type RecipeExtractionActions = {
   startFromImage: () => Promise<void>;
   startFromVideo: () => Promise<void>;
   startFromText: (transcript: string) => Promise<void>;
+  startFromSearch: (query: string) => Promise<void>;
   reset: () => void;
 };
 
@@ -287,6 +288,29 @@ export function useRecipeExtraction(): {
     [beginPolling, i18n, showError],
   );
 
+  const startFromSearch = useCallback(
+    async (query: string) => {
+      setError(null);
+      setPhase('processing');
+      cancelledRef.current = false;
+      try {
+        const created = await extractionApi.startSearch(query, i18n.language);
+        if (cancelledRef.current) return;
+        setJob(created);
+        await beginPolling(created.jobId);
+      } catch (err) {
+        if (cancelledRef.current) return;
+        const apiErr = toApiError(err);
+        const uiErr = mapCommonError(apiErr);
+        const message = apiErr.kind === 'http' && apiErr.detail ? apiErr.detail : uiErr.message;
+        setError(message);
+        setPhase('failed');
+        showError({ kind: uiErr.kind, message });
+      }
+    },
+    [beginPolling, i18n, showError],
+  );
+
   const state = useMemo<RecipeExtractionState>(
     () => ({ phase, job, error, videoUri, videoDurationMs }),
     [phase, job, error, videoUri, videoDurationMs],
@@ -297,9 +321,10 @@ export function useRecipeExtraction(): {
       startFromImage,
       startFromVideo,
       startFromText,
+      startFromSearch,
       reset,
     }),
-    [reset, startFromImage, startFromVideo, startFromText],
+    [reset, startFromImage, startFromVideo, startFromText, startFromSearch],
   );
 
   return { state, actions };

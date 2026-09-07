@@ -139,6 +139,34 @@ public class RecipeExtractionService {
         return job;
     }
 
+    /** Look up a dish by name and let the model write the recipe for it. */
+    public ExtractionJob enqueueSearch(String userId, String query, String locale) {
+        if (query == null || query.isBlank()) {
+            throw new ExtractionValidationException("Enter a dish to search for.");
+        }
+        quotaService.enforce(userId);
+
+        ExtractionLocaleResolver.Resolved resolved = localeResolver.resolve(locale);
+
+        ExtractionJob job = new ExtractionJob(
+                userId,
+                ExtractionSourceType.TEXT,
+                ExtractionStatus.PROCESSING,
+                "text/plain",
+                (long) query.length(),
+                resolved.languageCode(),
+                resolved.unitSystem(),
+                clock.instant());
+        job = jobRepository.save(job);
+
+        String jobId = job.getId();
+        String dishName = query.trim();
+        String languageName = resolved.languageName();
+        String unitSystem = resolved.unitSystem();
+        extractionExecutor.execute(() -> jobProcessor.processSearch(jobId, dishName, languageName, unitSystem));
+        return job;
+    }
+
     public ExtractionJob getJob(String userId, String jobId) {
         return jobRepository
                 .findByIdAndUserId(jobId, userId)

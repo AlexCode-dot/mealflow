@@ -352,10 +352,23 @@ export const en = {
       writeItYourself: 'Write it yourself',
       speakIt: 'Speak it',
       speakItSubtitle: 'Describe the recipe out loud',
+      searchForIt: 'Search for it',
+      searchForItSubtitle: 'Find a dish by name',
       fromAPhoto: 'From a photo',
       fromAPhotoSubtitle: 'One or more photos of a recipe',
       fromAVideo: 'From a video',
       fromAVideoSubtitle: 'TikTok, Reel or short clip',
+    },
+
+    search: {
+      title: 'Search for a recipe',
+      hint: 'Heard about a dish somewhere? Type its name and we\'ll write the recipe for it.',
+      dishLabel: 'Dish name',
+      placeholder: 'e.g. Marry Me Chicken',
+      cta: 'Find recipe',
+      searching: 'Looking up the recipe…',
+      disclaimer:
+        'Written by AI from what it knows about the dish — amounts are estimates, so check them before saving.',
     },
 
     voice: {

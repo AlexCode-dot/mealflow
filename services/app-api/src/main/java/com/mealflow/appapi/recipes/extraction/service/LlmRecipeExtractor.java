@@ -60,6 +60,18 @@ public class LlmRecipeExtractor {
             "You are a recipe extractor. The user has provided one or more images from a cooking video or a recipe photo.\n\n"
                     + EXTRACTION_RULES;
 
+    private static final String SEARCH_SYSTEM_PROMPT =
+            "You are a recipe reference. The user names a dish they want to cook — you write the recipe"
+                    + " for it from what you know about that dish.\n\n"
+                    + "Write the version a home cook would recognise as the classic take on it. If the name is"
+                    + " ambiguous, pick the most widely known dish by that name. If you don't actually know the"
+                    + " dish, do NOT invent one: return a title of \"\" and empty ingredients and steps.\n\n"
+                    + "Because you are recalling this rather than reading it from a source, treat every quantity"
+                    + " as an estimate: set \"estimated\" to true on every ingredient and list each ingredient"
+                    + " name, plus 'cookingTimeMinutes' and 'portions', in uncertainFields. The user reviews and"
+                    + " corrects the result before saving.\n\n"
+                    + EXTRACTION_RULES;
+
     private static final String TEXT_SYSTEM_PROMPT =
             "You are a recipe extractor. The user dictated a recipe out loud; the text below is a transcript of what they"
                     + " said. It may be casual and conversational, in any language, and contain filler words or asides —"
@@ -125,6 +137,39 @@ public class LlmRecipeExtractor {
             throw new ExtractionValidationException("Could not build a recipe from what you said. Try again.");
         }
         return parse(text);
+    }
+
+    /**
+     * Write the recipe for a dish the user named. The model recalls it rather than reading a source,
+     * so the prompt marks every amount as estimated — the review screen then flags them for the user.
+     */
+    public RecipeDraft searchByName(String dishName, String outputLanguageName, String unitSystem) {
+        if (dishName == null || dishName.isBlank()) {
+            throw new ExtractionValidationException("Enter a dish to search for.");
+        }
+
+        List<ContentBlock> userBlocks = List.of(ContentBlock.text(
+                "Dish: " + dishName + "\n\nWrite the recipe for this dish according to the rules. Output JSON only."));
+
+        AnthropicMessageRequest request = new AnthropicMessageRequest(
+                anthropicProperties.getModel(),
+                anthropicProperties.getMaxTokens(),
+                String.format(Locale.ROOT, SEARCH_SYSTEM_PROMPT, outputLanguageName, unitSystem),
+                List.of(new AnthropicMessageRequest.Message("user", userBlocks)),
+                0.0);
+
+        AnthropicMessageResponse response = anthropicClient.createMessage(request);
+        String text = response.firstText();
+        if (text == null || text.isBlank()) {
+            throw new ExtractionValidationException("Could not find that recipe. Try another name.");
+        }
+        try {
+            return parse(text);
+        } catch (ExtractionValidationException ex) {
+            // parse() rejects a blank title, which is exactly how the prompt says
+            // "I don't know this dish" — surface that as a search miss, not a parse failure.
+            throw new ExtractionValidationException("Could not find that recipe. Try another name.");
+        }
     }
 
     public RecipeDraft parse(String text) {
