@@ -9,6 +9,8 @@ import static org.mockito.Mockito.when;
 import com.jayway.jsonpath.JsonPath;
 import com.mealflow.appapi.recipes.extraction.client.AnthropicClient;
 import com.mealflow.appapi.recipes.extraction.client.AnthropicMessageResponse;
+import com.mealflow.appapi.recipes.image.PexelsClient;
+import com.mealflow.appapi.recipes.image.PexelsPhoto;
 import com.mealflow.appapi.support.MongoTestContainerConfig;
 import com.mealflow.appapi.support.TestAccessTokenFactory;
 import com.mealflow.appapi.support.TestJwtConfig;
@@ -44,6 +46,9 @@ class ExtractionControllerIT extends MongoTestContainerConfig {
 
     @MockitoBean
     private AnthropicClient anthropicClient;
+
+    @MockitoBean
+    private PexelsClient pexelsClient;
 
     private final HttpClient http = HttpClient.newHttpClient();
     private final TestAccessTokenFactory tokens;
@@ -166,6 +171,75 @@ class ExtractionControllerIT extends MongoTestContainerConfig {
         assertThat(reaccept.statusCode(), is(409));
     }
 
+    /**
+     * The media-less flows (voice/search) get a Pexels stock photo, whose attribution must reach
+     * the app via the job response and follow the photo onto the recipe when the draft is accepted.
+     */
+    @Test
+    void textExtraction_returnsPhotoAttribution_thatFollowsTheAcceptedRecipe() throws Exception {
+        when(anthropicClient.createMessage(any())).thenReturn(cannedResponseWithPhotoQuery());
+        when(pexelsClient.findPhoto("creamy chicken skillet"))
+                .thenReturn(new PexelsPhoto(
+                        "https://images.pexels.com/photos/1/large.jpg",
+                        "Anna Ek",
+                        "https://www.pexels.com/@anna-ek",
+                        "https://www.pexels.com/photo/creamy-chicken-1"));
+
+        String token = tokens.issue("user-extract-attribution");
+        HttpRequest start = HttpRequest.newBuilder()
+                .uri(URI.create("http://localhost:" + port + "/api/recipes/extract/text"))
+                .header("Authorization", "Bearer " + token)
+                .header("Content-Type", "application/json")
+                .POST(BodyPublishers.ofString("{\"transcript\":\"pasta med kyckling\",\"locale\":\"sv-SE\"}"))
+                .build();
+        HttpResponse<String> started = http.send(start, BodyHandlers.ofString());
+        assertThat(started.statusCode(), is(202));
+        String jobId = JsonPath.read(started.body(), "$.jobId");
+
+        String ready = pollUntilTerminal(token, jobId);
+        assertThat(JsonPath.read(ready, "$.status").toString(), is("READY"));
+        assertThat(
+                JsonPath.read(ready, "$.thumbnailUrl").toString(),
+                is("https://images.pexels.com/photos/1/large.jpg"));
+        assertThat(JsonPath.read(ready, "$.thumbnailAttribution.provider").toString(), is("pexels"));
+        assertThat(JsonPath.read(ready, "$.thumbnailAttribution.photographer").toString(), is("Anna Ek"));
+        assertThat(
+                JsonPath.read(ready, "$.thumbnailAttribution.photographerUrl").toString(),
+                is("https://www.pexels.com/@anna-ek"));
+        assertThat(
+                JsonPath.read(ready, "$.thumbnailAttribution.sourceUrl").toString(),
+                is("https://www.pexels.com/photo/creamy-chicken-1"));
+
+        // The app echoes the attribution back when the user keeps the suggested photo.
+        String acceptBody = """
+                {
+                  "title": "Pasta med kyckling",
+                  "imageUrl": "https://images.pexels.com/photos/1/large.jpg",
+                  "imageAttribution": {
+                    "provider": "pexels",
+                    "photographer": "Anna Ek",
+                    "photographerUrl": "https://www.pexels.com/@anna-ek",
+                    "sourceUrl": "https://www.pexels.com/photo/creamy-chicken-1"
+                  },
+                  "ingredients": [{"name":"Spaghetti","quantity":400,"unit":"g"}],
+                  "steps": ["Koka pastan"]
+                }
+                """;
+        HttpRequest accept = HttpRequest.newBuilder()
+                .uri(URI.create("http://localhost:" + port + "/api/recipes/extract/" + jobId + "/accept"))
+                .header("Authorization", "Bearer " + token)
+                .header("Content-Type", "application/json")
+                .POST(BodyPublishers.ofString(acceptBody))
+                .build();
+        HttpResponse<String> accepted = http.send(accept, BodyHandlers.ofString());
+        assertThat(accepted.statusCode(), is(201));
+        assertThat(JsonPath.read(accepted.body(), "$.imageAttribution.provider").toString(), is("pexels"));
+        assertThat(JsonPath.read(accepted.body(), "$.imageAttribution.photographer").toString(), is("Anna Ek"));
+        assertThat(
+                JsonPath.read(accepted.body(), "$.imageAttribution.sourceUrl").toString(),
+                is("https://www.pexels.com/photo/creamy-chicken-1"));
+    }
+
     private HttpResponse<String> postImage(String token) throws Exception {
         byte[] body = MultipartHelper.singleFilePart("file", "photo.jpg", "image/jpeg", MultipartHelper.minimalJpeg());
         HttpRequest request = HttpRequest.newBuilder()
@@ -203,6 +277,25 @@ class ExtractionControllerIT extends MongoTestContainerConfig {
         throw new AssertionError("Job did not reach a terminal state in time. Last body: " + body);
     }
 
+    /** The media-less prompts also ask the model for a photoQuery to look up on Pexels. */
+    private AnthropicMessageResponse cannedResponseWithPhotoQuery() {
+        String json = """
+                {
+                  "title": "Pasta med kyckling",
+                  "description": "Snabb pasta",
+                  "ingredients": [{"name":"Spaghetti","quantity":400,"unit":"g"}],
+                  "steps": ["Koka pastan"],
+                  "cookingTimeMinutes": 20,
+                  "portions": 4,
+                  "category": "dinner",
+                  "uncertainFields": [],
+                  "languageDetected": "sv",
+                  "photoQuery": "creamy chicken skillet"
+                }
+                """;
+        return textResponse(json);
+    }
+
     private AnthropicMessageResponse cannedResponse() {
         String json = """
                 {
@@ -217,6 +310,10 @@ class ExtractionControllerIT extends MongoTestContainerConfig {
                   "languageDetected": "sv"
                 }
                 """;
+        return textResponse(json);
+    }
+
+    private AnthropicMessageResponse textResponse(String json) {
         return new AnthropicMessageResponse(
                 "msg_test",
                 "message",

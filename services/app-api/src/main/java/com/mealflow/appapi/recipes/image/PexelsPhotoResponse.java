@@ -4,12 +4,19 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 
-/** The slice of the Pexels search response we care about: the photos and their hosted sizes. */
+/**
+ * The slice of the Pexels search response we care about: the photos with their hosted sizes,
+ * plus the photographer credit and photo page needed for the attribution Pexels requires.
+ */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record PexelsPhotoResponse(List<Photo> photos) {
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public record Photo(Source src) {}
+    public record Photo(
+            Source src,
+            @JsonProperty("photographer") String photographer,
+            @JsonProperty("photographer_url") String photographerUrl,
+            @JsonProperty("url") String url) {}
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     public record Source(

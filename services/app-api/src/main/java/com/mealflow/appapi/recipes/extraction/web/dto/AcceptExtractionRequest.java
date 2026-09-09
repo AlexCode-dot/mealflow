@@ -1,5 +1,6 @@
 package com.mealflow.appapi.recipes.extraction.web.dto;
 
+import com.mealflow.appapi.recipes.web.dto.ImageAttributionDto;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.Min;
@@ -13,6 +14,7 @@ public record AcceptExtractionRequest(
         @Size(max = 2000) String description,
         @Size(max = 500) String imageUrl,
         @Size(max = 200) String imageFileId,
+        @Valid ImageAttributionDto imageAttribution,
         List<@Valid AcceptIngredientDto> ingredients,
         List<@NotBlank @Size(max = 500) String> steps,
         @Min(0) Integer cookingTimeMinutes,

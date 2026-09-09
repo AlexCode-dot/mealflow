@@ -1,5 +1,6 @@
 package com.mealflow.appapi.recipes.service;
 
+import com.mealflow.appapi.recipes.domain.ImageAttribution;
 import com.mealflow.appapi.recipes.domain.Ingredient;
 import com.mealflow.appapi.recipes.domain.Recipe;
 import com.mealflow.appapi.recipes.image.RecipeImageService;
@@ -11,6 +12,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -72,6 +74,7 @@ public class RecipeService {
             String description,
             String imageUrl,
             String imageFileId,
+            ImageAttribution imageAttribution,
             List<Ingredient> ingredients,
             List<String> steps,
             Integer cookingTimeMinutes,
@@ -100,6 +103,11 @@ public class RecipeService {
                 now,
                 now);
         recipe.setTags(normalizeTags(tags));
+        // Attribution only makes sense for an externally hosted stock photo — a client that sends
+        // it alongside its own upload (or no image at all) is out of sync, so drop it.
+        if (image.imageFileId() == null && image.imageUrl() != null) {
+            recipe.setImageAttribution(imageAttribution);
+        }
 
         return recipeRepository.save(recipe);
     }
@@ -111,6 +119,7 @@ public class RecipeService {
             String description,
             String imageUrl,
             String imageFileId,
+            ImageAttribution imageAttribution,
             List<Ingredient> ingredients,
             List<String> steps,
             Integer cookingTimeMinutes,
@@ -129,6 +138,10 @@ public class RecipeService {
         Recipe existing = getForUser(userId, recipeId);
         ImageResolution image = resolveImageForPatch(userId, existing, imageUrl, imageFileId, fromExternal);
         String oldImageFileId = existing.getImageFileId();
+        boolean imageProvided = imageUrl != null || imageFileId != null;
+        boolean imageReplaced = imageProvided
+                && (!Objects.equals(image.imageUrl(), existing.getImageUrl())
+                        || !Objects.equals(image.imageFileId(), existing.getImageFileId()));
         existing.applyPatch(
                 title,
                 description,
@@ -143,6 +156,15 @@ public class RecipeService {
                 fromExternal,
                 language,
                 clock.instant());
+        // The credit belongs to the image, so it follows the same replacement rule as the old
+        // ImageKit file below: a new image brings its own attribution (or none — a user upload
+        // is never credited), while an untouched image keeps what it had unless the client sends
+        // an updated credit explicitly.
+        if (imageReplaced) {
+            existing.setImageAttribution(image.imageFileId() == null ? imageAttribution : null);
+        } else if (imageAttribution != null) {
+            existing.setImageAttribution(imageAttribution);
+        }
         if (imageFileId != null
                 && oldImageFileId != null
                 && !oldImageFileId.isBlank()
@@ -170,6 +192,7 @@ public class RecipeService {
         }
         recipe.setImageUrl(null);
         recipe.setImageFileId(null);
+        recipe.setImageAttribution(null);
         recipe.setUpdatedAt(clock.instant());
         return recipeRepository.save(recipe);
     }
