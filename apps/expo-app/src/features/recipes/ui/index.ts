@@ -12,6 +12,7 @@ export { RecipeEditorPickers } from './RecipeEditorPickers';
 export { RecipeEditorShell } from './RecipeEditorShell';
 export { RecipeEditorTabs } from './RecipeEditorTabs';
 export type { RecipeEditorTabKey } from './RecipeEditorTabs';
+export { PhotoAttributionBadge } from './PhotoAttributionBadge';
 export { RecipeGridCard } from './RecipeGridCard';
 export { RecipeHero } from './RecipeHero';
 export { RecipeIngredientRow } from './RecipeIngredientRow';

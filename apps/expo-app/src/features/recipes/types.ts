@@ -7,6 +7,14 @@ export type IngredientDto = {
   estimated?: boolean | null;
 };
 
+/** Credit for a stock photo (today always Pexels), rendered as a caption over the image. */
+export type ImageAttribution = {
+  provider?: string | null;
+  photographer?: string | null;
+  photographerUrl?: string | null;
+  sourceUrl?: string | null;
+};
+
 export type RecipeListItem = {
   id: string;
   title: string;
@@ -27,6 +35,7 @@ export type Recipe = {
   description?: string | null;
   imageUrl?: string | null;
   imageFileId?: string | null;
+  imageAttribution?: ImageAttribution | null;
   ingredients: IngredientDto[];
   steps: string[];
   cookingTimeMinutes?: number | null;
@@ -44,6 +53,7 @@ export type CreateRecipeRequest = {
   description?: string | null;
   imageUrl?: string | null;
   imageFileId?: string | null;
+  imageAttribution?: ImageAttribution | null;
   ingredients?: IngredientDto[];
   steps?: string[];
   cookingTimeMinutes?: number | null;
@@ -58,6 +68,7 @@ export type UpdateRecipeRequest = {
   description?: string | null;
   imageUrl?: string | null;
   imageFileId?: string | null;
+  imageAttribution?: ImageAttribution | null;
   ingredients?: IngredientDto[] | null;
   steps?: string[] | null;
   cookingTimeMinutes?: number | null;
@@ -125,6 +136,8 @@ export type ExtractionJob = {
   draft?: ExtractionDraft | null;
   thumbnailUrl?: string | null;
   thumbnailFileId?: string | null;
+  /** Set only when thumbnailUrl is a stock photo (Pexels) that must be credited. */
+  thumbnailAttribution?: ImageAttribution | null;
   acceptedRecipeId?: string | null;
   errorCode?: string | null;
   errorMessage?: string | null;
@@ -137,6 +150,7 @@ export type AcceptExtractionRequest = {
   description?: string | null;
   imageUrl?: string | null;
   imageFileId?: string | null;
+  imageAttribution?: ImageAttribution | null;
   ingredients?: IngredientDto[];
   steps?: string[];
   cookingTimeMinutes?: number | null;

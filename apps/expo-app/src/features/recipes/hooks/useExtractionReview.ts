@@ -120,11 +120,18 @@ export function useExtractionReview(jobId: string | undefined): ExtractionReview
         .filter((ing) => ing.name && ing.name.trim().length > 0)
         .map(({ id: _id, estimated: _estimated, ...rest }) => rest);
       const cleanSteps = steps.filter((s) => s.trim().length > 0);
+      // The stock photo's credit only travels along while the user actually kept that photo;
+      // once they picked their own image (or a video frame) there is nothing to attribute.
+      const keptStockPhoto =
+        Boolean(job?.thumbnailAttribution) &&
+        !base.imageFileId &&
+        base.imageUrl === job?.thumbnailUrl;
       const created = await extractionApi.accept(jobId, {
         title: base.title,
         description: base.description,
         imageUrl: base.imageUrl,
         imageFileId: base.imageFileId,
+        imageAttribution: keptStockPhoto ? job?.thumbnailAttribution : undefined,
         ingredients: cleanIngredients,
         steps: cleanSteps,
         cookingTimeMinutes: base.cookingTimeMinutes,
@@ -140,7 +147,7 @@ export function useExtractionReview(jobId: string | undefined): ExtractionReview
     } finally {
       setIsSaving(false);
     }
-  }, [canSubmit, form, ingredients, jobId, steps]);
+  }, [canSubmit, form, ingredients, job, jobId, steps]);
 
   const state = useMemo<ExtractionReviewState>(
     () => ({
