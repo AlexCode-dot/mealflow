@@ -92,4 +92,33 @@ class LlmRecipeExtractorTest {
         assertThat(draft.getIngredients()).hasSize(1);
         assertThat(draft.getIngredients().get(0).getName()).isEqualTo("Onion");
     }
+
+    @Test
+    void parsesPhotoQueryWhenPresent() {
+        String json = """
+                {
+                  "title": "Marry Me Chicken",
+                  "ingredients": [{"name": "Chicken", "quantity": 600, "unit": "g"}],
+                  "steps": ["Sear the chicken"],
+                  "uncertainFields": [],
+                  "languageDetected": "en",
+                  "photoQuery": "creamy sun-dried tomato chicken skillet"
+                }
+                """;
+        assertThat(extractor.parse(json).getPhotoQuery()).isEqualTo("creamy sun-dried tomato chicken skillet");
+    }
+
+    @Test
+    void photoQueryIsNullWhenTheModelOmitsIt() {
+        String json = """
+                {
+                  "title": "Pancakes",
+                  "ingredients": [{"name": "Flour", "quantity": 3, "unit": "dl"}],
+                  "steps": ["Whisk"],
+                  "uncertainFields": [],
+                  "languageDetected": "en"
+                }
+                """;
+        assertThat(extractor.parse(json).getPhotoQuery()).isNull();
+    }
 }

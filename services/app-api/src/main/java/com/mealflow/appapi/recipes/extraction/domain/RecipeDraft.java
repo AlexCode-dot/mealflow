@@ -13,6 +13,14 @@ public class RecipeDraft {
     private Integer portions;
     private String category;
     private String language;
+
+    /**
+     * English stock-photo search phrase describing the finished dish, written by the model for
+     * the media-less flows so they can be given an illustrative photo. Null for photo/video
+     * extractions, which already have a real image of the user's own dish.
+     */
+    private String photoQuery;
+
     private List<String> uncertainFields = new ArrayList<>();
 
     public RecipeDraft() {}
@@ -79,6 +87,14 @@ public class RecipeDraft {
 
     public void setLanguage(String language) {
         this.language = language;
+    }
+
+    public String getPhotoQuery() {
+        return photoQuery;
+    }
+
+    public void setPhotoQuery(String photoQuery) {
+        this.photoQuery = photoQuery;
     }
 
     public List<String> getUncertainFields() {
