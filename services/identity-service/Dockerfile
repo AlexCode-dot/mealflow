@@ -16,8 +16,10 @@ FROM eclipse-temurin:25-jre
 WORKDIR /app
 
 COPY --from=build /workspace/target/*.jar /app/app.jar
+COPY docker-entrypoint.sh /app/docker-entrypoint.sh
+RUN chmod +x /app/docker-entrypoint.sh
 
 ENV SPRING_PROFILES_ACTIVE=dev
 EXPOSE 8081
 
-ENTRYPOINT ["java", "-jar", "/app/app.jar"]
+ENTRYPOINT ["/app/docker-entrypoint.sh"]
