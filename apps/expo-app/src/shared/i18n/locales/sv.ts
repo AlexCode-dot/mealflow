@@ -301,6 +301,8 @@ export const sv: Translations = {
     removePhoto: 'Ta bort foto',
     changePhoto: 'Byt foto',
     addPhoto: 'Lägg till foto',
+    photoAttribution: 'Foto: {{photographer}} · Pexels',
+    photoAttributionUnnamed: 'Foto: Pexels',
     removePhotoTitle: 'Ta bort foto?',
     removePhotoBody: 'Det här tar bort fotot från ditt recept.',
     remove: 'Ta bort',

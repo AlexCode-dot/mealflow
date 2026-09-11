@@ -1,5 +1,6 @@
 package com.mealflow.appapi.recipes.extraction.web.dto;
 
+import com.mealflow.appapi.recipes.web.dto.ImageAttributionDto;
 import java.time.Instant;
 
 public record ExtractionJobResponse(
@@ -10,6 +11,7 @@ public record ExtractionJobResponse(
         ExtractionDraftResponse draft,
         String thumbnailUrl,
         String thumbnailFileId,
+        ImageAttributionDto thumbnailAttribution,
         String acceptedRecipeId,
         String errorCode,
         String errorMessage,

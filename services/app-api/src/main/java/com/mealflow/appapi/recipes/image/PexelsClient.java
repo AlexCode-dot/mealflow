@@ -60,10 +60,11 @@ public class PexelsClient {
     }
 
     /**
-     * Return the URL of a landscape food photo matching the query, or null when lookup is
-     * disabled, the query is empty, nothing matches, or the call fails.
+     * Return a landscape food photo matching the query — image URL plus the attribution data
+     * Pexels' terms require us to display — or null when lookup is disabled, the query is empty,
+     * nothing matches, or the call fails.
      */
-    public String findPhotoUrl(String query) {
+    public PexelsPhoto findPhoto(String query) {
         if (!isEnabled() || query == null || query.isBlank()) {
             return null;
         }
@@ -85,8 +86,17 @@ public class PexelsClient {
                     || response.photos().isEmpty()) {
                 return null;
             }
-            var src = response.photos().get(0).src();
-            return src == null ? null : src.best();
+            var photo = response.photos().get(0);
+            var src = photo.src();
+            String imageUrl = src == null ? null : src.best();
+            if (imageUrl == null) {
+                return null;
+            }
+            return new PexelsPhoto(
+                    imageUrl,
+                    blankToNull(photo.photographer()),
+                    blankToNull(photo.photographerUrl()),
+                    blankToNull(photo.url()));
         } catch (RestClientException ex) {
             ExternalApiReporter.captureFailure("pexels", "search", ex);
             log.warn("Pexels lookup failed for \"{}\": {}", query, ex.getMessage());
@@ -95,5 +105,9 @@ public class PexelsClient {
             log.warn("Pexels lookup failed for \"{}\": {}", query, ex.getMessage());
             return null;
         }
+    }
+
+    private static String blankToNull(String value) {
+        return value == null || value.isBlank() ? null : value;
     }
 }

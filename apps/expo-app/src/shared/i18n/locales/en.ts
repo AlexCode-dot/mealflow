@@ -298,6 +298,8 @@ export const en = {
     removePhoto: 'Remove photo',
     changePhoto: 'Change photo',
     addPhoto: 'Add photo',
+    photoAttribution: 'Photo: {{photographer}} · Pexels',
+    photoAttributionUnnamed: 'Photo: Pexels',
     removePhotoTitle: 'Remove photo?',
     removePhotoBody: 'This will remove the photo from your recipe.',
     remove: 'Remove',

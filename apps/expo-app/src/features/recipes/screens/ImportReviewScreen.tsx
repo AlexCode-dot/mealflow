@@ -97,6 +97,16 @@ export function ImportReviewScreen() {
   const canSubmit = review.state.canSubmit;
   const reviewServerError = review.state.serverError;
   const heroImageUrl = review.form.imageUrl;
+  // Credit the suggested stock photo only while it is still the one on display — once the user
+  // picks their own image (or a video frame) there is nothing to attribute.
+  const reviewJob = review.state.job;
+  const heroAttribution =
+    reviewJob?.thumbnailAttribution &&
+    heroImageUrl &&
+    !review.form.imageFileId &&
+    heroImageUrl === reviewJob.thumbnailUrl
+      ? reviewJob.thumbnailAttribution
+      : null;
   const isVideoSource = review.state.job?.sourceType === 'VIDEO';
   const canPickFromVideo = isVideoSource && Boolean(videoUri);
 
@@ -257,6 +267,7 @@ export function ImportReviewScreen() {
           hero={
             <RecipeHero
               imageUrl={heroImageUrl}
+              attribution={heroAttribution}
               onPress={pickImage}
               onRemove={heroImageUrl ? onRemoveImage : undefined}
               isUploading={isUploading}

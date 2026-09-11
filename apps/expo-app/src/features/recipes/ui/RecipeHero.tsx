@@ -12,15 +12,19 @@ import { useTranslation } from 'react-i18next';
 import { LinearGradient } from 'expo-linear-gradient';
 import { ImagePlus } from 'lucide-react-native';
 import { type Theme, useTheme, useThemedStyles } from '@/src/shared/theme';
+import type { ImageAttribution } from '@/src/features/recipes/types';
+import { PhotoAttributionBadge } from './PhotoAttributionBadge';
 
 type Props = {
   imageUrl?: string | null;
+  /** Stock-photo credit to overlay on the image (e.g. a Pexels suggestion on review). */
+  attribution?: ImageAttribution | null;
   onPress?: () => void;
   onRemove?: () => void;
   isUploading?: boolean;
 };
 
-export function RecipeHero({ imageUrl, onPress, onRemove, isUploading }: Props) {
+export function RecipeHero({ imageUrl, attribution, onPress, onRemove, isUploading }: Props) {
   const { t } = useTranslation();
   const theme = useTheme();
   const styles = useThemedStyles(createStyles);
@@ -69,6 +73,15 @@ export function RecipeHero({ imageUrl, onPress, onRemove, isUploading }: Props) 
                 <Animated.View style={[styles.uploadFill, { width: progressWidth }]} />
               </View>
             </View>
+          ) : null}
+          {!isUploading && attribution ? (
+            // The change/remove badges own the bottom-right corner, so the credit goes left,
+            // lifted to sit on the same line as those badges.
+            <PhotoAttributionBadge
+              attribution={attribution}
+              position="bottom-left"
+              bottomOffset={6}
+            />
           ) : null}
           {!isUploading && (onPress || onRemove) ? (
             <View style={styles.actionRow}>

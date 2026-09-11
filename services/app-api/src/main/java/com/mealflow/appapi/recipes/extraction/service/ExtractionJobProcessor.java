@@ -1,5 +1,6 @@
 package com.mealflow.appapi.recipes.extraction.service;
 
+import com.mealflow.appapi.recipes.domain.ImageAttribution;
 import com.mealflow.appapi.recipes.extraction.domain.ExtractionJob;
 import com.mealflow.appapi.recipes.extraction.domain.ExtractionSourceType;
 import com.mealflow.appapi.recipes.extraction.domain.ExtractionStatus;
@@ -7,6 +8,7 @@ import com.mealflow.appapi.recipes.extraction.domain.RecipeDraft;
 import com.mealflow.appapi.recipes.extraction.repository.ExtractionJobRepository;
 import com.mealflow.appapi.recipes.image.ImageKitUploadResult;
 import com.mealflow.appapi.recipes.image.PexelsClient;
+import com.mealflow.appapi.recipes.image.PexelsPhoto;
 import java.nio.file.Path;
 import java.time.Clock;
 import java.util.List;
@@ -129,7 +131,12 @@ public class ExtractionJobProcessor {
         try {
             RecipeDraft draft = draftSupplier.get();
             job.setDraft(draft);
-            job.setThumbnailUrl(findIllustrativePhoto(draft));
+            PexelsPhoto photo = findIllustrativePhoto(draft);
+            if (photo != null) {
+                job.setThumbnailUrl(photo.imageUrl());
+                job.setThumbnailAttribution(
+                        new ImageAttribution("pexels", photo.photographer(), photo.photographerUrl(), photo.pageUrl()));
+            }
             job.setStatus(ExtractionStatus.READY);
             job.setUpdatedAt(clock.instant());
             jobRepository.save(job);
@@ -156,11 +163,11 @@ public class ExtractionJobProcessor {
      * <p>No thumbnailFileId is set — the image is hosted by Pexels rather than uploaded to
      * ImageKit, so there is nothing of ours to clean up if the user replaces it.
      */
-    private String findIllustrativePhoto(RecipeDraft draft) {
+    private PexelsPhoto findIllustrativePhoto(RecipeDraft draft) {
         if (draft == null) {
             return null;
         }
-        return pexelsClient.findPhotoUrl(draft.getPhotoQuery());
+        return pexelsClient.findPhoto(draft.getPhotoQuery());
     }
 
     private String imageMediaType(String contentType) {

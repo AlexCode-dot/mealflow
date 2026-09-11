@@ -1,8 +1,10 @@
 package com.mealflow.appapi.recipes.web.mapper;
 
+import com.mealflow.appapi.recipes.domain.ImageAttribution;
 import com.mealflow.appapi.recipes.domain.Ingredient;
 import com.mealflow.appapi.recipes.domain.Recipe;
 import com.mealflow.appapi.recipes.web.dto.CreateRecipeRequest;
+import com.mealflow.appapi.recipes.web.dto.ImageAttributionDto;
 import com.mealflow.appapi.recipes.web.dto.IngredientDto;
 import com.mealflow.appapi.recipes.web.dto.RecipeListItemResponse;
 import com.mealflow.appapi.recipes.web.dto.RecipeResponse;
@@ -34,6 +36,7 @@ public class RecipeMapper {
                 body.description(),
                 imageUrl,
                 imageFileId,
+                toAttributionDomain(body.imageAttribution()),
                 ingredients,
                 steps,
                 body.cookingTimeMinutes(),
@@ -61,6 +64,7 @@ public class RecipeMapper {
                 body.description(),
                 imageUrl,
                 imageFileId,
+                toAttributionDomain(body.imageAttribution()),
                 ingredients,
                 body.steps(),
                 body.cookingTimeMinutes(),
@@ -77,6 +81,7 @@ public class RecipeMapper {
                 r.getDescription(),
                 r.getImageUrl(),
                 r.getImageFileId(),
+                toAttributionDto(r.getImageAttribution()),
                 r.getIngredients().stream().map(this::toDto).toList(),
                 r.getSteps(),
                 r.getCookingTimeMinutes(),
@@ -109,6 +114,43 @@ public class RecipeMapper {
                 r.isFromExternal());
     }
 
+    /**
+     * Trim the credit fields and drop the object entirely when every field is blank, so a recipe
+     * never carries an empty attribution that the app would render as a bare caption.
+     */
+    public ImageAttribution toAttributionDomain(ImageAttributionDto dto) {
+        if (dto == null) {
+            return null;
+        }
+        String provider = trimToNull(dto.provider());
+        String photographer = trimToNull(dto.photographer());
+        String photographerUrl = trimToNull(dto.photographerUrl());
+        String sourceUrl = trimToNull(dto.sourceUrl());
+        if (provider == null && photographer == null && photographerUrl == null && sourceUrl == null) {
+            return null;
+        }
+        return new ImageAttribution(provider, photographer, photographerUrl, sourceUrl);
+    }
+
+    public ImageAttributionDto toAttributionDto(ImageAttribution attribution) {
+        if (attribution == null) {
+            return null;
+        }
+        return new ImageAttributionDto(
+                attribution.getProvider(),
+                attribution.getPhotographer(),
+                attribution.getPhotographerUrl(),
+                attribution.getSourceUrl());
+    }
+
+    private String trimToNull(String value) {
+        if (value == null) {
+            return null;
+        }
+        String trimmed = value.trim();
+        return trimmed.isEmpty() ? null : trimmed;
+    }
+
     private Ingredient toDomain(IngredientDto dto) {
         String name = dto.name().trim();
         String unit = dto.unit() == null ? null : dto.unit().trim();
@@ -125,6 +167,7 @@ public class RecipeMapper {
             String description,
             String imageUrl,
             String imageFileId,
+            ImageAttribution imageAttribution,
             List<Ingredient> ingredients,
             List<String> steps,
             Integer cookingTimeMinutes,
@@ -140,6 +183,7 @@ public class RecipeMapper {
             String description,
             String imageUrl,
             String imageFileId,
+            ImageAttribution imageAttribution,
             List<Ingredient> ingredients,
             List<String> steps,
             Integer cookingTimeMinutes,

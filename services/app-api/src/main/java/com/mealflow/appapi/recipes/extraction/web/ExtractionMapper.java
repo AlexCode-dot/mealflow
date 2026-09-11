@@ -6,11 +6,18 @@ import com.mealflow.appapi.recipes.extraction.service.RecipeExtractionService;
 import com.mealflow.appapi.recipes.extraction.web.dto.AcceptExtractionRequest;
 import com.mealflow.appapi.recipes.extraction.web.dto.ExtractionDraftResponse;
 import com.mealflow.appapi.recipes.extraction.web.dto.ExtractionJobResponse;
+import com.mealflow.appapi.recipes.web.mapper.RecipeMapper;
 import java.util.List;
 import org.springframework.stereotype.Component;
 
 @Component
 public class ExtractionMapper {
+
+    private final RecipeMapper recipeMapper;
+
+    public ExtractionMapper(RecipeMapper recipeMapper) {
+        this.recipeMapper = recipeMapper;
+    }
 
     public ExtractionJobResponse toResponse(ExtractionJob job) {
         ExtractionDraftResponse draft = job.getDraft() == null ? null : toDraftResponse(job.getDraft());
@@ -22,6 +29,7 @@ public class ExtractionMapper {
                 draft,
                 job.getThumbnailUrl(),
                 job.getThumbnailFileId(),
+                recipeMapper.toAttributionDto(job.getThumbnailAttribution()),
                 job.getAcceptedRecipeId(),
                 job.getErrorCode(),
                 job.getErrorMessage(),
@@ -59,6 +67,7 @@ public class ExtractionMapper {
                 body.description(),
                 trim(body.imageUrl()),
                 trim(body.imageFileId()),
+                recipeMapper.toAttributionDomain(body.imageAttribution()),
                 ingredients,
                 steps,
                 body.cookingTimeMinutes(),

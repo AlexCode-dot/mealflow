@@ -174,6 +174,51 @@ class RecipeControllerIT extends MongoTestContainerConfig {
         assertThat(JsonPath.read(patched.body(), "$.steps").toString(), is("[]"));
     }
 
+    /**
+     * A stock photo's credit rides along with the image: stored on create, returned on read, and
+     * dropped as soon as the image is replaced by one the new payload carries no credit for.
+     */
+    @Test
+    void imageAttribution_isStoredWithTheImage_andClearedWhenTheImageIsReplaced() throws Exception {
+        String token = tokens.issue("user-1");
+
+        HttpResponse<String> created = post("/api/recipes", token, """
+{
+  "title":"Krämig kycklingpasta",
+  "imageUrl":"https://images.pexels.com/photos/1/large.jpg",
+  "fromExternal":true,
+  "imageAttribution":{
+    "provider":"pexels",
+    "photographer":"Anna Ek",
+    "photographerUrl":"https://www.pexels.com/@anna-ek",
+    "sourceUrl":"https://www.pexels.com/photo/creamy-chicken-1"
+  }
+}
+""");
+        assertThat(created.statusCode(), is(201));
+        String id = JsonPath.read(created.body(), "$.id");
+        assertThat(JsonPath.read(created.body(), "$.imageAttribution.provider").toString(), is("pexels"));
+
+        HttpResponse<String> fetched = get("/api/recipes/" + id, token);
+        assertThat(
+                JsonPath.read(fetched.body(), "$.imageAttribution.photographer").toString(), is("Anna Ek"));
+
+        // A patch that doesn't touch the image keeps the credit.
+        HttpResponse<String> renamed = patch("/api/recipes/" + id, token, """
+{ "title":"Krämig kycklingpasta deluxe" }
+""");
+        assertThat(renamed.statusCode(), is(200));
+        assertThat(
+                JsonPath.read(renamed.body(), "$.imageAttribution.photographer").toString(), is("Anna Ek"));
+
+        // Replacing the image without sending a new credit clears the old one.
+        HttpResponse<String> replaced = patch("/api/recipes/" + id, token, """
+{ "imageUrl":"https://images.pexels.com/photos/2/large.jpg", "fromExternal":true }
+""");
+        assertThat(replaced.statusCode(), is(200));
+        assertThat(JsonPath.read(replaced.body(), "$.imageAttribution"), nullValue());
+    }
+
     @Test
     void patch_shouldReject_blankTitle_whenProvided() throws Exception {
         String token = tokens.issue("user-1");

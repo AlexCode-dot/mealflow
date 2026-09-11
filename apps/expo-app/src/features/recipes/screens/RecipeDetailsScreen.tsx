@@ -20,6 +20,7 @@ import { type Theme, useTheme, useThemedStyles } from '@/src/shared/theme';
 import { routes } from '@/src/core/navigation/routes';
 import { useAddRecipeToShoppingList, useRecipeDetails } from '@/src/features/recipes/hooks';
 import {
+  PhotoAttributionBadge,
   RecipeIngredientRow,
   RecipeStepRow,
   RecipeSheetLayout,
@@ -318,6 +319,10 @@ export function RecipeDetailsScreen() {
                 ) : (
                   <Shimmer height={heroHeight} borderRadius={0} />
                 )}
+                {state.recipe?.imageUrl && state.recipe?.imageAttribution ? (
+                  // Lifted past the 15px the content sheet overlaps into the hero.
+                  <PhotoAttributionBadge attribution={state.recipe.imageAttribution} bottomOffset={15} />
+                ) : null}
                 {state.recipe?.fromExternal ? (
                   <View style={styles.originBadge}>
                     <Text style={styles.originBadgeText}>{t('recipes.imported')}</Text>

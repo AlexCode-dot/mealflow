@@ -1,5 +1,6 @@
 package com.mealflow.appapi.recipes.extraction.domain;
 
+import com.mealflow.appapi.recipes.domain.ImageAttribution;
 import java.time.Instant;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
@@ -29,6 +30,9 @@ public class ExtractionJob {
 
     private String thumbnailUrl;
     private String thumbnailFileId;
+
+    /** Set only when thumbnailUrl is a stock photo (Pexels) that must be credited; null otherwise. */
+    private ImageAttribution thumbnailAttribution;
 
     private String acceptedRecipeId;
 
@@ -167,6 +171,14 @@ public class ExtractionJob {
 
     public void setThumbnailFileId(String thumbnailFileId) {
         this.thumbnailFileId = thumbnailFileId;
+    }
+
+    public ImageAttribution getThumbnailAttribution() {
+        return thumbnailAttribution;
+    }
+
+    public void setThumbnailAttribution(ImageAttribution thumbnailAttribution) {
+        this.thumbnailAttribution = thumbnailAttribution;
     }
 
     public Instant getCreatedAt() {
