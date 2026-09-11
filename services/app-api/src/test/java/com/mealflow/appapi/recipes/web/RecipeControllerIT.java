@@ -200,14 +200,16 @@ class RecipeControllerIT extends MongoTestContainerConfig {
         assertThat(JsonPath.read(created.body(), "$.imageAttribution.provider").toString(), is("pexels"));
 
         HttpResponse<String> fetched = get("/api/recipes/" + id, token);
-        assertThat(JsonPath.read(fetched.body(), "$.imageAttribution.photographer").toString(), is("Anna Ek"));
+        assertThat(
+                JsonPath.read(fetched.body(), "$.imageAttribution.photographer").toString(), is("Anna Ek"));
 
         // A patch that doesn't touch the image keeps the credit.
         HttpResponse<String> renamed = patch("/api/recipes/" + id, token, """
 { "title":"Krämig kycklingpasta deluxe" }
 """);
         assertThat(renamed.statusCode(), is(200));
-        assertThat(JsonPath.read(renamed.body(), "$.imageAttribution.photographer").toString(), is("Anna Ek"));
+        assertThat(
+                JsonPath.read(renamed.body(), "$.imageAttribution.photographer").toString(), is("Anna Ek"));
 
         // Replacing the image without sending a new credit clears the old one.
         HttpResponse<String> replaced = patch("/api/recipes/" + id, token, """

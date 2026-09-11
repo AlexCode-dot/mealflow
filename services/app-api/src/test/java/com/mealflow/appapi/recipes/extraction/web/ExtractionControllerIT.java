@@ -199,8 +199,7 @@ class ExtractionControllerIT extends MongoTestContainerConfig {
         String ready = pollUntilTerminal(token, jobId);
         assertThat(JsonPath.read(ready, "$.status").toString(), is("READY"));
         assertThat(
-                JsonPath.read(ready, "$.thumbnailUrl").toString(),
-                is("https://images.pexels.com/photos/1/large.jpg"));
+                JsonPath.read(ready, "$.thumbnailUrl").toString(), is("https://images.pexels.com/photos/1/large.jpg"));
         assertThat(JsonPath.read(ready, "$.thumbnailAttribution.provider").toString(), is("pexels"));
         assertThat(JsonPath.read(ready, "$.thumbnailAttribution.photographer").toString(), is("Anna Ek"));
         assertThat(
@@ -234,7 +233,10 @@ class ExtractionControllerIT extends MongoTestContainerConfig {
         HttpResponse<String> accepted = http.send(accept, BodyHandlers.ofString());
         assertThat(accepted.statusCode(), is(201));
         assertThat(JsonPath.read(accepted.body(), "$.imageAttribution.provider").toString(), is("pexels"));
-        assertThat(JsonPath.read(accepted.body(), "$.imageAttribution.photographer").toString(), is("Anna Ek"));
+        assertThat(
+                JsonPath.read(accepted.body(), "$.imageAttribution.photographer")
+                        .toString(),
+                is("Anna Ek"));
         assertThat(
                 JsonPath.read(accepted.body(), "$.imageAttribution.sourceUrl").toString(),
                 is("https://www.pexels.com/photo/creamy-chicken-1"));

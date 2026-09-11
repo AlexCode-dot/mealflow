@@ -1,10 +1,10 @@
 package com.mealflow.appapi.recipes.extraction.service;
 
+import com.mealflow.appapi.recipes.domain.ImageAttribution;
 import com.mealflow.appapi.recipes.extraction.domain.ExtractionJob;
 import com.mealflow.appapi.recipes.extraction.domain.ExtractionSourceType;
 import com.mealflow.appapi.recipes.extraction.domain.ExtractionStatus;
 import com.mealflow.appapi.recipes.extraction.domain.RecipeDraft;
-import com.mealflow.appapi.recipes.domain.ImageAttribution;
 import com.mealflow.appapi.recipes.extraction.repository.ExtractionJobRepository;
 import com.mealflow.appapi.recipes.image.ImageKitUploadResult;
 import com.mealflow.appapi.recipes.image.PexelsClient;
@@ -134,8 +134,8 @@ public class ExtractionJobProcessor {
             PexelsPhoto photo = findIllustrativePhoto(draft);
             if (photo != null) {
                 job.setThumbnailUrl(photo.imageUrl());
-                job.setThumbnailAttribution(new ImageAttribution(
-                        "pexels", photo.photographer(), photo.photographerUrl(), photo.pageUrl()));
+                job.setThumbnailAttribution(
+                        new ImageAttribution("pexels", photo.photographer(), photo.photographerUrl(), photo.pageUrl()));
             }
             job.setStatus(ExtractionStatus.READY);
             job.setUpdatedAt(clock.instant());
