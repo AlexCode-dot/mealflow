@@ -1,6 +1,7 @@
 package com.mealflow.appapi.recipes.service;
 
 import com.mealflow.appapi.recipes.domain.ImageAttribution;
+import com.mealflow.appapi.recipes.domain.ImageFocus;
 import com.mealflow.appapi.recipes.domain.Ingredient;
 import com.mealflow.appapi.recipes.domain.Recipe;
 import com.mealflow.appapi.recipes.image.RecipeImageService;
@@ -75,6 +76,7 @@ public class RecipeService {
             String imageUrl,
             String imageFileId,
             ImageAttribution imageAttribution,
+            ImageFocus imageFocus,
             List<Ingredient> ingredients,
             List<String> steps,
             Integer cookingTimeMinutes,
@@ -108,6 +110,10 @@ public class RecipeService {
         if (image.imageFileId() == null && image.imageUrl() != null) {
             recipe.setImageAttribution(imageAttribution);
         }
+        // Framing only means something relative to an image.
+        if (image.imageUrl() != null) {
+            recipe.setImageFocus(imageFocus);
+        }
 
         return recipeRepository.save(recipe);
     }
@@ -120,6 +126,7 @@ public class RecipeService {
             String imageUrl,
             String imageFileId,
             ImageAttribution imageAttribution,
+            ImageFocus imageFocus,
             List<Ingredient> ingredients,
             List<String> steps,
             Integer cookingTimeMinutes,
@@ -165,6 +172,14 @@ public class RecipeService {
         } else if (imageAttribution != null) {
             existing.setImageAttribution(imageAttribution);
         }
+        // Framing belongs to the image the same way the credit does: a new image starts from
+        // whatever the client framed for it (or centred), an untouched image keeps its framing
+        // unless the user re-framed it.
+        if (imageReplaced) {
+            existing.setImageFocus(imageFocus);
+        } else if (imageFocus != null && existing.getImageUrl() != null) {
+            existing.setImageFocus(imageFocus);
+        }
         if (imageFileId != null
                 && oldImageFileId != null
                 && !oldImageFileId.isBlank()
@@ -193,6 +208,7 @@ public class RecipeService {
         recipe.setImageUrl(null);
         recipe.setImageFileId(null);
         recipe.setImageAttribution(null);
+        recipe.setImageFocus(null);
         recipe.setUpdatedAt(clock.instant());
         return recipeRepository.save(recipe);
     }

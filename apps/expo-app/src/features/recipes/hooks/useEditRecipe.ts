@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { Dispatch, SetStateAction } from 'react';
-import type { IngredientDto, Recipe } from '@/src/features/recipes/types';
+import type { ImageFocus, IngredientDto, Recipe } from '@/src/features/recipes/types';
 import { recipesApi } from '@/src/features/recipes/api/recipesApi';
 import { toApiError } from '@/src/core/http/toApiError';
 import { mapCommonError } from '@/src/shared/errors/mapCommonError';
@@ -32,6 +32,8 @@ export type EditRecipeForm = {
   setCategory: (value: string) => void;
   tags: string[];
   setTags: (value: string[]) => void;
+  imageFocus: ImageFocus | null;
+  setImageFocus: (value: ImageFocus | null) => void;
   touched: ReturnType<typeof useRecipeFormState>['touched'];
   setTouched: ReturnType<typeof useRecipeFormState>['setTouched'];
   errors: ReturnType<typeof useRecipeFormState>['errors'];
@@ -78,6 +80,7 @@ export function useEditRecipe(id: string): EditRecipeView {
     portions,
     category,
     tags,
+    imageFocus,
     errors,
     touched,
     setTouched,
@@ -89,6 +92,7 @@ export function useEditRecipe(id: string): EditRecipeView {
     setPortions,
     setCategory,
     setTags,
+    setImageFocus,
   } = form;
   const [ingredients, setIngredients] = useState<IngredientDto[]>([]);
   const [steps, setSteps] = useState<string[]>([]);
@@ -205,6 +209,8 @@ export function useEditRecipe(id: string): EditRecipeView {
       setCategory,
       tags,
       setTags,
+      imageFocus,
+      setImageFocus,
       touched,
       setTouched,
       errors,
@@ -226,6 +232,8 @@ export function useEditRecipe(id: string): EditRecipeView {
       setCategory,
       tags,
       setTags,
+      imageFocus,
+      setImageFocus,
       touched,
       setTouched,
       errors,

@@ -4,7 +4,7 @@ import { recipesApi } from '@/src/features/recipes/api/recipesApi';
 import { toApiError } from '@/src/core/http/toApiError';
 import { mapCommonError } from '@/src/shared/errors/mapCommonError';
 import { useRecipeFormState } from '@/src/features/recipes/hooks/useRecipeFormState';
-import type { IngredientDto } from '@/src/features/recipes/types';
+import type { ImageFocus, IngredientDto } from '@/src/features/recipes/types';
 
 export type CreateRecipeState = {
   isSaving: boolean;
@@ -29,6 +29,8 @@ export type CreateRecipeForm = {
   setCategory: (value: string) => void;
   tags: string[];
   setTags: (value: string[]) => void;
+  imageFocus: ImageFocus | null;
+  setImageFocus: (value: ImageFocus | null) => void;
   touched: ReturnType<typeof useRecipeFormState>['touched'];
   setTouched: ReturnType<typeof useRecipeFormState>['setTouched'];
   errors: ReturnType<typeof useRecipeFormState>['errors'];
@@ -76,7 +78,9 @@ export function useCreateRecipe(): CreateRecipeView {
     category,
     setCategory,
     tags,
+    imageFocus,
     setTags,
+    setImageFocus,
     touched,
     setTouched,
     errors,
@@ -146,6 +150,8 @@ export function useCreateRecipe(): CreateRecipeView {
       setCategory,
       tags,
       setTags,
+      imageFocus,
+      setImageFocus,
       touched,
       setTouched,
       errors,
@@ -167,6 +173,8 @@ export function useCreateRecipe(): CreateRecipeView {
       setCategory,
       tags,
       setTags,
+      imageFocus,
+      setImageFocus,
       touched,
       setTouched,
       errors,
