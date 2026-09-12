@@ -12,6 +12,7 @@ public record UpdateRecipeRequest(
         @Size(max = 500) String imageUrl,
         @Size(max = 200) String imageFileId,
         @Valid ImageAttributionDto imageAttribution,
+        @Valid ImageFocusDto imageFocus,
         List<@Valid IngredientDto> ingredients,
         List<@NotBlank @Size(max = 500) String> steps,
         @Min(0) Integer cookingTimeMinutes,

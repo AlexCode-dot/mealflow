@@ -1,5 +1,7 @@
 import type { ReactElement } from 'react';
-import { Image, Pressable, StyleSheet, Text, View, type ColorValue } from 'react-native';
+import { Pressable, StyleSheet, Text, View, type ColorValue } from 'react-native';
+import type { ImageFocus } from '@/src/features/recipes/types';
+import { RecipeImage } from './RecipeImage';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Clock3, ShoppingBasket, Utensils } from 'lucide-react-native';
 import { IconStat, Shimmer } from '@/src/shared/ui';
@@ -15,6 +17,7 @@ const CARD_HEIGHT = IMAGE_HEIGHT + SHEET_HEIGHT - SHEET_OVERLAP;
 type Props = {
   title: string;
   imageUrl?: string | null;
+  imageFocus?: ImageFocus | null;
   cookingTimeMinutes?: number | null;
   ingredientCount?: number | null;
   category?: string | null;
@@ -30,6 +33,7 @@ type Stat = {
 export function RecipeGridCard({
   title,
   imageUrl,
+  imageFocus,
   cookingTimeMinutes,
   ingredientCount,
   category,
@@ -88,7 +92,7 @@ export function RecipeGridCard({
       >
         <View style={styles.imageWrap}>
           {imageUrl ? (
-            <Image source={{ uri: imageUrl }} style={styles.image} resizeMode="cover" />
+            <RecipeImage uri={imageUrl} focus={imageFocus} style={styles.image} />
           ) : (
             <Shimmer height={IMAGE_HEIGHT} borderRadius={0} />
           )}

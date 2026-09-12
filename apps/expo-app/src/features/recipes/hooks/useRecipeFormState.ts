@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from 'react';
 import { validateRecipeBasics } from '@/src/features/recipes/validation/recipeValidation';
-import type { Recipe } from '@/src/features/recipes/types';
+import type { ImageFocus, Recipe } from '@/src/features/recipes/types';
 
 type Touched = {
   title: boolean;
@@ -12,6 +12,7 @@ type Values = {
   description: string;
   imageUrl: string;
   imageFileId: string;
+  imageFocus: ImageFocus | null;
   time: string;
   portions: string;
   category: string;
@@ -23,6 +24,7 @@ type ApiValues = {
   description: string | null;
   imageUrl: string | null;
   imageFileId: string | null;
+  imageFocus: ImageFocus | null;
   cookingTimeMinutes: number | null;
   portions: number | null;
   category: string | null;
@@ -32,8 +34,9 @@ type ApiValues = {
 export function useRecipeFormState(initial?: Partial<Values>) {
   const [title, setTitleState] = useState(initial?.title ?? '');
   const [description, setDescriptionState] = useState(initial?.description ?? '');
-  const [imageUrl, setImageUrl] = useState(initial?.imageUrl ?? '');
+  const [imageUrl, setImageUrlState] = useState(initial?.imageUrl ?? '');
   const [imageFileId, setImageFileId] = useState(initial?.imageFileId ?? '');
+  const [imageFocus, setImageFocus] = useState<ImageFocus | null>(initial?.imageFocus ?? null);
   const [time, setTime] = useState(initial?.time ?? '');
   const [portions, setPortions] = useState(initial?.portions ?? '');
   const [category, setCategory] = useState(initial?.category ?? '');
@@ -44,6 +47,13 @@ export function useRecipeFormState(initial?: Partial<Values>) {
 
   const markAllTouched = useCallback(() => {
     setTouched({ title: true, description: true });
+  }, []);
+
+  // Framing describes one specific picture, so picking, uploading or removing an image starts
+  // the new one centred. Loading a saved recipe goes through setValues and keeps its framing.
+  const setImageUrl = useCallback((value: string) => {
+    setImageUrlState(value);
+    setImageFocus(null);
   }, []);
 
   const setTitle = useCallback((value: string) => {
@@ -57,8 +67,9 @@ export function useRecipeFormState(initial?: Partial<Values>) {
   const setValues = useCallback((next: Partial<Values>, resetTouched = false) => {
     if (next.title !== undefined) setTitleState(next.title);
     if (next.description !== undefined) setDescriptionState(next.description);
-    if (next.imageUrl !== undefined) setImageUrl(next.imageUrl);
+    if (next.imageUrl !== undefined) setImageUrlState(next.imageUrl);
     if (next.imageFileId !== undefined) setImageFileId(next.imageFileId);
+    if (next.imageFocus !== undefined) setImageFocus(next.imageFocus);
     if (next.time !== undefined) setTime(next.time);
     if (next.portions !== undefined) setPortions(next.portions);
     if (next.category !== undefined) setCategory(next.category);
@@ -74,6 +85,7 @@ export function useRecipeFormState(initial?: Partial<Values>) {
           description: recipe.description ?? '',
           imageUrl: recipe.imageUrl ?? '',
           imageFileId: recipe.imageFileId ?? '',
+          imageFocus: recipe.imageFocus ?? null,
           time:
             recipe.cookingTimeMinutes !== null && recipe.cookingTimeMinutes !== undefined
               ? String(recipe.cookingTimeMinutes)
@@ -104,12 +116,13 @@ export function useRecipeFormState(initial?: Partial<Values>) {
       description: trimmedDescription ? trimmedDescription : null,
       imageUrl: trimmedImageUrl ? trimmedImageUrl : null,
       imageFileId: trimmedImageFileId ? trimmedImageFileId : null,
+      imageFocus: trimmedImageUrl ? imageFocus : null,
       cookingTimeMinutes: Number.isNaN(cookingTimeMinutes) ? null : cookingTimeMinutes,
       portions: Number.isNaN(portionsValue) ? null : portionsValue,
       category: category ? category : null,
       tags,
     };
-  }, [category, description, imageFileId, imageUrl, portions, tags, time, title]);
+  }, [category, description, imageFileId, imageFocus, imageUrl, portions, tags, time, title]);
 
   return {
     title,
@@ -120,6 +133,8 @@ export function useRecipeFormState(initial?: Partial<Values>) {
     setImageUrl,
     imageFileId,
     setImageFileId,
+    imageFocus,
+    setImageFocus,
     time,
     setTime,
     portions,

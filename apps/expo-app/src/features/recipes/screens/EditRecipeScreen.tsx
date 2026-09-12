@@ -21,6 +21,7 @@ import {
   useStepReorderState,
 } from '@/src/features/recipes/hooks';
 import {
+  ImageFocusEditorSheet,
   RecipeHero,
   IngredientEditorSheet,
   StepEditorSheet,
@@ -52,6 +53,7 @@ export function EditRecipeScreen() {
     recipeId: id,
   });
   const [showRemoveImage, setShowRemoveImage] = useState(false);
+  const [focusEditorOpen, setFocusEditorOpen] = useState(false);
 
   const [refreshing, setRefreshing] = useState(false);
   const editorState = useRecipeEditorUiState();
@@ -175,6 +177,8 @@ export function EditRecipeScreen() {
           hero={
             <RecipeHero
               imageUrl={form.imageUrl}
+              imageFocus={form.imageFocus}
+              onAdjust={form.imageUrl ? () => setFocusEditorOpen(true) : undefined}
               onPress={pickImage}
               onRemove={form.imageUrl ? onRemoveImage : undefined}
               isUploading={isUploading || state.isRemovingImage}
@@ -302,6 +306,16 @@ export function EditRecipeScreen() {
         disabled={state.isRemovingImage}
       />
 
+      <ImageFocusEditorSheet
+        visible={focusEditorOpen}
+        uri={form.imageUrl}
+        focus={form.imageFocus}
+        onConfirm={(focus) => {
+          form.setImageFocus(focus);
+          setFocusEditorOpen(false);
+        }}
+        onCancel={() => setFocusEditorOpen(false)}
+      />
       <IngredientEditorSheet
         visible={ingredientEditor.isOpen}
         title={ingredientEditor.editingIndex === null ? t('recipes.addIngredientTitle') : t('recipes.editIngredientTitle')}

@@ -15,11 +15,22 @@ export type ImageAttribution = {
   sourceUrl?: string | null;
 };
 
+/**
+ * How a recipe image is framed: the image point (x, y as 0–1 fractions) kept at the centre of
+ * every box that shows it, and zoom beyond a plain cover fit (1 = none). Null means centred.
+ */
+export type ImageFocus = {
+  x: number;
+  y: number;
+  zoom: number;
+};
+
 export type RecipeListItem = {
   id: string;
   title: string;
   description?: string | null;
   imageUrl?: string | null;
+  imageFocus?: ImageFocus | null;
   cookingTimeMinutes?: number | null;
   ingredientCount?: number | null;
   portions?: number | null;
@@ -36,6 +47,7 @@ export type Recipe = {
   imageUrl?: string | null;
   imageFileId?: string | null;
   imageAttribution?: ImageAttribution | null;
+  imageFocus?: ImageFocus | null;
   ingredients: IngredientDto[];
   steps: string[];
   cookingTimeMinutes?: number | null;
@@ -54,6 +66,7 @@ export type CreateRecipeRequest = {
   imageUrl?: string | null;
   imageFileId?: string | null;
   imageAttribution?: ImageAttribution | null;
+  imageFocus?: ImageFocus | null;
   ingredients?: IngredientDto[];
   steps?: string[];
   cookingTimeMinutes?: number | null;
@@ -69,6 +82,7 @@ export type UpdateRecipeRequest = {
   imageUrl?: string | null;
   imageFileId?: string | null;
   imageAttribution?: ImageAttribution | null;
+  imageFocus?: ImageFocus | null;
   ingredients?: IngredientDto[] | null;
   steps?: string[] | null;
   cookingTimeMinutes?: number | null;
@@ -151,6 +165,7 @@ export type AcceptExtractionRequest = {
   imageUrl?: string | null;
   imageFileId?: string | null;
   imageAttribution?: ImageAttribution | null;
+  imageFocus?: ImageFocus | null;
   ingredients?: IngredientDto[];
   steps?: string[];
   cookingTimeMinutes?: number | null;

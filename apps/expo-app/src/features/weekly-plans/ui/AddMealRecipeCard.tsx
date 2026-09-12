@@ -1,4 +1,5 @@
-import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { RecipeImage } from '@/src/features/recipes/ui/RecipeImage';
 import { Check, ShoppingBasket, Users, Utensils } from 'lucide-react-native';
 import type { RecipeListItem } from '@/src/features/recipes/types';
 import { IconStat, Shimmer } from '@/src/shared/ui';
@@ -37,7 +38,7 @@ export function AddMealRecipeCard({ recipe, selected, onPress }: Props) {
       >
         <View style={styles.imageFrame}>
           {recipe.imageUrl ? (
-            <Image source={{ uri: recipe.imageUrl }} style={styles.image} resizeMode="cover" />
+            <RecipeImage uri={recipe.imageUrl} focus={recipe.imageFocus} style={styles.image} />
           ) : (
             <Shimmer height={72} borderRadius={12} style={styles.imageShimmer} />
           )}

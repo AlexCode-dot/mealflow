@@ -1,10 +1,12 @@
 package com.mealflow.appapi.recipes.web.mapper;
 
 import com.mealflow.appapi.recipes.domain.ImageAttribution;
+import com.mealflow.appapi.recipes.domain.ImageFocus;
 import com.mealflow.appapi.recipes.domain.Ingredient;
 import com.mealflow.appapi.recipes.domain.Recipe;
 import com.mealflow.appapi.recipes.web.dto.CreateRecipeRequest;
 import com.mealflow.appapi.recipes.web.dto.ImageAttributionDto;
+import com.mealflow.appapi.recipes.web.dto.ImageFocusDto;
 import com.mealflow.appapi.recipes.web.dto.IngredientDto;
 import com.mealflow.appapi.recipes.web.dto.RecipeListItemResponse;
 import com.mealflow.appapi.recipes.web.dto.RecipeResponse;
@@ -37,6 +39,7 @@ public class RecipeMapper {
                 imageUrl,
                 imageFileId,
                 toAttributionDomain(body.imageAttribution()),
+                toFocusDomain(body.imageFocus()),
                 ingredients,
                 steps,
                 body.cookingTimeMinutes(),
@@ -65,6 +68,7 @@ public class RecipeMapper {
                 imageUrl,
                 imageFileId,
                 toAttributionDomain(body.imageAttribution()),
+                toFocusDomain(body.imageFocus()),
                 ingredients,
                 body.steps(),
                 body.cookingTimeMinutes(),
@@ -82,6 +86,7 @@ public class RecipeMapper {
                 r.getImageUrl(),
                 r.getImageFileId(),
                 toAttributionDto(r.getImageAttribution()),
+                toFocusDto(r.getImageFocus()),
                 r.getIngredients().stream().map(this::toDto).toList(),
                 r.getSteps(),
                 r.getCookingTimeMinutes(),
@@ -105,6 +110,7 @@ public class RecipeMapper {
                 r.getTitle(),
                 r.getDescription(),
                 r.getImageUrl(),
+                toFocusDto(r.getImageFocus()),
                 r.getCookingTimeMinutes(),
                 ingredientCount,
                 r.getPortions(),
@@ -157,6 +163,14 @@ public class RecipeMapper {
         return new Ingredient(name, dto.quantity(), unit);
     }
 
+    public ImageFocus toFocusDomain(ImageFocusDto dto) {
+        return dto == null ? null : new ImageFocus(dto.x(), dto.y(), dto.zoom());
+    }
+
+    public ImageFocusDto toFocusDto(ImageFocus focus) {
+        return focus == null ? null : new ImageFocusDto(focus.getX(), focus.getY(), focus.getZoom());
+    }
+
     private IngredientDto toDto(Ingredient ing) {
         return new IngredientDto(ing.getName(), ing.getQuantity(), ing.getUnit());
     }
@@ -168,6 +182,7 @@ public class RecipeMapper {
             String imageUrl,
             String imageFileId,
             ImageAttribution imageAttribution,
+            ImageFocus imageFocus,
             List<Ingredient> ingredients,
             List<String> steps,
             Integer cookingTimeMinutes,
@@ -184,6 +199,7 @@ public class RecipeMapper {
             String imageUrl,
             String imageFileId,
             ImageAttribution imageAttribution,
+            ImageFocus imageFocus,
             List<Ingredient> ingredients,
             List<String> steps,
             Integer cookingTimeMinutes,
