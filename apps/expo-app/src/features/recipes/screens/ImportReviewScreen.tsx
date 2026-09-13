@@ -42,6 +42,9 @@ import { ChevronRight, Download, Film, Info, Plus, XCircle } from 'lucide-react-
 import { TAB_BAR } from '@/src/shared/ui/layout/tabBar';
 import { routes } from '@/src/core/navigation/routes';
 
+// Longer than the sheet's fade-out, so the fallback never races a sheet that is still closing.
+const FRAME_PICKER_CLOSE_FALLBACK_MS = 800;
+
 export function ImportReviewScreen() {
   const { t } = useTranslation();
   const theme = useTheme();
@@ -116,6 +119,30 @@ export function ImportReviewScreen() {
   const [framePickerError, setFramePickerError] = useState<string | null>(null);
   const [isUploadingFrame, setIsUploadingFrame] = useState(false);
 
+  // Picking a frame is almost always followed by framing it, so the editor opens by itself. It
+  // has to wait until the frame picker has finished closing: iOS silently drops a modal that is
+  // presented while another is still animating out. onDismiss is the precise signal; the timeout
+  // covers platforms that don't fire it, and the ref makes sure only one of the two opens it.
+  const openEditorAfterFramePick = useRef(false);
+  const framePickerCloseFallback = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const openFocusEditorIfPending = useCallback(() => {
+    if (framePickerCloseFallback.current) {
+      clearTimeout(framePickerCloseFallback.current);
+      framePickerCloseFallback.current = null;
+    }
+    if (!openEditorAfterFramePick.current) return;
+    openEditorAfterFramePick.current = false;
+    setFocusEditorOpen(true);
+  }, []);
+
+  useEffect(
+    () => () => {
+      if (framePickerCloseFallback.current) clearTimeout(framePickerCloseFallback.current);
+    },
+    [],
+  );
+
   const onPickedFrame = useCallback(
     async (frameUri: string, _timeMs: number) => {
       if (!frameUri) return;
@@ -132,13 +159,18 @@ export function ImportReviewScreen() {
         review.form.setImageUrl(response.imageUrl);
         review.form.setImageFileId(response.imageFileId);
         setFramePickerOpen(false);
+        openEditorAfterFramePick.current = true;
+        framePickerCloseFallback.current = setTimeout(
+          openFocusEditorIfPending,
+          FRAME_PICKER_CLOSE_FALLBACK_MS,
+        );
       } catch {
         setFramePickerError(t('recipes.review.uploadFrameFailed'));
       } finally {
         setIsUploadingFrame(false);
       }
     },
-    [review.form],
+    [openFocusEditorIfPending, review.form],
   );
 
   const submit = useCallback(async () => {
@@ -460,6 +492,7 @@ export function ImportReviewScreen() {
         durationMs={videoDurationMs}
         onCancel={() => setFramePickerOpen(false)}
         onPicked={onPickedFrame}
+        onDismissed={openFocusEditorIfPending}
       />
 
       <IngredientEditorSheet

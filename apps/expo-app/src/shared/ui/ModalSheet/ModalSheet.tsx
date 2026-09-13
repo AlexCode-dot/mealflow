@@ -17,6 +17,8 @@ import { WEB, isWeb } from '@/src/shared/ui/webStyles';
 type Props = {
   visible: boolean;
   onClose: () => void;
+  /** Fires once the sheet has fully closed — its animation included. */
+  onDismiss?: () => void;
   onBackdropPress?: () => void;
   dismissKeyboardOnBackdropTap?: boolean;
   avoidKeyboard?: boolean;
@@ -32,6 +34,7 @@ type Props = {
 export function ModalSheet({
   visible,
   onClose,
+  onDismiss,
   onBackdropPress,
   dismissKeyboardOnBackdropTap = false,
   avoidKeyboard = true,
@@ -62,6 +65,7 @@ export function ModalSheet({
       presentationStyle="overFullScreen"
       statusBarTranslucent
       onRequestClose={onClose}
+      onDismiss={onDismiss}
     >
       <View
         style={[
