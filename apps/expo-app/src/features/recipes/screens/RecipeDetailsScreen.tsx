@@ -3,6 +3,7 @@ import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import { useFocusEffect, useIsFocused } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
+import { useLiveRefresh } from '@/src/shared/hooks/useLiveRefresh';
 import { Clock3, ShoppingBasket, Utensils, Users, Pencil, Trash2 } from 'lucide-react-native';
 import {
   Screen,
@@ -272,6 +273,8 @@ export function RecipeDetailsScreen() {
       void actions.load();
     }, [actions]),
   );
+
+  useLiveRefresh(actions.load, { refreshOnFocus: false });
 
   const heroHeight = 320;
 

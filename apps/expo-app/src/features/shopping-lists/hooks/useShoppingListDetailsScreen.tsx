@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useLiveRefresh } from '@/src/shared/hooks/useLiveRefresh';
 import { useTranslation } from 'react-i18next';
 import { useLocalSearchParams, router } from 'expo-router';
 import { useIsFocused } from '@react-navigation/native';
@@ -146,6 +147,10 @@ export type ShoppingListDetailsView = {
   options: ShoppingListDetailsOptions;
 };
 
+// Two people splitting up a shopping trip tick things off in parallel, so this screen polls.
+// 12 requests a minute per phone, well inside the API's per-minute rate limit.
+const SHOPPING_LIST_POLL_MS = 5000;
+
 export function useShoppingListDetailsScreen(): ShoppingListDetailsView {
   const params = useLocalSearchParams<{ id?: string; returnTo?: string }>();
   const listId = typeof params.id === 'string' ? params.id : null;
@@ -210,6 +215,20 @@ export function useShoppingListDetailsScreen(): ShoppingListDetailsView {
     await load();
     setIsRefreshing(false);
   }, [load]);
+
+  // Background refresh (shown again, back from the background, and the poll): silent on failure,
+  // so a dropped request in a shop with poor signal doesn't cover a usable list with an error.
+  // It only takes a copy newer than the one on screen, so a poll that left before the user's own
+  // tap can't undo that tap when it lands after it.
+  const refreshQuietly = useCallback(async () => {
+    if (!listId) return;
+    const res = await shoppingListsApi.get(listId);
+    setList((current) =>
+      current && Date.parse(res.updatedAt) <= Date.parse(current.updatedAt) ? current : res,
+    );
+  }, [listId]);
+
+  useLiveRefresh(refreshQuietly, { pollIntervalMs: SHOPPING_LIST_POLL_MS });
 
   const handleBack = useCallback(() => {
     if (returnTo) {

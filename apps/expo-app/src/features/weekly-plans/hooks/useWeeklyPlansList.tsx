@@ -16,6 +16,7 @@ type UseWeeklyPlansListResult = {
   error: UiError | null;
   load: () => Promise<void>;
   loadMore: () => Promise<void>;
+  refreshQuietly: () => Promise<void>;
   refreshControl: ReactElement<RefreshControlProps>;
 };
 
@@ -98,6 +99,19 @@ export function useWeeklyPlansList(options?: UseWeeklyPlansListOptions): UseWeek
     }
   }, [canLoadMore, isLoading, isLoadingMore, offset, pageSize, shouldPaginate, showError]);
 
+  // Same request as load, for background refreshes: a failure keeps what's shown instead of
+  // emptying the list and raising an error.
+  const refreshQuietly = useCallback(async () => {
+    const list = await weeklyPlansApi.list(
+      shouldPaginate ? { limit: pageSize, offset: 0 } : weeklyStart,
+    );
+    setItems(list);
+    if (shouldPaginate) {
+      setOffset(list.length);
+      setCanLoadMore(list.length >= pageSize);
+    }
+  }, [pageSize, shouldPaginate, weeklyStart]);
+
   const refresh = useCallback(async () => {
     setIsRefreshing(true);
     try {
@@ -120,6 +134,7 @@ export function useWeeklyPlansList(options?: UseWeeklyPlansListOptions): UseWeek
     error,
     load,
     loadMore,
+    refreshQuietly,
     refreshControl,
   };
 }

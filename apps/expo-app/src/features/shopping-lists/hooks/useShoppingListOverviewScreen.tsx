@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useLiveRefresh } from '@/src/shared/hooks/useLiveRefresh';
 import { useTranslation } from 'react-i18next';
 import { useLocalSearchParams, router } from 'expo-router';
 import { useFocusEffect, useIsFocused } from '@react-navigation/native';
@@ -124,6 +125,8 @@ export function useShoppingListOverviewScreen(): ShoppingListOverviewView {
       void load().finally(() => setIsLoading(false));
     }, [load]),
   );
+
+  useLiveRefresh(load, { refreshOnFocus: false });
 
   useEffect(() => {
     if (!toastParam || !isFocused) return undefined;
