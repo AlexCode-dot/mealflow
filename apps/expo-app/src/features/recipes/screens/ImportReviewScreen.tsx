@@ -25,6 +25,7 @@ import {
 } from '@/src/features/recipes/hooks';
 import {
   RecipeAddButton,
+  ImageFocusEditorSheet,
   RecipeHero,
   RecipeSheetLayout,
   createRecipeEditorRenderers,
@@ -79,6 +80,7 @@ export function ImportReviewScreen() {
   const descriptionInputRef = useRef<TextInput | null>(null);
   const [serverError, setServerError] = useState<string | null>(null);
   const [showRemoveImage, setShowRemoveImage] = useState(false);
+  const [focusEditorOpen, setFocusEditorOpen] = useState(false);
 
   const { pickImage, isUploading } = useRecipeImagePicker({
     setImageUrl: review.form.setImageUrl,
@@ -267,6 +269,8 @@ export function ImportReviewScreen() {
           hero={
             <RecipeHero
               imageUrl={heroImageUrl}
+              imageFocus={review.form.imageFocus}
+              onAdjust={heroImageUrl ? () => setFocusEditorOpen(true) : undefined}
               attribution={heroAttribution}
               onPress={pickImage}
               onRemove={heroImageUrl ? onRemoveImage : undefined}
@@ -440,6 +444,16 @@ export function ImportReviewScreen() {
         onConfirm={confirmRemoveImage}
       />
 
+      <ImageFocusEditorSheet
+        visible={focusEditorOpen}
+        uri={review.form.imageUrl}
+        focus={review.form.imageFocus}
+        onConfirm={(focus) => {
+          review.form.setImageFocus(focus);
+          setFocusEditorOpen(false);
+        }}
+        onCancel={() => setFocusEditorOpen(false)}
+      />
       <VideoThumbnailPickerSheet
         visible={framePickerOpen}
         videoUri={videoUri}

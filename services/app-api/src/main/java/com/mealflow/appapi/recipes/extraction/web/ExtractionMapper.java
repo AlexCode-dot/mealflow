@@ -68,6 +68,7 @@ public class ExtractionMapper {
                 trim(body.imageUrl()),
                 trim(body.imageFileId()),
                 recipeMapper.toAttributionDomain(body.imageAttribution()),
+                recipeMapper.toFocusDomain(body.imageFocus()),
                 ingredients,
                 steps,
                 body.cookingTimeMinutes(),

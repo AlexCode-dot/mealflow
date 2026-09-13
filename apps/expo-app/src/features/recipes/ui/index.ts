@@ -15,6 +15,8 @@ export type { RecipeEditorTabKey } from './RecipeEditorTabs';
 export { PhotoAttributionBadge } from './PhotoAttributionBadge';
 export { RecipeGridCard } from './RecipeGridCard';
 export { RecipeHero } from './RecipeHero';
+export { RecipeImage } from './RecipeImage';
+export { ImageFocusEditorSheet } from './ImageFocusEditorSheet';
 export { RecipeIngredientRow } from './RecipeIngredientRow';
 export { RecipeListCard } from './RecipeListCard';
 export { RecipeListHeader } from './RecipeListHeader';

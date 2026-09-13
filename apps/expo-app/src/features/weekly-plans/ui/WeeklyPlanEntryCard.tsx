@@ -1,4 +1,5 @@
-import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { RecipeImage } from '@/src/features/recipes/ui/RecipeImage';
 import { ShoppingBasket, Users, Utensils } from 'lucide-react-native';
 import type { WeeklyPlanEntry } from '@/src/features/weekly-plans/types';
 import type { RecipeListItem } from '@/src/features/recipes/types';
@@ -49,7 +50,7 @@ export function WeeklyPlanEntryCard({ entry, recipe, onPress }: Props) {
         <View style={styles.row}>
           <View style={styles.imageFrame}>
             {recipe?.imageUrl ? (
-              <Image source={{ uri: recipe.imageUrl }} style={styles.image} resizeMode="cover" />
+              <RecipeImage uri={recipe.imageUrl} focus={recipe.imageFocus} style={styles.image} />
             ) : (
               <Shimmer height={92} borderRadius={14} style={styles.imageShimmer} />
             )}

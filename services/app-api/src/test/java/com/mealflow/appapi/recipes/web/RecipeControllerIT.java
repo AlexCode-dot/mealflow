@@ -220,6 +220,58 @@ class RecipeControllerIT extends MongoTestContainerConfig {
     }
 
     @Test
+    void imageFocus_followsTheImage_andIsValidated() throws Exception {
+        String token = tokens.issue("user-1");
+
+        HttpResponse<String> created = post("/api/recipes", token, """
+{
+  "title":"Kladdkaka",
+  "imageUrl":"https://images.pexels.com/photos/1/large.jpg",
+  "fromExternal":true,
+  "imageFocus":{"x":0.25,"y":0.7,"zoom":2.0}
+}
+""");
+        assertThat(created.statusCode(), is(201));
+        String id = JsonPath.read(created.body(), "$.id");
+        assertThat(((Number) JsonPath.read(created.body(), "$.imageFocus.x")).doubleValue(), is(0.25));
+        assertThat(((Number) JsonPath.read(created.body(), "$.imageFocus.zoom")).doubleValue(), is(2.0));
+
+        // The list feeds the recipe cards and the week plan, so it has to carry the framing too.
+        HttpResponse<String> list = get("/api/recipes", token);
+        assertThat(((Number) JsonPath.read(list.body(), "$[0].imageFocus.y")).doubleValue(), is(0.7));
+
+        // Re-framing an untouched image is stored ...
+        HttpResponse<String> reframed = patch("/api/recipes/" + id, token, """
+{ "imageFocus":{"x":0.5,"y":0.5,"zoom":1.5} }
+""");
+        assertThat(reframed.statusCode(), is(200));
+        assertThat(((Number) JsonPath.read(reframed.body(), "$.imageFocus.zoom")).doubleValue(), is(1.5));
+
+        // ... and survives a patch that doesn't touch the image.
+        HttpResponse<String> renamed = patch("/api/recipes/" + id, token, """
+{ "title":"Kladdkaka deluxe" }
+""");
+        assertThat(((Number) JsonPath.read(renamed.body(), "$.imageFocus.zoom")).doubleValue(), is(1.5));
+
+        // A new image starts centred — the old framing described a different picture.
+        HttpResponse<String> replaced = patch("/api/recipes/" + id, token, """
+{ "imageUrl":"https://images.pexels.com/photos/2/large.jpg", "fromExternal":true }
+""");
+        assertThat(replaced.statusCode(), is(200));
+        assertThat(JsonPath.read(replaced.body(), "$.imageFocus"), nullValue());
+
+        // Out-of-range framing is rejected rather than stored.
+        HttpResponse<String> offImage = patch("/api/recipes/" + id, token, """
+{ "imageFocus":{"x":1.5,"y":0.5,"zoom":1.0} }
+""");
+        assertThat(offImage.statusCode(), is(400));
+        HttpResponse<String> overZoomed = patch("/api/recipes/" + id, token, """
+{ "imageFocus":{"x":0.5,"y":0.5,"zoom":9.0} }
+""");
+        assertThat(overZoomed.statusCode(), is(400));
+    }
+
+    @Test
     void patch_shouldReject_blankTitle_whenProvided() throws Exception {
         String token = tokens.issue("user-1");
 

@@ -1,6 +1,7 @@
 package com.mealflow.appapi.recipes.extraction.service;
 
 import com.mealflow.appapi.recipes.domain.ImageAttribution;
+import com.mealflow.appapi.recipes.domain.ImageFocus;
 import com.mealflow.appapi.recipes.domain.Ingredient;
 import com.mealflow.appapi.recipes.domain.Recipe;
 import com.mealflow.appapi.recipes.extraction.config.ExtractionAsyncConfig;
@@ -198,6 +199,7 @@ public class RecipeExtractionService {
                 request.imageUrl(),
                 request.imageFileId(),
                 request.imageAttribution(),
+                request.imageFocus(),
                 ingredients,
                 steps,
                 request.cookingTimeMinutes(),
@@ -230,6 +232,7 @@ public class RecipeExtractionService {
             String imageUrl,
             String imageFileId,
             ImageAttribution imageAttribution,
+            ImageFocus imageFocus,
             List<AcceptIngredient> ingredients,
             List<String> steps,
             Integer cookingTimeMinutes,

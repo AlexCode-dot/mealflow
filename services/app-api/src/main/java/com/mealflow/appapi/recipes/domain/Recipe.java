@@ -24,6 +24,9 @@ public class Recipe {
     /** Credit for a stock imageUrl (e.g. Pexels); null for the user's own uploads. */
     private ImageAttribution imageAttribution;
 
+    /** How the image is framed (focal point + zoom) at every display size; null = centred. */
+    private ImageFocus imageFocus;
+
     private List<Ingredient> ingredients = new ArrayList<>();
     private List<String> steps = new ArrayList<>();
 
@@ -180,6 +183,14 @@ public class Recipe {
 
     public void setImageAttribution(ImageAttribution imageAttribution) {
         this.imageAttribution = imageAttribution;
+    }
+
+    public ImageFocus getImageFocus() {
+        return imageFocus;
+    }
+
+    public void setImageFocus(ImageFocus imageFocus) {
+        this.imageFocus = imageFocus;
     }
 
     public List<Ingredient> getIngredients() {

@@ -1,30 +1,35 @@
-import {
-  ActivityIndicator,
-  Animated,
-  Image,
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { ActivityIndicator, Animated, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { LinearGradient } from 'expo-linear-gradient';
 import { ImagePlus } from 'lucide-react-native';
 import { type Theme, useTheme, useThemedStyles } from '@/src/shared/theme';
-import type { ImageAttribution } from '@/src/features/recipes/types';
+import type { ImageAttribution, ImageFocus } from '@/src/features/recipes/types';
 import { PhotoAttributionBadge } from './PhotoAttributionBadge';
+import { RecipeImage } from './RecipeImage';
 
 type Props = {
   imageUrl?: string | null;
   /** Stock-photo credit to overlay on the image (e.g. a Pexels suggestion on review). */
   attribution?: ImageAttribution | null;
+  /** How the photo is framed; see RecipeImage. */
+  imageFocus?: ImageFocus | null;
+  /** Opens the framing editor — shown as an Adjust badge next to change/remove. */
+  onAdjust?: () => void;
   onPress?: () => void;
   onRemove?: () => void;
   isUploading?: boolean;
 };
 
-export function RecipeHero({ imageUrl, attribution, onPress, onRemove, isUploading }: Props) {
+export function RecipeHero({
+  imageUrl,
+  attribution,
+  imageFocus,
+  onPress,
+  onAdjust,
+  onRemove,
+  isUploading,
+}: Props) {
   const { t } = useTranslation();
   const theme = useTheme();
   const styles = useThemedStyles(createStyles);
@@ -64,7 +69,7 @@ export function RecipeHero({ imageUrl, attribution, onPress, onRemove, isUploadi
           disabled={!onPress || isUploading}
           style={styles.heroPressable}
         >
-          <Image source={{ uri: imageUrl }} style={styles.heroImage} resizeMode="cover" />
+          <RecipeImage uri={imageUrl} focus={imageFocus} style={styles.heroImage} />
           {isUploading ? (
             <View style={styles.uploadOverlay}>
               <ActivityIndicator color="#fff" />
@@ -83,11 +88,16 @@ export function RecipeHero({ imageUrl, attribution, onPress, onRemove, isUploadi
               bottomOffset={6}
             />
           ) : null}
-          {!isUploading && (onPress || onRemove) ? (
+          {!isUploading && (onPress || onRemove || onAdjust) ? (
             <View style={styles.actionRow}>
               {onRemove ? (
                 <Pressable onPress={onRemove} style={styles.removeBadge}>
                   <Text style={styles.removeBadgeText}>{t('recipes.removePhoto')}</Text>
+                </Pressable>
+              ) : null}
+              {onAdjust ? (
+                <Pressable onPress={onAdjust} style={styles.changeBadge} accessibilityRole="button">
+                  <Text style={styles.changeBadgeText}>{t('recipes.adjustPhoto')}</Text>
                 </Pressable>
               ) : null}
               {onPress ? (

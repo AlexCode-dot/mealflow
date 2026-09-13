@@ -132,6 +132,7 @@ export function useExtractionReview(jobId: string | undefined): ExtractionReview
         imageUrl: base.imageUrl,
         imageFileId: base.imageFileId,
         imageAttribution: keptStockPhoto ? job?.thumbnailAttribution : undefined,
+        imageFocus: base.imageFocus,
         ingredients: cleanIngredients,
         steps: cleanSteps,
         cookingTimeMinutes: base.cookingTimeMinutes,

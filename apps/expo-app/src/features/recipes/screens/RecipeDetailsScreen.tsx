@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, Image, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import { useFocusEffect, useIsFocused } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
@@ -21,6 +21,7 @@ import { routes } from '@/src/core/navigation/routes';
 import { useAddRecipeToShoppingList, useRecipeDetails } from '@/src/features/recipes/hooks';
 import {
   PhotoAttributionBadge,
+  RecipeImage,
   RecipeIngredientRow,
   RecipeStepRow,
   RecipeSheetLayout,
@@ -315,7 +316,11 @@ export function RecipeDetailsScreen() {
             hero={
               <View style={styles.hero}>
                 {state.recipe?.imageUrl ? (
-                  <Image source={{ uri: state.recipe.imageUrl }} style={styles.heroImage} />
+                  <RecipeImage
+                    uri={state.recipe.imageUrl}
+                    focus={state.recipe.imageFocus}
+                    style={styles.heroImage}
+                  />
                 ) : (
                   <Shimmer height={heroHeight} borderRadius={0} />
                 )}

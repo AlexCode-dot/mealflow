@@ -10,6 +10,7 @@ public record RecipeResponse(
         String imageUrl,
         String imageFileId,
         ImageAttributionDto imageAttribution,
+        ImageFocusDto imageFocus,
         List<IngredientDto> ingredients,
         List<String> steps,
         Integer cookingTimeMinutes,
