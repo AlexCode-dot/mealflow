@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useLiveRefresh } from '@/src/shared/hooks/useLiveRefresh';
 import type { Dispatch, SetStateAction } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useWindowDimensions } from 'react-native';
@@ -210,8 +211,9 @@ export function useWeeklyPlanDetailsScreen(): WeeklyPlanDetailsView {
   const pendingEntryId = typeof params.editEntryId === 'string' ? params.editEntryId : null;
   const pendingDay = typeof params.editDay === 'string' ? params.editDay : null;
   const returnTo = normalizePath(typeof params.returnTo === 'string' ? params.returnTo : null);
-  const { plan, isLoading, error, load, setPlan } = useWeeklyPlanDetails(planId);
+  const { plan, isLoading, error, load, setPlan, refreshQuietly } = useWeeklyPlanDetails(planId);
   const isFocused = useIsFocused();
+  useLiveRefresh(refreshQuietly);
   const insets = useSafeAreaInsets();
   const didOpenPendingEntry = useRef(false);
   const didApplyPendingDay = useRef(false);

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useLiveRefresh } from '@/src/shared/hooks/useLiveRefresh';
 import { ActivityIndicator, Image, StyleSheet, Text, View } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import { useFocusEffect, useIsFocused } from '@react-navigation/native';
@@ -271,6 +272,8 @@ export function RecipeDetailsScreen() {
       void actions.load();
     }, [actions]),
   );
+
+  useLiveRefresh(actions.load, { refreshOnFocus: false });
 
   const heroHeight = 320;
 

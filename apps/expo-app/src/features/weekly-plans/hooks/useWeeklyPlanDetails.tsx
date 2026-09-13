@@ -12,6 +12,7 @@ type UseWeeklyPlanDetailsResult = {
   error: UiError | null;
   load: () => Promise<void>;
   setPlan: (plan: WeeklyPlan | null) => void;
+  refreshQuietly: () => Promise<void>;
 };
 
 export function useWeeklyPlanDetails(planId: string | null): UseWeeklyPlanDetailsResult {
@@ -45,5 +46,16 @@ export function useWeeklyPlanDetails(planId: string | null): UseWeeklyPlanDetail
     load();
   }, [load]);
 
-  return { plan, isLoading, error, load, setPlan };
+  // For background refreshes: silent on failure, and keeps the current object unless the server's
+  // copy is newer — the screen derives editor drafts from the plan, and a no-op refresh must not
+  // reset them under the user's fingers.
+  const refreshQuietly = useCallback(async () => {
+    if (!planId) return;
+    const res = await weeklyPlansApi.get(planId);
+    setPlan((current) =>
+      current && Date.parse(res.updatedAt) <= Date.parse(current.updatedAt) ? current : res,
+    );
+  }, [planId]);
+
+  return { plan, isLoading, error, load, setPlan, refreshQuietly };
 }

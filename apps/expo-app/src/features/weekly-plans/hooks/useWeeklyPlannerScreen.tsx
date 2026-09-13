@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useLiveRefresh } from '@/src/shared/hooks/useLiveRefresh';
 import { useTranslation } from 'react-i18next';
 import { router, useLocalSearchParams } from 'expo-router';
 import { weeklyPlansApi } from '@/src/features/weekly-plans/api/weeklyPlansApi';
@@ -71,7 +72,14 @@ export type WeeklyPlannerView = {
 export function useWeeklyPlannerScreen(): WeeklyPlannerView {
   const { t } = useTranslation();
   const params = useLocalSearchParams<{ openPlanId?: string; returnTo?: string }>();
-  const { items, isLoading, error, load, refreshControl } = useWeeklyPlansList();
+  const {
+    items,
+    isLoading,
+    error,
+    load,
+    refreshQuietly: refreshWeeksQuietly,
+    refreshControl,
+  } = useWeeklyPlansList();
   const [tab, setTab] = useState<WeeklyPlannerTab>('recent');
   const [isCreating, setIsCreating] = useState(false);
   const {
@@ -143,6 +151,16 @@ export function useWeeklyPlannerScreen(): WeeklyPlannerView {
   useEffect(() => {
     loadSelectedPlan();
   }, [loadSelectedPlan]);
+
+  // Shared by everyone on the account: catch up when shown again or back from the background.
+  const refreshPlanner = useCallback(async () => {
+    await refreshWeeksQuietly();
+    if (selectedPlan?.id) {
+      setSelectedPlanDetails(await weeklyPlansApi.get(selectedPlan.id));
+    }
+  }, [refreshWeeksQuietly, selectedPlan?.id]);
+
+  useLiveRefresh(refreshPlanner);
 
   const dayMealCounts = useMemo(() => {
     const counts: Record<string, number> = {};

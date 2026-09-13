@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useLiveRefresh } from '@/src/shared/hooks/useLiveRefresh';
 import type { RefObject } from 'react';
 import type { FlatList } from 'react-native';
 import { useTranslation } from 'react-i18next';
@@ -143,6 +144,8 @@ export function useRecipesScreen(): RecipesScreenView {
       }
     }, [loadDiscovery, loadSaved, view.tab]),
   );
+
+  useLiveRefresh(loadSaved, { refreshOnFocus: false });
 
   useEffect(() => {
     if (!toastParam || !isFocused) return undefined;

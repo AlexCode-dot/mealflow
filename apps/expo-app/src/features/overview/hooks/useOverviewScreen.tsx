@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useState } from 'react';
+import { useLiveRefresh } from '@/src/shared/hooks/useLiveRefresh';
 import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { useFocusEffect } from '@react-navigation/native';
@@ -138,6 +139,8 @@ export function useOverviewScreen(): OverviewView {
       void load().finally(() => setIsLoading(false));
     }, [load]),
   );
+
+  useLiveRefresh(load, { refreshOnFocus: false });
 
   const handleRefresh = useCallback(async () => {
     setIsRefreshing(true);
