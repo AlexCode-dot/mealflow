@@ -15,6 +15,8 @@ type Props = {
   onCancel: () => void;
   /** Called with the local URI of the extracted frame and the timestamp it was taken at. */
   onPicked: (uri: string, timeMs: number) => void;
+  /** Fires once the sheet has fully closed, so the caller can safely open another sheet. */
+  onDismissed?: () => void;
 };
 
 const FALLBACK_DURATION_MS = 60_000;
@@ -26,6 +28,7 @@ export function VideoThumbnailPickerSheet({
   durationMs,
   onCancel,
   onPicked,
+  onDismissed,
 }: Props) {
   const theme = useTheme();
   const styles = useThemedStyles(createStyles);
@@ -202,7 +205,7 @@ export function VideoThumbnailPickerSheet({
   });
 
   return (
-    <ModalSheet visible={visible} onClose={onCancel} avoidKeyboard={false}>
+    <ModalSheet visible={visible} onClose={onCancel} onDismiss={onDismissed} avoidKeyboard={false}>
       <View style={styles.root}>
         <View style={styles.header}>
           <View style={styles.headerIcon}>
