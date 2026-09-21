@@ -36,6 +36,7 @@ public class ShoppingListService {
     private final RecipeRepository recipeRepository;
     private final ShoppingListGenerator generator;
     private final ItemCategoryResolver categoryResolver;
+    private final LlmItemNameNormalizer nameNormalizer;
     private final Clock clock;
 
     public ShoppingListService(
@@ -44,12 +45,14 @@ public class ShoppingListService {
             RecipeRepository recipeRepository,
             ShoppingListGenerator generator,
             ItemCategoryResolver categoryResolver,
+            LlmItemNameNormalizer nameNormalizer,
             Clock clock) {
         this.shoppingListRepository = shoppingListRepository;
         this.weeklyPlanRepository = weeklyPlanRepository;
         this.recipeRepository = recipeRepository;
         this.generator = generator;
         this.categoryResolver = categoryResolver;
+        this.nameNormalizer = nameNormalizer;
         this.clock = clock;
     }
 
@@ -104,8 +107,13 @@ public class ShoppingListService {
         String nextTitle = normalizedTitle != null
                 ? normalizedTitle
                 : currentTitle != null ? currentTitle : defaultTitleForPlan(plan.getWeeklyStart());
-        List<ShoppingListItem> mergedItems = generator.mergePlan(baseItems, plan, loadRecipes(plan, userId));
-        // Keywords for the common groceries, one batched LLM call for the rest.
+        Map<String, Recipe> recipes = loadRecipes(plan, userId);
+        // One LLM call turns ingredient names into product names (and aisles), so the same product
+        // from several recipes lands on one line. Without it, names merge on exact spelling.
+        Map<String, NormalizedItemName> normalizedNames =
+                nameNormalizer.normalize(generator.collectNames(baseItems, plan, recipes));
+        List<ShoppingListItem> mergedItems = generator.mergePlan(baseItems, plan, recipes, normalizedNames);
+        // Aisles for whatever the normalization didn't cover: keywords first, then one LLM call.
         categoryResolver.applyCategories(mergedItems);
         active.setItems(mergedItems);
         active.setWeeklyPlanId(weeklyPlanId);
