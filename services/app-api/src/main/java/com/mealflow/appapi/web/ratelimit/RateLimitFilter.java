@@ -51,11 +51,13 @@ public class RateLimitFilter extends OncePerRequestFilter {
             return;
         }
 
-        String key = "api:" + rateLimitKey(request);
+        boolean integration = isIntegrationRequest(request);
+        String key = integration ? "int:" + integrationRateLimitKey(request) : "api:" + rateLimitKey(request);
+        int perMinute = integration ? props.getIntegrationsPerMinute() : props.getApiPerMinute();
         Bucket bucket = buckets.get(key, ignored -> Bucket.builder()
                 .addLimit(BandwidthBuilder.builder()
-                        .capacity(props.getApiPerMinute())
-                        .refillGreedy(props.getApiPerMinute(), Duration.ofMinutes(1))
+                        .capacity(perMinute)
+                        .refillGreedy(perMinute, Duration.ofMinutes(1))
                         .build())
                 .build());
 
@@ -73,7 +75,26 @@ public class RateLimitFilter extends OncePerRequestFilter {
         if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
             return true;
         }
-        return !request.getRequestURI().startsWith("/api/");
+        return !request.getRequestURI().startsWith("/api/") && !isIntegrationRequest(request);
+    }
+
+    private static boolean isIntegrationRequest(HttpServletRequest request) {
+        return request.getRequestURI().startsWith("/integrations/");
+    }
+
+    /** Integration API: one bucket per (user, OAuth client) so one client can't starve another. */
+    private String integrationRateLimitKey(HttpServletRequest request) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null
+                && authentication.isAuthenticated()
+                && authentication.getPrincipal() instanceof Jwt jwt) {
+            String subject = jwt.getSubject();
+            String clientId = jwt.getClaimAsString("client_id");
+            if (subject != null && !subject.isBlank()) {
+                return "user:" + subject + ":client:" + (clientId == null ? "-" : clientId);
+            }
+        }
+        return "ip:" + clientIp(request);
     }
 
     private String rateLimitKey(HttpServletRequest request) {

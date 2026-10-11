@@ -23,20 +23,43 @@ public class IdentityMongoConfig {
 
     public static final String COLLECTION = "integration_tokens";
 
+    /**
+     * Spring Authorization Server grants (OAuth 2.0 authorizations) persisted by identity-service.
+     * {@code _id} = grant id ({@code gid} claim), {@code principalName} = userId, {@code revoked}.
+     */
+    public static final String OAUTH_AUTHORIZATIONS_COLLECTION = "oauth2_authorizations";
+
+    private final String configuredUri;
+    private final String fallbackUri;
     private MongoClient client;
 
+    public IdentityMongoConfig(
+            @Value("${integration-tokens.identity-mongodb.uri:}") String configuredUri,
+            @Value("${spring.data.mongodb.uri:${spring.mongodb.uri:}}") String fallbackUri) {
+        this.configuredUri = configuredUri;
+        this.fallbackUri = fallbackUri;
+    }
+
     @Bean(name = "identityIntegrationTokens")
-    MongoCollection<Document> identityIntegrationTokens(
-            @Value("${integration-tokens.identity-mongodb.uri:}") String configured,
-            @Value("${spring.data.mongodb.uri:${spring.mongodb.uri:}}") String fallback) {
-        String uri = (configured == null || configured.isBlank()) ? fallback : configured;
+    MongoCollection<Document> identityIntegrationTokens() {
+        return identityDatabase().getCollection(COLLECTION);
+    }
+
+    @Bean(name = "identityOAuthAuthorizations")
+    MongoCollection<Document> identityOAuthAuthorizations() {
+        return identityDatabase().getCollection(OAUTH_AUTHORIZATIONS_COLLECTION);
+    }
+
+    private synchronized MongoDatabase identityDatabase() {
+        String uri = (configuredUri == null || configuredUri.isBlank()) ? fallbackUri : configuredUri;
         if (uri == null || uri.isBlank()) {
             throw new IllegalStateException(
                     "No Mongo URI configured for integration-tokens. Set integration-tokens.identity-mongodb.uri.");
         }
-        this.client = MongoClients.create(uri);
-        MongoDatabase db = client.getDatabase(databaseFromUri(uri));
-        return db.getCollection(COLLECTION);
+        if (client == null) {
+            client = MongoClients.create(uri);
+        }
+        return client.getDatabase(databaseFromUri(uri));
     }
 
     @PreDestroy

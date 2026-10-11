@@ -292,7 +292,7 @@ public class RecipeService {
      * Clean up user-entered tags: trim, drop blanks, de-duplicate case-insensitively (keeping the
      * first spelling the user typed) and cap the count so one recipe can't collect hundreds.
      */
-    private List<String> normalizeTags(List<String> tags) {
+    public List<String> normalizeTags(List<String> tags) {
         if (tags == null) {
             return List.of();
         }

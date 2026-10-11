@@ -15,6 +15,10 @@ public class RateLimitProperties {
     @Min(1)
     private int apiPerMinute = 120;
 
+    /** Per (user, OAuth client) limit for the third-party integration API (/integrations/**). */
+    @Min(1)
+    private int integrationsPerMinute = 60;
+
     @Min(1)
     private int bucketTtlMinutes = 15;
 
@@ -35,6 +39,14 @@ public class RateLimitProperties {
 
     public void setApiPerMinute(int apiPerMinute) {
         this.apiPerMinute = apiPerMinute;
+    }
+
+    public int getIntegrationsPerMinute() {
+        return integrationsPerMinute;
+    }
+
+    public void setIntegrationsPerMinute(int integrationsPerMinute) {
+        this.integrationsPerMinute = integrationsPerMinute;
     }
 
     public int getBucketTtlMinutes() {

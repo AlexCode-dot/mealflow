@@ -1,0 +1,298 @@
+openapi: 3.1.0
+info:
+  title: MealFlow integration API for Personal OS
+  version: "1.0.0"
+  description: |
+    Narrow, versioned API for connected apps (Personal OS). See personal-os-v1.md for the OAuth flow,
+    idempotency, ETag and isolation rules. All writes require `Idempotency-Key`.
+servers:
+  - url: http://localhost:8082/integrations/v1
+    description: Local app-api
+security:
+  - mealflowOAuth: []
+components:
+  securitySchemes:
+    mealflowOAuth:
+      type: oauth2
+      flows:
+        authorizationCode:
+          authorizationUrl: http://localhost:8081/oauth2/authorize
+          tokenUrl: http://localhost:8081/oauth2/token
+          refreshUrl: http://localhost:8081/oauth2/token
+          scopes:
+            recipes.read: See your recipes
+            recipes.write: Add new recipes and edit your recipes
+            mealplan.read: See your meal plan for this week and next week
+            mealplan.write: Add and remove meals in your meal plan
+            shoppinglist.read: See your shopping lists
+            shoppinglist.write: Add, remove and check off items on your shopping lists
+  parameters:
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      description: 1-255 visible ASCII chars; scoped per user+client; kept 24 h.
+      schema: { type: string, minLength: 1, maxLength: 255 }
+    IfMatch:
+      name: If-Match
+      in: header
+      required: false
+      description: Quoted version from a previous ETag; 412 if the resource changed.
+      schema: { type: string }
+    Id: { name: id, in: path, required: true, schema: { type: string } }
+    ItemId: { name: itemId, in: path, required: true, schema: { type: string } }
+    Week: { name: week, in: path, required: true, schema: { type: string, enum: [current, next] } }
+  headers:
+    ETag: { description: Quoted resource version, schema: { type: string } }
+    IdempotencyReplayed: { description: "true when this is a stored replay", schema: { type: string } }
+  responses:
+    Problem:
+      description: Error (problem+json)
+      content:
+        application/problem+json:
+          schema: { $ref: "#/components/schemas/Problem" }
+  schemas:
+    Problem:
+      type: object
+      properties:
+        type: { type: string }
+        title: { type: string }
+        status: { type: integer }
+        detail: { type: string }
+        path: { type: string }
+        timestamp: { type: string, format: date-time }
+    Ingredient:
+      type: object
+      properties:
+        name: { type: string, maxLength: 120 }
+        quantity: { type: [number, "null"] }
+        unit: { type: [string, "null"] }
+    RecipeSummary:
+      type: object
+      properties:
+        id: { type: string }
+        title: { type: string }
+        category: { type: [string, "null"] }
+        tags: { type: array, items: { type: string } }
+        cookingTimeMinutes: { type: [integer, "null"] }
+        portions: { type: [integer, "null"] }
+        imageUrl: { type: [string, "null"] }
+        updatedAt: { type: string, format: date-time }
+        version: { type: integer, format: int64 }
+    RecipePage:
+      type: object
+      properties:
+        items: { type: array, items: { $ref: "#/components/schemas/RecipeSummary" } }
+        nextCursor: { type: [string, "null"] }
+    Recipe:
+      type: object
+      properties:
+        id: { type: string }
+        title: { type: string }
+        description: { type: [string, "null"] }
+        ingredients: { type: array, items: { $ref: "#/components/schemas/Ingredient" } }
+        steps: { type: array, items: { type: string } }
+        cookingTimeMinutes: { type: [integer, "null"] }
+        portions: { type: [integer, "null"] }
+        category: { type: [string, "null"] }
+        tags: { type: array, items: { type: string } }
+        imageUrl: { type: [string, "null"] }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+        version: { type: integer, format: int64 }
+    CreateRecipe:
+      type: object
+      required: [title]
+      properties:
+        title: { type: string, maxLength: 120 }
+        description: { type: string, maxLength: 2000 }
+        ingredients: { type: array, maxItems: 100, items: { $ref: "#/components/schemas/Ingredient" } }
+        steps: { type: array, maxItems: 100, items: { type: string, maxLength: 500 } }
+        cookingTimeMinutes: { type: integer, minimum: 0, maximum: 10000 }
+        portions: { type: integer, minimum: 0, maximum: 1000 }
+        category: { type: string, maxLength: 80 }
+        tags: { type: array, maxItems: 10, items: { type: string, maxLength: 40 } }
+    UpdateRecipe:
+      description: Partial update; omitted fields are unchanged.
+      allOf: [{ $ref: "#/components/schemas/CreateRecipe" }]
+      required: []
+    MealPlanEntry:
+      type: object
+      properties:
+        id: { type: string }
+        day: { type: string }
+        section: { type: string }
+        recipeId: { type: [string, "null"] }
+        customTitle: { type: [string, "null"] }
+        title: { type: [string, "null"] }
+        notes: { type: [string, "null"] }
+        portions: { type: [integer, "null"] }
+    MealPlan:
+      type: object
+      properties:
+        id: { type: [string, "null"] }
+        weekStart: { type: string, format: date, description: Monday of the week (Europe/Stockholm) }
+        sections: { type: array, items: { type: string } }
+        entries: { type: array, items: { $ref: "#/components/schemas/MealPlanEntry" } }
+        updatedAt: { type: [string, "null"], format: date-time }
+        version: { type: [integer, "null"], format: int64 }
+    AddMealPlanEntry:
+      type: object
+      required: [day, section]
+      properties:
+        day: { type: string, maxLength: 12 }
+        section: { type: string, maxLength: 40 }
+        recipeId: { type: string, maxLength: 120 }
+        customTitle: { type: string, maxLength: 120 }
+        notes: { type: string, maxLength: 500 }
+        portions: { type: integer, minimum: 1, maximum: 1000 }
+    ShoppingListItem:
+      type: object
+      properties:
+        id: { type: string }
+        name: { type: string }
+        quantity: { type: [number, "null"] }
+        unit: { type: [string, "null"] }
+        checked: { type: boolean }
+        category: { type: string }
+    ShoppingListSummary:
+      type: object
+      properties:
+        id: { type: string }
+        title: { type: string }
+        status: { type: string, enum: [active, archived] }
+        itemCount: { type: integer }
+        checkedCount: { type: integer }
+        updatedAt: { type: string, format: date-time }
+        version: { type: integer, format: int64 }
+    ShoppingList:
+      type: object
+      properties:
+        id: { type: string }
+        title: { type: string }
+        status: { type: string, enum: [active, archived] }
+        items: { type: array, items: { $ref: "#/components/schemas/ShoppingListItem" } }
+        updatedAt: { type: string, format: date-time }
+        version: { type: integer, format: int64 }
+    AddShoppingItem:
+      type: object
+      required: [name]
+      properties:
+        name: { type: string, maxLength: 80 }
+        quantity: { type: number, minimum: 0 }
+        unit: { type: string, maxLength: 20 }
+    UpdateShoppingItem:
+      type: object
+      required: [checked]
+      properties:
+        checked: { type: boolean }
+paths:
+  /recipes:
+    get:
+      summary: List / search own recipes
+      security: [{ mealflowOAuth: [recipes.read] }]
+      parameters:
+        - { name: q, in: query, schema: { type: string, maxLength: 100 } }
+        - { name: limit, in: query, schema: { type: integer, minimum: 1, maximum: 100, default: 20 } }
+        - { name: cursor, in: query, schema: { type: string } }
+      responses:
+        "200": { description: Page, content: { application/json: { schema: { $ref: "#/components/schemas/RecipePage" } } } }
+        default: { $ref: "#/components/responses/Problem" }
+    post:
+      summary: Create recipe
+      security: [{ mealflowOAuth: [recipes.write] }]
+      parameters: [{ $ref: "#/components/parameters/IdempotencyKey" }]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: "#/components/schemas/CreateRecipe" } } } }
+      responses:
+        "201":
+          description: Created (or replayed)
+          headers: { ETag: { $ref: "#/components/headers/ETag" }, Idempotency-Replayed: { $ref: "#/components/headers/IdempotencyReplayed" } }
+          content: { application/json: { schema: { $ref: "#/components/schemas/Recipe" } } }
+        default: { $ref: "#/components/responses/Problem" }
+  /recipes/{id}:
+    parameters: [{ $ref: "#/components/parameters/Id" }]
+    get:
+      summary: Get recipe
+      security: [{ mealflowOAuth: [recipes.read] }]
+      responses:
+        "200": { description: Recipe, headers: { ETag: { $ref: "#/components/headers/ETag" } }, content: { application/json: { schema: { $ref: "#/components/schemas/Recipe" } } } }
+        default: { $ref: "#/components/responses/Problem" }
+    patch:
+      summary: Update recipe (partial)
+      security: [{ mealflowOAuth: [recipes.write] }]
+      parameters: [{ $ref: "#/components/parameters/IdempotencyKey" }, { $ref: "#/components/parameters/IfMatch" }]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: "#/components/schemas/UpdateRecipe" } } } }
+      responses:
+        "200": { description: Updated, headers: { ETag: { $ref: "#/components/headers/ETag" } }, content: { application/json: { schema: { $ref: "#/components/schemas/Recipe" } } } }
+        default: { $ref: "#/components/responses/Problem" }
+  /meal-plans/{week}:
+    parameters: [{ $ref: "#/components/parameters/Week" }]
+    get:
+      summary: Current or next week's meal plan
+      security: [{ mealflowOAuth: [mealplan.read] }]
+      responses:
+        "200": { description: Plan (empty if none), headers: { ETag: { $ref: "#/components/headers/ETag" } }, content: { application/json: { schema: { $ref: "#/components/schemas/MealPlan" } } } }
+        default: { $ref: "#/components/responses/Problem" }
+  /meal-plans/{week}/entries:
+    parameters: [{ $ref: "#/components/parameters/Week" }]
+    post:
+      summary: Add a meal-plan entry
+      security: [{ mealflowOAuth: [mealplan.write] }]
+      parameters: [{ $ref: "#/components/parameters/IdempotencyKey" }, { $ref: "#/components/parameters/IfMatch" }]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: "#/components/schemas/AddMealPlanEntry" } } } }
+      responses:
+        "201": { description: Updated plan, headers: { ETag: { $ref: "#/components/headers/ETag" } }, content: { application/json: { schema: { $ref: "#/components/schemas/MealPlan" } } } }
+        default: { $ref: "#/components/responses/Problem" }
+  /meal-plans/{planId}/entries/{entryId}:
+    parameters:
+      - { name: planId, in: path, required: true, schema: { type: string } }
+      - { name: entryId, in: path, required: true, schema: { type: string } }
+    delete:
+      summary: Remove a meal-plan entry
+      security: [{ mealflowOAuth: [mealplan.write] }]
+      parameters: [{ $ref: "#/components/parameters/IdempotencyKey" }, { $ref: "#/components/parameters/IfMatch" }]
+      responses:
+        "200": { description: Updated plan, headers: { ETag: { $ref: "#/components/headers/ETag" } }, content: { application/json: { schema: { $ref: "#/components/schemas/MealPlan" } } } }
+        default: { $ref: "#/components/responses/Problem" }
+  /shopping-lists:
+    get:
+      summary: List own shopping lists
+      security: [{ mealflowOAuth: [shoppinglist.read] }]
+      responses:
+        "200": { description: Lists, content: { application/json: { schema: { type: array, items: { $ref: "#/components/schemas/ShoppingListSummary" } } } } }
+        default: { $ref: "#/components/responses/Problem" }
+  /shopping-lists/{id}:
+    parameters: [{ $ref: "#/components/parameters/Id" }]
+    get:
+      summary: Get shopping list
+      security: [{ mealflowOAuth: [shoppinglist.read] }]
+      responses:
+        "200": { description: List, headers: { ETag: { $ref: "#/components/headers/ETag" } }, content: { application/json: { schema: { $ref: "#/components/schemas/ShoppingList" } } } }
+        default: { $ref: "#/components/responses/Problem" }
+  /shopping-lists/{id}/items:
+    parameters: [{ $ref: "#/components/parameters/Id" }]
+    post:
+      summary: Add item
+      security: [{ mealflowOAuth: [shoppinglist.write] }]
+      parameters: [{ $ref: "#/components/parameters/IdempotencyKey" }, { $ref: "#/components/parameters/IfMatch" }]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: "#/components/schemas/AddShoppingItem" } } } }
+      responses:
+        "201": { description: Updated list, headers: { ETag: { $ref: "#/components/headers/ETag" } }, content: { application/json: { schema: { $ref: "#/components/schemas/ShoppingList" } } } }
+        default: { $ref: "#/components/responses/Problem" }
+  /shopping-lists/{id}/items/{itemId}:
+    parameters: [{ $ref: "#/components/parameters/Id" }, { $ref: "#/components/parameters/ItemId" }]
+    patch:
+      summary: Check / uncheck item
+      security: [{ mealflowOAuth: [shoppinglist.write] }]
+      parameters: [{ $ref: "#/components/parameters/IdempotencyKey" }, { $ref: "#/components/parameters/IfMatch" }]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: "#/components/schemas/UpdateShoppingItem" } } } }
+      responses:
+        "200": { description: Updated list, headers: { ETag: { $ref: "#/components/headers/ETag" } }, content: { application/json: { schema: { $ref: "#/components/schemas/ShoppingList" } } } }
+        default: { $ref: "#/components/responses/Problem" }
+    delete:
+      summary: Remove item
+      security: [{ mealflowOAuth: [shoppinglist.write] }]
+      parameters: [{ $ref: "#/components/parameters/IdempotencyKey" }, { $ref: "#/components/parameters/IfMatch" }]
+      responses:
+        "200": { description: Updated list, headers: { ETag: { $ref: "#/components/headers/ETag" } }, content: { application/json: { schema: { $ref: "#/components/schemas/ShoppingList" } } } }
+        default: { $ref: "#/components/responses/Problem" }

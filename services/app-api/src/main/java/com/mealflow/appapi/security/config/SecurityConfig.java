@@ -1,6 +1,8 @@
 package com.mealflow.appapi.security.config;
 
 import com.mealflow.appapi.security.integrations.IntegrationTokenAuthenticationFilter;
+import com.mealflow.appapi.security.oauth.FirstPartyTokenValidator;
+import com.mealflow.appapi.security.oauth.ValidatingJwtDecoder;
 import com.mealflow.appapi.web.logging.RequestIdFilter;
 import com.mealflow.appapi.web.ratelimit.RateLimitFilter;
 import org.springframework.beans.factory.annotation.Value;
@@ -28,8 +30,13 @@ public class SecurityConfig {
             SecurityProblemSupport problems,
             RateLimitFilter rateLimitFilter,
             RequestIdFilter requestIdFilter,
-            IntegrationTokenAuthenticationFilter integrationTokenAuthenticationFilter)
+            IntegrationTokenAuthenticationFilter integrationTokenAuthenticationFilter,
+            JwtDecoder jwtDecoder)
             throws Exception {
+        // Third-party OAuth tokens (aud=mealflow-integrations / client_id) are only valid on
+        // /integrations/** (see IntegrationSecurityConfig) — never on the first-party API.
+        JwtDecoder firstPartyDecoder = new ValidatingJwtDecoder(jwtDecoder, new FirstPartyTokenValidator());
+
         return http.csrf(AbstractHttpConfigurer::disable)
                 .cors(Customizer.withDefaults())
                 .addFilterBefore(requestIdFilter, BearerTokenAuthenticationFilter.class)
@@ -51,7 +58,7 @@ public class SecurityConfig {
                         .authenticated()
                         .anyRequest()
                         .denyAll())
-                .oauth2ResourceServer(oauth -> oauth.jwt(Customizer.withDefaults()))
+                .oauth2ResourceServer(oauth -> oauth.jwt(jwt -> jwt.decoder(firstPartyDecoder)))
                 .build();
     }
 
