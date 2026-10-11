@@ -23,6 +23,12 @@ public final class AuditEventType {
     public static final String EMAIL_VERIFICATION_RESENT = "auth.email_verification_resent";
     public static final String ACCOUNT_DELETED = "auth.account_deleted";
 
+    // Connected apps (OAuth 2.0 provider, MF1). Never carry token values.
+    public static final String OAUTH_CONSENT_GRANTED = "oauth.consent_granted";
+    public static final String OAUTH_TOKEN_ISSUED = "oauth.token_issued";
+    public static final String OAUTH_TOKEN_REVOKED = "oauth.token_revoked";
+    public static final String OAUTH_ACCESS_REVOKED_BY_USER = "oauth.access_revoked_by_user";
+
     // Security signals
     public static final String TOKEN_REUSE_DETECTED = "security.token_reuse_detected";
 

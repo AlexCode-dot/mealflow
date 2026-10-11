@@ -180,6 +180,8 @@ export const en = {
     developer: 'Developer',
     developerAccess: 'Developer access',
     developerAccessSubtitle: 'Generate API tokens for third-party apps',
+    connectedApps: 'Connected apps',
+    connectedAppsSubtitle: 'Apps you have given access to MealFlow',
     account: 'Account',
     logout: 'Logout',
     signOutOfMealFlow: 'Sign out of MealFlow',
@@ -204,6 +206,29 @@ export const en = {
     accountDeletionRequest: 'Account Deletion Request',
     support: 'Support',
     supportEmail: 'Support email',
+  },
+
+  connections: {
+    title: 'Connected apps',
+    introTitle: 'Apps with access to MealFlow',
+    introBody:
+      'These apps can use your MealFlow data with the permissions you approved. Remove access at any time — the app then has to ask you again.',
+    empty: 'No apps are connected to your MealFlow account.',
+    connectedSince: 'Connected {{date}}',
+    lastActive: 'Last active {{date}}',
+    removeAccess: 'Remove access',
+    removeTitle: 'Remove access?',
+    removeDescription: '{{name}} will no longer be able to read or change anything in MealFlow.',
+    removing: 'Removing…',
+    removed: 'Access removed',
+    scopes: {
+      'recipes.read': 'See your recipes',
+      'recipes.write': 'Add and edit recipes',
+      'mealplan.read': 'See your meal plan',
+      'mealplan.write': 'Change your meal plan',
+      'shoppinglist.read': 'See your shopping lists',
+      'shoppinglist.write': 'Change your shopping lists',
+    },
   },
 
   developer: {

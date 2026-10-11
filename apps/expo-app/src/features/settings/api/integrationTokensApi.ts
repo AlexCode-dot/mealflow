@@ -39,7 +39,7 @@ export type CreateIntegrationTokenInput = {
 
 type Method = 'GET' | 'POST' | 'DELETE';
 
-async function authed<T>(path: string, method: Method, body?: unknown): Promise<T> {
+export async function authed<T>(path: string, method: Method, body?: unknown): Promise<T> {
   const call = (token: string | null) =>
     request<T>(ENV.IDENTITY_BASE_URL, path, method, {
       body,

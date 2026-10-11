@@ -8,6 +8,7 @@ import {
   ChevronRight,
   FileText,
   KeyRound,
+  Link2,
   Languages,
   LogOut,
   Mail,
@@ -180,6 +181,15 @@ export function SettingsScreen() {
 
           <SectionHeader title={t('settings.account')} styles={styles} />
           <View style={styles.sectionGroup}>
+            <SettingsRow
+              title={t('settings.connectedApps')}
+              subtitle={t('settings.connectedAppsSubtitle')}
+              onPress={actions.openConnectedApps}
+              icon={<Link2 size={22} color={theme.colors.textMuted} strokeWidth={2.3} />}
+              iconBg={theme.colors.bgLight}
+              right={<ChevronRight size={22} color={theme.colors.textMuted} strokeWidth={2.4} />}
+              styles={styles}
+            />
             <SettingsRow
               title={t('settings.logout')}
               subtitle={t('settings.signOutOfMealFlow')}

@@ -104,6 +104,29 @@ public class RateLimitFilter extends OncePerRequestFilter {
             if ("/auth/reset-password".equals(path)) {
                 return new RateLimit("reset-password", props.getResetPasswordPerMinute());
             }
+            // OAuth browser flow shares the buckets of the equivalent API endpoints (same IP).
+            if ("/oauth/login".equals(path)) {
+                return new RateLimit("login", props.getLoginPerMinute());
+            }
+            if ("/oauth/signup".equals(path)) {
+                return new RateLimit("register", props.getRegisterPerMinute());
+            }
+            if ("/oauth/verify".equals(path)) {
+                return new RateLimit("verify-email", props.getVerifyEmailPerMinute());
+            }
+            if ("/oauth/verify/resend".equals(path)) {
+                return new RateLimit("resend-verification", props.getResendVerificationPerMinute());
+            }
+            if ("/oauth2/token".equals(path)) {
+                return new RateLimit("oauth-token", props.getOauthTokenPerMinute());
+            }
+            if ("/oauth2/revoke".equals(path)) {
+                return new RateLimit("oauth-revoke", props.getOauthRevokePerMinute());
+            }
+        }
+
+        if ("/oauth2/authorize".equals(path)) {
+            return new RateLimit("oauth-authorize", props.getOauthAuthorizePerMinute());
         }
 
         if ("GET".equalsIgnoreCase(method) && "/.well-known/jwks.json".equals(path)) {

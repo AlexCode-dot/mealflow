@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}">
+<head th:replace="~{oauth/layout-head :: head(#{oauth.login.title})}"></head>
+<body>
+<main>
+  <div class="card">
+    <h1 th:text="#{oauth.login.title}">Log in to MealFlow</h1>
+    <p class="muted" th:text="#{oauth.login.subtitle}">Log in with your MealFlow account to continue.</p>
+    <form method="post" th:action="@{/oauth/login}">
+      <label for="email" th:text="#{oauth.field.email}">Email</label>
+      <input id="email" name="email" type="email" autocomplete="username" required>
+      <label for="password" th:text="#{oauth.field.password}">Password</label>
+      <input id="password" name="password" type="password" autocomplete="current-password" required>
+      <p class="error" th:if="${error}" th:text="#{oauth.login.error}">Wrong email or password.</p>
+      <button type="submit" th:text="#{oauth.login.submit}">Log in</button>
+    </form>
+    <p class="muted"><span th:text="#{oauth.login.noAccount}">No account?</span>
+      <a th:href="@{/oauth/signup}" th:text="#{oauth.login.signupLink}">Create one</a></p>
+    <p class="muted" th:text="#{oauth.login.forgotHint}">Forgot your password? Reset it in the MealFlow app.</p>
+  </div>
+</main>
+</body>
+</html>

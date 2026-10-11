@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}">
+<head th:replace="~{oauth/layout-head :: head(#{oauth.verify.title})}"></head>
+<body>
+<main>
+  <div class="card">
+    <h1 th:text="#{oauth.verify.title}">Check your email</h1>
+    <p class="muted" th:text="#{oauth.verify.subtitle}">We sent a code to your email. Enter it to continue.</p>
+    <form method="post" th:action="@{/oauth/verify}">
+      <label for="code" th:text="#{oauth.field.code}">Code</label>
+      <input id="code" name="code" type="text" inputmode="numeric" autocomplete="one-time-code" required>
+      <p class="error" th:if="${error}" th:text="${#messages.msg(error)}">Error</p>
+      <p class="info" th:if="${info}" th:text="${#messages.msg(info)}">Info</p>
+      <button type="submit" th:text="#{oauth.verify.submit}">Verify</button>
+    </form>
+    <form method="post" th:action="@{/oauth/verify/resend}">
+      <button type="submit" class="secondary" th:text="#{oauth.verify.resend}">Send a new code</button>
+    </form>
+  </div>
+</main>
+</body>
+</html>

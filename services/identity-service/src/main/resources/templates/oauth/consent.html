@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}">
+<head th:replace="~{oauth/layout-head :: head(#{oauth.consent.title(${clientName})})}"></head>
+<body>
+<main>
+  <div class="card">
+    <h1 th:text="#{oauth.consent.title(${clientName})}">Connect Personal OS to MealFlow</h1>
+    <p class="muted" th:text="#{oauth.consent.subtitle(${clientName})}">Personal OS is asking for permission to:</p>
+    <form id="approve" method="post" th:action="@{/oauth2/authorize}">
+      <input type="hidden" name="client_id" th:value="${clientId}">
+      <input type="hidden" name="state" th:value="${state}">
+      <ul class="scopes">
+        <li th:each="scope : ${scopes}">
+          <input type="checkbox" name="scope" th:value="${scope}" th:id="'scope-' + ${scope}" checked>
+          <label style="margin:0" th:for="'scope-' + ${scope}" th:text="${#messages.msg('oauth.scope.' + scope)}">scope</label>
+        </li>
+        <li th:each="scope : ${previouslyApprovedScopes}">
+          <input type="checkbox" checked disabled>
+          <span th:text="${#messages.msg('oauth.scope.' + scope)}">scope</span>
+          <span class="muted" th:text="#{oauth.consent.alreadyApproved}">(already allowed)</span>
+        </li>
+      </ul>
+      <p class="muted" th:text="#{oauth.consent.confirmNote(${clientName})}">Personal OS always asks you before changing anything.</p>
+      <p class="muted" th:text="#{oauth.consent.revokeNote}">You can remove access at any time in MealFlow under Account.</p>
+      <button type="submit" th:text="#{oauth.consent.allow}">Allow</button>
+    </form>
+    <form id="deny" method="post" th:action="@{/oauth2/authorize}">
+      <input type="hidden" name="client_id" th:value="${clientId}">
+      <input type="hidden" name="state" th:value="${state}">
+      <button type="submit" class="secondary" th:text="#{oauth.consent.deny}">Deny</button>
+    </form>
+  </div>
+</main>
+</body>
+</html>

@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}">
+<head th:replace="~{oauth/layout-head :: head(#{oauth.signup.title})}"></head>
+<body>
+<main>
+  <div class="card">
+    <h1 th:text="#{oauth.signup.title}">Create a MealFlow account</h1>
+    <form method="post" th:action="@{/oauth/signup}">
+      <label for="email" th:text="#{oauth.field.email}">Email</label>
+      <input id="email" name="email" type="email" autocomplete="username" required>
+      <label for="password" th:text="#{oauth.field.password}">Password</label>
+      <input id="password" name="password" type="password" autocomplete="new-password" minlength="8" maxlength="72" required>
+      <p class="muted" th:text="#{oauth.signup.passwordHint}">At least 8 characters.</p>
+      <p class="error" th:if="${error}" th:text="${#messages.msg(error)}">Error</p>
+      <button type="submit" th:text="#{oauth.signup.submit}">Create account</button>
+    </form>
+    <p class="muted"><a th:href="@{/oauth/login}" th:text="#{oauth.signup.loginLink}">I already have an account</a></p>
+  </div>
+</main>
+</body>
+</html>

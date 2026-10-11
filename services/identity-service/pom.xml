@@ -81,6 +81,16 @@
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-oauth2-resource-server</artifactId>
     </dependency>
+    <!-- OAuth 2.0 authorization server for third-party connections (Personal OS, MF1) -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-security-oauth2-authorization-server</artifactId>
+    </dependency>
+    <!-- Server-rendered login / consent pages for the OAuth flow (i18n EN/SV) -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-thymeleaf</artifactId>
+    </dependency>
     <!-- Needed by Argon2PasswordEncoder -->
     <dependency>
       <groupId>org.bouncycastle</groupId>

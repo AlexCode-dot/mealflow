@@ -30,6 +30,7 @@ export const routes = {
   settings: '/settings' as const,
   settingsLegal: '/settings/legal' as const,
   settingsDeveloper: '/settings/developer' as const,
+  settingsConnections: '/settings/connections' as const,
   settingsWithToast: (toast: string) =>
     ({
       pathname: '/settings',

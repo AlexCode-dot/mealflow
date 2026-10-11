@@ -182,6 +182,8 @@ export const sv: Translations = {
     developer: 'Utvecklare',
     developerAccess: 'Utvecklaråtkomst',
     developerAccessSubtitle: 'Skapa API-token för tredjepartsappar',
+    connectedApps: 'Kopplade appar',
+    connectedAppsSubtitle: 'Appar som du har gett åtkomst till MealFlow',
     account: 'Konto',
     logout: 'Logga ut',
     signOutOfMealFlow: 'Logga ut från MealFlow',
@@ -206,6 +208,29 @@ export const sv: Translations = {
     accountDeletionRequest: 'Begäran om kontoborttagning',
     support: 'Support',
     supportEmail: 'Support-e-post',
+  },
+
+  connections: {
+    title: 'Kopplade appar',
+    introTitle: 'Appar med åtkomst till MealFlow',
+    introBody:
+      'De här apparna kan använda din MealFlow-data med de behörigheter du har godkänt. Ta bort åtkomsten när som helst — då måste appen fråga dig igen.',
+    empty: 'Inga appar är kopplade till ditt MealFlow-konto.',
+    connectedSince: 'Kopplad {{date}}',
+    lastActive: 'Senast aktiv {{date}}',
+    removeAccess: 'Ta bort åtkomst',
+    removeTitle: 'Ta bort åtkomst?',
+    removeDescription: '{{name}} kommer inte längre kunna läsa eller ändra något i MealFlow.',
+    removing: 'Tar bort…',
+    removed: 'Åtkomsten är borttagen',
+    scopes: {
+      'recipes.read': 'Se dina recept',
+      'recipes.write': 'Lägga till och ändra recept',
+      'mealplan.read': 'Se din matplanering',
+      'mealplan.write': 'Ändra din matplanering',
+      'shoppinglist.read': 'Se dina inköpslistor',
+      'shoppinglist.write': 'Ändra dina inköpslistor',
+    },
   },
 
   developer: {

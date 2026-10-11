@@ -57,6 +57,7 @@ type SettingsActions = {
   setLanguage: (value: Language) => Promise<void>;
   openLegal: () => void;
   openDeveloperAccess: () => void;
+  openConnectedApps: () => void;
   openDeleteConfirm: () => void;
   closeDeleteConfirm: () => void;
   confirmDelete: () => void;
@@ -192,6 +193,9 @@ export function useSettingsScreen(): SettingsView {
   const openDeveloperAccess = useCallback(() => {
     router.push(routes.settingsDeveloper);
   }, []);
+  const openConnectedApps = useCallback(() => {
+    router.push(routes.settingsConnections);
+  }, []);
   const openDeleteConfirm = useCallback(() => setDeleteOpen(true), []);
   const closeDeleteConfirm = useCallback(() => setDeleteOpen(false), []);
 
@@ -289,6 +293,7 @@ export function useSettingsScreen(): SettingsView {
       setLanguage,
       openLegal,
       openDeveloperAccess,
+      openConnectedApps,
       openDeleteConfirm,
       closeDeleteConfirm,
       confirmDelete,
@@ -303,6 +308,7 @@ export function useSettingsScreen(): SettingsView {
       openLanguagePicker,
       openLegal,
       openDeveloperAccess,
+      openConnectedApps,
       openDeleteConfirm,
       openProfileEdit,
       logout,

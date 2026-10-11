@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}">
+<head th:replace="~{oauth/layout-head :: head(#{oauth.done.title})}"></head>
+<body>
+<main>
+  <div class="card">
+    <h1 th:text="#{oauth.done.title}">You're verified</h1>
+    <p class="muted" th:text="#{oauth.done.subtitle}">Go back to the app that sent you here and connect again.</p>
+  </div>
+</main>
+</body>
+</html>

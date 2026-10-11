@@ -40,6 +40,15 @@ public class RateLimitProperties {
     private int resetPasswordPerMinute = 10;
 
     @Min(1)
+    private int oauthTokenPerMinute = 30;
+
+    @Min(1)
+    private int oauthRevokePerMinute = 30;
+
+    @Min(1)
+    private int oauthAuthorizePerMinute = 60;
+
+    @Min(1)
     private int bucketTtlMinutes = 15;
 
     @Min(100)
@@ -123,6 +132,30 @@ public class RateLimitProperties {
 
     public void setResendVerificationPerMinute(int resendVerificationPerMinute) {
         this.resendVerificationPerMinute = resendVerificationPerMinute;
+    }
+
+    public int getOauthTokenPerMinute() {
+        return oauthTokenPerMinute;
+    }
+
+    public void setOauthTokenPerMinute(int oauthTokenPerMinute) {
+        this.oauthTokenPerMinute = oauthTokenPerMinute;
+    }
+
+    public int getOauthRevokePerMinute() {
+        return oauthRevokePerMinute;
+    }
+
+    public void setOauthRevokePerMinute(int oauthRevokePerMinute) {
+        this.oauthRevokePerMinute = oauthRevokePerMinute;
+    }
+
+    public int getOauthAuthorizePerMinute() {
+        return oauthAuthorizePerMinute;
+    }
+
+    public void setOauthAuthorizePerMinute(int oauthAuthorizePerMinute) {
+        this.oauthAuthorizePerMinute = oauthAuthorizePerMinute;
     }
 
     public int getBucketTtlMinutes() {
