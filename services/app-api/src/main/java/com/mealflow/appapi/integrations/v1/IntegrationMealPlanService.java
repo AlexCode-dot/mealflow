@@ -41,6 +41,15 @@ public class IntegrationMealPlanService {
 
     static final List<String> DEFAULT_SECTIONS = List.of("Breakfast", "Lunch", "Dinner");
     private static final Set<String> DAYS = Set.of("MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN");
+    /** Full English weekday names, accepted on input and stored in the app's three-letter form. */
+    private static final Map<String, String> FULL_DAY_NAMES = Map.of(
+            "MONDAY", "MON",
+            "TUESDAY", "TUE",
+            "WEDNESDAY", "WED",
+            "THURSDAY", "THU",
+            "FRIDAY", "FRI",
+            "SATURDAY", "SAT",
+            "SUNDAY", "SUN");
 
     private final WeeklyPlanRepository plans;
     private final WeeklyPlanService weeklyPlanService;
@@ -84,10 +93,7 @@ public class IntegrationMealPlanService {
 
     public AddedEntry addEntry(String userId, String week, AddMealPlanEntryBody body, String ifMatch) {
         String weekStart = weekStart(week);
-        String day = body.day().trim().toUpperCase(Locale.ROOT);
-        if (!DAYS.contains(day)) {
-            throw IntegrationApiException.badRequest("day must be one of MON,TUE,WED,THU,FRI,SAT,SUN");
-        }
+        String day = normalizeDay(body.day());
         boolean hasRecipe = body.recipeId() != null && !body.recipeId().isBlank();
         boolean hasCustom = body.customTitle() != null && !body.customTitle().isBlank();
         if (hasRecipe == hasCustom) {
@@ -102,9 +108,8 @@ public class IntegrationMealPlanService {
         String entryId = UUID.randomUUID().toString();
         WeeklyPlan existing = find(userId, weekStart);
         if (existing == null) {
-            if (ifMatch != null && !ifMatch.isBlank()) {
-                throw IntegrationApiException.preconditionFailed();
-            }
+            // An empty week is served with version 0 (ETag "0"), so only "0" or * match it.
+            Versioning.checkIfMatch(ifMatch, null);
             PlanEntry entry = newEntry(entryId, day, body.section().trim(), body, hasRecipe);
             try {
                 WeeklyPlan created = weeklyPlanService.create(userId, weekStart, null, List.of(entry));
@@ -174,7 +179,7 @@ public class IntegrationMealPlanService {
 
     public MealPlanDto toDto(String userId, String weekStart, WeeklyPlan plan) {
         if (plan == null) {
-            return new MealPlanDto(null, weekStart, DEFAULT_SECTIONS, List.of(), null, null);
+            return new MealPlanDto(null, weekStart, DEFAULT_SECTIONS, List.of(), null, Versioning.EMPTY_VERSION);
         }
         List<String> recipeIds = plan.getEntries().stream()
                 .map(PlanEntry::getRecipeId)
@@ -201,6 +206,19 @@ public class IntegrationMealPlanService {
                 plan.getEntries().stream().map(toEntry).toList(),
                 plan.getUpdatedAt(),
                 Versioning.version(plan.getUpdatedAt()));
+    }
+
+    /**
+     * Accepts {@code MON}…{@code SUN} and {@code monday}…{@code sunday}, case-insensitively, and
+     * returns the stored three-letter form ({@code MON}…{@code SUN}).
+     */
+    static String normalizeDay(String raw) {
+        String upper = raw == null ? "" : raw.trim().toUpperCase(Locale.ROOT);
+        String day = FULL_DAY_NAMES.getOrDefault(upper, upper);
+        if (!DAYS.contains(day)) {
+            throw IntegrationApiException.badRequest("day must be one of MON…SUN or monday…sunday");
+        }
+        return day;
     }
 
     private static PlanEntry newEntry(

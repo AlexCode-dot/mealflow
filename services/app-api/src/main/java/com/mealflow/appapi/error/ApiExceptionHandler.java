@@ -17,9 +17,15 @@ import jakarta.validation.ConstraintViolationException;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ProblemDetail;
+import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.HttpMediaTypeNotAcceptableException;
+import org.springframework.web.HttpMediaTypeNotSupportedException;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -162,6 +168,44 @@ public class ApiExceptionHandler {
                 "Invalid request parameter",
                 req,
                 Map.of("param", ex.getName(), "value", String.valueOf(ex.getValue())));
+    }
+
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    public ResponseEntity<ProblemDetail> handleMethodNotSupported(
+            HttpRequestMethodNotSupportedException ex, HttpServletRequest req) {
+        HttpHeaders headers = new HttpHeaders();
+        if (ex.getSupportedHttpMethods() != null) {
+            headers.setAllow(ex.getSupportedHttpMethods());
+        }
+        return problem(HttpStatus.METHOD_NOT_ALLOWED, "Method not allowed", headers, req);
+    }
+
+    @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
+    public ResponseEntity<ProblemDetail> handleMediaTypeNotSupported(
+            HttpMediaTypeNotSupportedException ex, HttpServletRequest req) {
+        HttpHeaders headers = new HttpHeaders();
+        if (!ex.getSupportedMediaTypes().isEmpty()) {
+            headers.setAccept(ex.getSupportedMediaTypes());
+        }
+        return problem(HttpStatus.UNSUPPORTED_MEDIA_TYPE, "Unsupported Content-Type", headers, req);
+    }
+
+    @ExceptionHandler(HttpMediaTypeNotAcceptableException.class)
+    public ResponseEntity<ProblemDetail> handleMediaTypeNotAcceptable(
+            HttpMediaTypeNotAcceptableException ex, HttpServletRequest req) {
+        return problem(HttpStatus.NOT_ACCEPTABLE, "Requested media type is not available", new HttpHeaders(), req);
+    }
+
+    /**
+     * The content type is set explicitly so the problem body is written even when the client's
+     * Accept header (e.g. after a 406) does not list application/problem+json.
+     */
+    private ResponseEntity<ProblemDetail> problem(
+            HttpStatus status, String detail, HttpHeaders headers, HttpServletRequest req) {
+        return ResponseEntity.status(status)
+                .headers(headers)
+                .contentType(MediaType.APPLICATION_PROBLEM_JSON)
+                .body(problems.build(status, detail, req));
     }
 
     // LAST: never leak exception details to the client

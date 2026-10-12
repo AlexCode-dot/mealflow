@@ -20,6 +20,9 @@ import org.springframework.data.mongodb.core.query.Update;
  */
 public final class Versioning {
 
+    /** Version (and ETag {@code "0"}) of a resource that has not been stored yet, e.g. an empty week. */
+    public static final long EMPTY_VERSION = 0L;
+
     private Versioning() {}
 
     public static Long version(Instant updatedAt) {

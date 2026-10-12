@@ -1,10 +1,11 @@
 openapi: 3.1.0
 info:
   title: MealFlow integration API for Personal OS
-  version: "1.0.0"
+  version: "1.0.1"
   description: |
     Narrow, versioned API for connected apps (Personal OS). See personal-os-v1.md for the OAuth flow,
     idempotency, ETag and isolation rules. All writes require `Idempotency-Key`.
+    Changes since the v1 draft (MF1 QA, D1-D10) are listed in personal-os-v1.md, "Changes since v1 draft".
 servers:
   - url: http://localhost:8082/integrations/v1
     description: Local app-api
@@ -45,6 +46,7 @@ components:
   headers:
     ETag: { description: Quoted resource version, schema: { type: string } }
     IdempotencyReplayed: { description: "true when this is a stored replay", schema: { type: string } }
+    Location: { description: Path of the created resource (recipe, meal-plan entry or shopping-list item), schema: { type: string } }
   responses:
     Problem:
       description: Error (problem+json)
@@ -54,6 +56,11 @@ components:
   schemas:
     Problem:
       type: object
+      description: |
+        RFC 9457 problem details. The first six fields are always present. Some errors add fields:
+        `errors` (bean validation, 400), `param` / `value` (bad query or path parameter, 400) and
+        `retryAfterSeconds` (429). Clients must ignore fields they do not know.
+      additionalProperties: true
       properties:
         type: { type: string }
         title: { type: string }
@@ -61,12 +68,32 @@ components:
         detail: { type: string }
         path: { type: string }
         timestamp: { type: string, format: date-time }
+        errors:
+          type: array
+          items:
+            type: object
+            properties:
+              field: { type: string }
+              message: { type: string }
+        param: { type: string }
+        value: { type: string }
+        retryAfterSeconds: { type: integer }
     Ingredient:
       type: object
+      description: |
+        `quantity`, when set, must be > 0 and then `unit` is required (not blank). `unit` may be set
+        without `quantity` ("1 nypa salt" -> name "salt", unit "nypa"). Violations answer 400.
+      required: [name]
       properties:
-        name: { type: string, maxLength: 120 }
-        quantity: { type: [number, "null"] }
-        unit: { type: [string, "null"] }
+        name: { type: string, minLength: 1, maxLength: 80, description: Not blank }
+        quantity: { type: [number, "null"], exclusiveMinimum: 0 }
+        unit: { type: [string, "null"], maxLength: 20 }
+      if:
+        required: [quantity]
+        properties: { quantity: { type: number } }
+      then:
+        required: [unit]
+        properties: { unit: { type: string, minLength: 1, pattern: "\\S" } }
     RecipeSummary:
       type: object
       properties:
@@ -104,24 +131,34 @@ components:
       type: object
       required: [title]
       properties:
-        title: { type: string, maxLength: 120 }
+        title: { type: string, minLength: 1, maxLength: 120, description: Not blank }
         description: { type: string, maxLength: 2000 }
         ingredients: { type: array, maxItems: 100, items: { $ref: "#/components/schemas/Ingredient" } }
-        steps: { type: array, maxItems: 100, items: { type: string, maxLength: 500 } }
+        steps: { type: array, maxItems: 100, items: { type: string, minLength: 1, maxLength: 500, description: Not blank } }
         cookingTimeMinutes: { type: integer, minimum: 0, maximum: 10000 }
         portions: { type: integer, minimum: 0, maximum: 1000 }
-        category: { type: string, maxLength: 80 }
-        tags: { type: array, maxItems: 10, items: { type: string, maxLength: 40 } }
+        category: { type: string, maxLength: 80, description: Free text (e.g. "Middag"), not an enum }
+        tags: { type: array, maxItems: 10, items: { type: string, minLength: 1, maxLength: 40, description: Not blank } }
     UpdateRecipe:
-      description: Partial update; omitted fields are unchanged.
-      allOf: [{ $ref: "#/components/schemas/CreateRecipe" }]
-      required: []
+      type: object
+      description: |
+        Partial update (merge semantics); every field is optional and omitted or null fields are
+        unchanged. A list that is sent replaces the stored list. `title`, if sent, must not be blank.
+      properties:
+        title: { type: [string, "null"], minLength: 1, maxLength: 120, description: Not blank when set }
+        description: { type: [string, "null"], maxLength: 2000 }
+        ingredients: { type: [array, "null"], maxItems: 100, items: { $ref: "#/components/schemas/Ingredient" } }
+        steps: { type: [array, "null"], maxItems: 100, items: { type: string, minLength: 1, maxLength: 500, description: Not blank } }
+        cookingTimeMinutes: { type: [integer, "null"], minimum: 0, maximum: 10000 }
+        portions: { type: [integer, "null"], minimum: 0, maximum: 1000 }
+        category: { type: [string, "null"], maxLength: 80 }
+        tags: { type: [array, "null"], maxItems: 10, items: { type: string, minLength: 1, maxLength: 40, description: Not blank } }
     MealPlanEntry:
       type: object
       properties:
         id: { type: string }
-        day: { type: string }
-        section: { type: string }
+        day: { type: string, enum: [MON, TUE, WED, THU, FRI, SAT, SUN], description: Always returned in this three-letter form }
+        section: { type: string, description: One of the plan's sections, in the plan's spelling }
         recipeId: { type: [string, "null"] }
         customTitle: { type: [string, "null"] }
         title: { type: [string, "null"] }
@@ -129,19 +166,37 @@ components:
         portions: { type: [integer, "null"] }
     MealPlan:
       type: object
+      description: |
+        An empty week (no plan stored yet) has `id` and `updatedAt` null, `sections`
+        [Breakfast, Lunch, Dinner], no entries, `version` 0 and ETag `"0"`.
       properties:
-        id: { type: [string, "null"] }
+        id: { type: [string, "null"], description: null for an empty week }
         weekStart: { type: string, format: date, description: Monday of the week (Europe/Stockholm) }
         sections: { type: array, items: { type: string } }
         entries: { type: array, items: { $ref: "#/components/schemas/MealPlanEntry" } }
-        updatedAt: { type: [string, "null"], format: date-time }
-        version: { type: [integer, "null"], format: int64 }
+        updatedAt: { type: [string, "null"], format: date-time, description: null for an empty week }
+        version: { type: integer, format: int64, description: 0 for an empty week }
     AddMealPlanEntry:
       type: object
+      description: |
+        Exactly one of `recipeId` / `customTitle` must be set (non-blank); both or neither answers 400.
+        `recipeId` must be one of the caller's own recipes; an unknown or another user's recipe answers
+        400 (not 404), with the same message either way.
+
+        `section`: if the week has no plan yet, any section is accepted and the new plan's sections are
+        [Breakfast, Lunch, Dinner] plus that section if it is not one of them. If the plan exists,
+        `section` must match one of its `sections` (case-insensitive; the plan's spelling is stored),
+        otherwise 400.
       required: [day, section]
       properties:
-        day: { type: string, maxLength: 12 }
-        section: { type: string, maxLength: 40 }
+        day:
+          type: string
+          maxLength: 12
+          description: |
+            `MON`...`SUN` or `monday`...`sunday`, case-insensitive. Stored and returned as `MON`...`SUN`.
+            Anything else answers 400.
+          examples: [tuesday, TUE]
+        section: { type: string, minLength: 1, maxLength: 40, description: Not blank; see the rule above }
         recipeId: { type: string, maxLength: 120 }
         customTitle: { type: string, maxLength: 120 }
         notes: { type: string, maxLength: 500 }
@@ -154,7 +209,10 @@ components:
         quantity: { type: [number, "null"] }
         unit: { type: [string, "null"] }
         checked: { type: boolean }
-        category: { type: string }
+        category:
+          type: string
+          enum: [produce, meat, dairy, bread, pantry, frozen, drinks, other]
+          description: Always lower case. Assigned by MealFlow from the item name; not settable through this API.
     ShoppingListSummary:
       type: object
       properties:
@@ -178,7 +236,7 @@ components:
       type: object
       required: [name]
       properties:
-        name: { type: string, maxLength: 80 }
+        name: { type: string, minLength: 1, maxLength: 80, description: Not blank }
         quantity: { type: number, minimum: 0 }
         unit: { type: string, maxLength: 20 }
     UpdateShoppingItem:
@@ -206,7 +264,7 @@ paths:
       responses:
         "201":
           description: Created (or replayed)
-          headers: { ETag: { $ref: "#/components/headers/ETag" }, Idempotency-Replayed: { $ref: "#/components/headers/IdempotencyReplayed" } }
+          headers: { ETag: { $ref: "#/components/headers/ETag" }, Location: { $ref: "#/components/headers/Location" }, Idempotency-Replayed: { $ref: "#/components/headers/IdempotencyReplayed" } }
           content: { application/json: { schema: { $ref: "#/components/schemas/Recipe" } } }
         default: { $ref: "#/components/responses/Problem" }
   /recipes/{id}:
@@ -231,17 +289,19 @@ paths:
       summary: Current or next week's meal plan
       security: [{ mealflowOAuth: [mealplan.read] }]
       responses:
-        "200": { description: Plan (empty if none), headers: { ETag: { $ref: "#/components/headers/ETag" } }, content: { application/json: { schema: { $ref: "#/components/schemas/MealPlan" } } } }
+        "200": { description: 'Plan (empty if none: version 0, ETag "0")', headers: { ETag: { $ref: "#/components/headers/ETag" } }, content: { application/json: { schema: { $ref: "#/components/schemas/MealPlan" } } } }
         default: { $ref: "#/components/responses/Problem" }
   /meal-plans/{week}/entries:
     parameters: [{ $ref: "#/components/parameters/Week" }]
     post:
       summary: Add a meal-plan entry
       security: [{ mealflowOAuth: [mealplan.write] }]
-      parameters: [{ $ref: "#/components/parameters/IdempotencyKey" }, { $ref: "#/components/parameters/IfMatch" }]
+      parameters:
+        - { $ref: "#/components/parameters/IdempotencyKey" }
+        - { $ref: "#/components/parameters/IfMatch", description: 'Version of the plan; "0" (or *) while the week is still empty' }
       requestBody: { required: true, content: { application/json: { schema: { $ref: "#/components/schemas/AddMealPlanEntry" } } } }
       responses:
-        "201": { description: Updated plan, headers: { ETag: { $ref: "#/components/headers/ETag" } }, content: { application/json: { schema: { $ref: "#/components/schemas/MealPlan" } } } }
+        "201": { description: Updated plan, headers: { ETag: { $ref: "#/components/headers/ETag" }, Location: { $ref: "#/components/headers/Location" } }, content: { application/json: { schema: { $ref: "#/components/schemas/MealPlan" } } } }
         default: { $ref: "#/components/responses/Problem" }
   /meal-plans/{planId}/entries/{entryId}:
     parameters:
@@ -258,6 +318,12 @@ paths:
     get:
       summary: List own shopping lists
       security: [{ mealflowOAuth: [shoppinglist.read] }]
+      parameters:
+        - name: status
+          in: query
+          required: false
+          description: Only lists with this status (case-insensitive). Omitted means all. Other values answer 400.
+          schema: { type: string, enum: [active, archived] }
       responses:
         "200": { description: Lists, content: { application/json: { schema: { type: array, items: { $ref: "#/components/schemas/ShoppingListSummary" } } } } }
         default: { $ref: "#/components/responses/Problem" }
@@ -277,7 +343,7 @@ paths:
       parameters: [{ $ref: "#/components/parameters/IdempotencyKey" }, { $ref: "#/components/parameters/IfMatch" }]
       requestBody: { required: true, content: { application/json: { schema: { $ref: "#/components/schemas/AddShoppingItem" } } } }
       responses:
-        "201": { description: Updated list, headers: { ETag: { $ref: "#/components/headers/ETag" } }, content: { application/json: { schema: { $ref: "#/components/schemas/ShoppingList" } } } }
+        "201": { description: Updated list, headers: { ETag: { $ref: "#/components/headers/ETag" }, Location: { $ref: "#/components/headers/Location" } }, content: { application/json: { schema: { $ref: "#/components/schemas/ShoppingList" } } } }
         default: { $ref: "#/components/responses/Problem" }
   /shopping-lists/{id}/items/{itemId}:
     parameters: [{ $ref: "#/components/parameters/Id" }, { $ref: "#/components/parameters/ItemId" }]

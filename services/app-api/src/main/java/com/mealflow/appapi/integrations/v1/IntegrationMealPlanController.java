@@ -39,11 +39,10 @@ public class IntegrationMealPlanController {
         String userId = IntegrationTokenClaims.from(auth).userId();
         String weekStart = mealPlans.weekStart(week);
         WeeklyPlan plan = mealPlans.find(userId, weekStart);
-        ResponseEntity.BodyBuilder response = ResponseEntity.ok();
-        if (plan != null) {
-            response.eTag(Versioning.etag(plan.getUpdatedAt()));
-        }
-        return response.body(mealPlans.toDto(userId, weekStart, plan));
+        // An empty week has no stored plan yet: ETag "0" (Versioning.etag(null)), version 0.
+        return ResponseEntity.ok()
+                .eTag(Versioning.etag(plan == null ? null : plan.getUpdatedAt()))
+                .body(mealPlans.toDto(userId, weekStart, plan));
     }
 
     @PostMapping("/{week}/entries")
