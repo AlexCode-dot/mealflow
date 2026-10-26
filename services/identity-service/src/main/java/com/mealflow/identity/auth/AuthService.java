@@ -12,6 +12,8 @@ import com.mealflow.identity.user.domain.User;
 import com.mealflow.identity.user.repository.UserRepository;
 import java.time.Clock;
 import java.time.Instant;
+import java.util.Optional;
+import java.util.UUID;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 
@@ -25,6 +27,7 @@ public class AuthService {
     private final EmailVerificationService emailVerificationService;
     private final PasswordResetService passwordResetService;
     private final Clock clock;
+    private final String dummyPasswordHash;
 
     public AuthService(
             UserRepository userRepository,
@@ -41,6 +44,9 @@ public class AuthService {
         this.emailVerificationService = emailVerificationService;
         this.passwordResetService = passwordResetService;
         this.clock = clock;
+        // Hashed once at startup with the same encoder (and therefore the same Argon2 cost) as real
+        // passwords, so login can burn an equivalent verify when the email is unknown.
+        this.dummyPasswordHash = passwordService.hash(UUID.randomUUID().toString());
     }
 
     /**
@@ -73,10 +79,15 @@ public class AuthService {
     public AuthTokens login(String email, String password) {
         String normalizedEmail = normalizeEmail(email);
 
-        User user = userRepository
-                .findByEmail(normalizedEmail)
-                .orElseThrow(() -> new InvalidCredentialsException("Invalid email or password"));
+        Optional<User> maybeUser = userRepository.findByEmail(normalizedEmail);
+        if (maybeUser.isEmpty()) {
+            // Run a full Argon2 verify anyway so unknown emails take as long as wrong passwords —
+            // otherwise response time reveals which emails have accounts (user enumeration).
+            passwordService.matches(password, dummyPasswordHash);
+            throw new InvalidCredentialsException("Invalid email or password");
+        }
 
+        User user = maybeUser.get();
         if (!passwordService.matches(password, user.getPasswordHash())) {
             throw new InvalidCredentialsException("Invalid email or password");
         }
