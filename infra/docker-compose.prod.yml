@@ -27,6 +27,12 @@ services:
       CORS_ALLOWED_ORIGINS: ${WEB_ORIGIN}
       RESEND_API_KEY: ${RESEND_API_KEY}
       INTEGRATION_TOKEN_ENV_SEGMENT: live
+      # Connected apps (MF1 / Personal OS) — OAuth 2.0 authorization server.
+      # All three EMPTY (or absent from .env.prod) = no client registered = the flow is off and
+      # nothing changes for existing users. The secret lives in .env.prod on the host only.
+      PERSONAL_OS_OAUTH_CLIENT_ID: ${PERSONAL_OS_OAUTH_CLIENT_ID:-}
+      PERSONAL_OS_OAUTH_CLIENT_SECRET: ${PERSONAL_OS_OAUTH_CLIENT_SECRET:-}
+      PERSONAL_OS_OAUTH_REDIRECT_URIS: ${PERSONAL_OS_OAUTH_REDIRECT_URIS:-}
       JAVA_TOOL_OPTIONS: -XX:MaxRAMPercentage=70
     volumes:
       # JWT signing keys live on the host and persist across deploys.
