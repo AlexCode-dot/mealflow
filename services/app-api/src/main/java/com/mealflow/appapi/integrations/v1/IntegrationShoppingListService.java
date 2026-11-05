@@ -59,6 +59,11 @@ public class IntegrationShoppingListService {
         return shoppingLists.getForUser(userId, listId);
     }
 
+    /** The user's single active list, created empty if there is none (see {@link ShoppingListService#ensureActive}). */
+    public ShoppingListService.ActiveList ensureActive(String userId) {
+        return shoppingLists.ensureActive(userId);
+    }
+
     public record AddedItem(ShoppingList list, String itemId) {}
 
     public AddedItem addItem(String userId, String listId, AddShoppingItemBody body, String ifMatch) {

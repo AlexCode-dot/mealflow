@@ -14,6 +14,7 @@ import com.mealflow.appapi.weeklyPlans.service.WeeklyPlanNotFoundException;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.time.temporal.WeekFields;
 import java.util.ArrayList;
 import java.util.List;
@@ -24,6 +25,10 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -37,6 +42,8 @@ public class ShoppingListService {
     private final ShoppingListGenerator generator;
     private final ItemCategoryResolver categoryResolver;
     private final LlmItemNameNormalizer nameNormalizer;
+    private final ActiveShoppingListLock activeListLock;
+    private final MongoTemplate mongo;
     private final Clock clock;
 
     public ShoppingListService(
@@ -46,6 +53,8 @@ public class ShoppingListService {
             ShoppingListGenerator generator,
             ItemCategoryResolver categoryResolver,
             LlmItemNameNormalizer nameNormalizer,
+            ActiveShoppingListLock activeListLock,
+            MongoTemplate mongo,
             Clock clock) {
         this.shoppingListRepository = shoppingListRepository;
         this.weeklyPlanRepository = weeklyPlanRepository;
@@ -53,6 +62,8 @@ public class ShoppingListService {
         this.generator = generator;
         this.categoryResolver = categoryResolver;
         this.nameNormalizer = nameNormalizer;
+        this.activeListLock = activeListLock;
+        this.mongo = mongo;
         this.clock = clock;
     }
 
@@ -122,13 +133,29 @@ public class ShoppingListService {
         return shoppingListRepository.save(active);
     }
 
+    /**
+     * Renames and/or changes the status of a list. A user has at most one active list: making a list
+     * active archives the other active one (it becomes the app's "current" list); archiving the active
+     * list makes sure a new empty active list exists. Status changes run under the per-user
+     * {@link ActiveShoppingListLock}, so concurrent requests cannot leave two active lists.
+     */
     public ShoppingList patchList(String userId, String listId, ShoppingListStatus status, String title) {
+        if (status == null) {
+            return applyPatch(userId, listId, null, title);
+        }
+        return activeListLock.withLock(userId, () -> applyPatch(userId, listId, status, title));
+    }
+
+    private ShoppingList applyPatch(String userId, String listId, ShoppingListStatus status, String title) {
         ShoppingList list = getForUser(userId, listId);
         String normalizedTitle = normalizeTitle(title);
         if (title != null && normalizedTitle == null) {
             throw new ShoppingListValidationException("title must not be blank");
         }
         if (status != null && list.getStatus() != status) {
+            if (status == ShoppingListStatus.ACTIVE) {
+                archiveOtherActiveLists(userId, listId);
+            }
             list.setStatus(status);
             list.setUpdatedAt(clock.instant());
             shoppingListRepository.save(list);
@@ -140,7 +167,7 @@ public class ShoppingListService {
         }
 
         if (status == ShoppingListStatus.ARCHIVED) {
-            ensureActiveList(userId);
+            findOrCreateActive(userId);
         }
 
         return list;
@@ -238,16 +265,47 @@ public class ShoppingListService {
         }
     }
 
+    /** The user's active list, and whether this call had to create it. */
+    public record ActiveList(ShoppingList list, boolean created) {}
+
+    /**
+     * Returns the user's active list, creating an empty one if there is none. Serialised per user, so
+     * concurrent callers (app or integration API, any instance) end up with the same single list.
+     */
+    public ActiveList ensureActive(String userId) {
+        return activeListLock.withLock(userId, () -> findOrCreateActive(userId));
+    }
+
     private ShoppingList ensureActiveList(String userId) {
+        return ensureActive(userId).list();
+    }
+
+    /** Caller must hold {@link ActiveShoppingListLock} for the user. */
+    private ActiveList findOrCreateActive(String userId) {
         Optional<ShoppingList> active = shoppingListRepository.findFirstByUserIdAndStatusOrderByUpdatedAtDesc(
                 userId, ShoppingListStatus.ACTIVE);
         if (active.isPresent()) {
-            return active.get();
+            return new ActiveList(active.get(), false);
         }
 
-        Instant now = clock.instant();
+        // Millisecond precision, as Mongo stores it, so the returned list equals what a later read sees.
+        Instant now = clock.instant().truncatedTo(ChronoUnit.MILLIS);
         ShoppingList list = new ShoppingList(userId, ShoppingListStatus.ACTIVE, null, null, List.of(), now, now);
-        return shoppingListRepository.save(list);
+        return new ActiveList(shoppingListRepository.save(list), true);
+    }
+
+    /** Caller must hold {@link ActiveShoppingListLock} for the user. Touches only status/updatedAt. */
+    private void archiveOtherActiveLists(String userId, String keepListId) {
+        Query others = Query.query(Criteria.where("userId")
+                .is(userId)
+                .and("status")
+                .is(ShoppingListStatus.ACTIVE)
+                .and("id")
+                .ne(keepListId));
+        mongo.updateMulti(
+                others,
+                new Update().set("status", ShoppingListStatus.ARCHIVED).set("updatedAt", clock.instant()),
+                ShoppingList.class);
     }
 
     private Map<String, Recipe> loadRecipes(WeeklyPlan plan, String userId) {
