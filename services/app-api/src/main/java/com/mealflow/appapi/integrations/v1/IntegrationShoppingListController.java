@@ -6,6 +6,7 @@ import com.mealflow.appapi.integrations.v1.dto.ShoppingListSummaryDto;
 import com.mealflow.appapi.integrations.v1.dto.UpdateShoppingItemBody;
 import com.mealflow.appapi.security.oauth.IntegrationTokenClaims;
 import com.mealflow.appapi.shoppingLists.domain.ShoppingList;
+import com.mealflow.appapi.shoppingLists.service.ShoppingListService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import java.net.URI;
@@ -49,6 +50,30 @@ public class IntegrationShoppingListController {
         return respond(
                 HttpStatus.OK,
                 shoppingLists.get(IntegrationTokenClaims.from(auth).userId(), id));
+    }
+
+    /**
+     * Makes sure the user has an active list: 200 with the existing one (nothing written), or 201 with a
+     * new empty one. Never more than one active list, also for concurrent calls; a replayed
+     * Idempotency-Key returns the first response.
+     */
+    @PostMapping("/active")
+    public ResponseEntity<Object> ensureActive(
+            @RequestHeader(name = IdempotencyService.HEADER, required = false) String idempotencyKey,
+            Authentication auth,
+            HttpServletRequest request) {
+        IntegrationTokenClaims token = IntegrationTokenClaims.from(auth);
+        return idempotency.execute(token, idempotencyKey, request, null, () -> {
+            ShoppingListService.ActiveList active = shoppingLists.ensureActive(token.userId());
+            if (!active.created()) {
+                return respond(HttpStatus.OK, active.list());
+            }
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .location(URI.create(
+                            "/integrations/v1/shopping-lists/" + active.list().getId()))
+                    .eTag(Versioning.etag(active.list().getUpdatedAt()))
+                    .body(IntegrationShoppingListService.toDto(active.list()));
+        });
     }
 
     @PostMapping("/{id}/items")

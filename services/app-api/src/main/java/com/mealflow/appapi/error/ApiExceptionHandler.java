@@ -8,6 +8,7 @@ import com.mealflow.appapi.recipes.extraction.service.ExtractionValidationExcept
 import com.mealflow.appapi.recipes.image.ImageUploadValidationException;
 import com.mealflow.appapi.recipes.service.RecipeNotFoundException;
 import com.mealflow.appapi.recipes.service.RecipeValidationException;
+import com.mealflow.appapi.shoppingLists.service.ShoppingListBusyException;
 import com.mealflow.appapi.shoppingLists.service.ShoppingListNotFoundException;
 import com.mealflow.appapi.shoppingLists.service.ShoppingListValidationException;
 import com.mealflow.appapi.weeklyPlans.service.WeeklyPlanNotFoundException;
@@ -113,6 +114,12 @@ public class ApiExceptionHandler {
     @ExceptionHandler(ExtractionStateException.class)
     @ResponseStatus(HttpStatus.CONFLICT)
     public ProblemDetail handleExtractionState(ExtractionStateException ex, HttpServletRequest req) {
+        return problems.build(HttpStatus.CONFLICT, ex.getMessage(), req);
+    }
+
+    @ExceptionHandler(ShoppingListBusyException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ProblemDetail handleShoppingListBusy(ShoppingListBusyException ex, HttpServletRequest req) {
         return problems.build(HttpStatus.CONFLICT, ex.getMessage(), req);
     }
 

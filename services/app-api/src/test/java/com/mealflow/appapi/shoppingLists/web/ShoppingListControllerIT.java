@@ -115,6 +115,40 @@ class ShoppingListControllerIT extends MongoTestContainerConfig {
     }
 
     @Test
+    void activatingAnArchivedList_archivesTheOtherActiveList_leavingExactlyOneActive() throws Exception {
+        String token = tokens.issue("user-reactivate");
+
+        String first = JsonPath.read(post("/api/shopping-lists", token, "{}").body(), "$.id");
+        assertThat(patch("/api/shopping-lists/" + first, token, """
+{ "status":"archived" }
+""").statusCode(), is(200));
+        List<String> afterArchive =
+                JsonPath.read(get("/api/shopping-lists?status=active", token).body(), "$[*].id");
+        assertThat(afterArchive, hasSize(1));
+        String second = afterArchive.get(0);
+        assertThat(second, not(first));
+
+        HttpResponse<String> reactivated = patch("/api/shopping-lists/" + first, token, """
+{ "status":"active" }
+""");
+        assertThat(reactivated.statusCode(), is(200));
+        assertThat(JsonPath.read(reactivated.body(), "$.status"), is("active"));
+
+        List<String> active =
+                JsonPath.read(get("/api/shopping-lists?status=active", token).body(), "$[*].id");
+        assertThat(active, contains(first));
+        List<String> archived =
+                JsonPath.read(get("/api/shopping-lists?status=archived", token).body(), "$[*].id");
+        assertThat(archived, contains(second));
+
+        // Activating the list that is already active changes nothing.
+        assertThat(patch("/api/shopping-lists/" + first, token, """
+{ "status":"active" }
+""").statusCode(), is(200));
+        assertThat(JsonPath.read(get("/api/shopping-lists?status=active", token).body(), "$[*].id"), contains(first));
+    }
+
+    @Test
     void shouldEnforceUserScoping() throws Exception {
         String tokenUser1 = tokens.issue("user-1");
         String tokenUser2 = tokens.issue("user-2");

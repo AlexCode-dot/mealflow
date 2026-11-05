@@ -1,9 +1,10 @@
 # MealFlow ↔ Personal OS — integration contract v1
 
 Status: implemented on branch `personal-os/mf1` (MF1), corrected after QA MF1 (2026-10-11); see
-[Changes since v1 draft](#changes-since-v1-draft). Personal OS's MealFlow connector (C2) is written
-against this document. Machine-readable version: [`personal-os-v1.openapi.yaml`](personal-os-v1.openapi.yaml)
-(`info.version` 1.0.1).
+[Changes since v1 draft](#changes-since-v1-draft). v1.1 (MF3, 2026-11-05) adds
+`POST /shopping-lists/active`, additively; see [v1.1](#v11-2026-11-05-mf3). Personal OS's MealFlow
+connector (C2) is written against this document. Machine-readable version:
+[`personal-os-v1.openapi.yaml`](personal-os-v1.openapi.yaml) (`info.version` 1.1.0).
 
 Two services take part:
 
@@ -125,6 +126,7 @@ errors are `application/problem+json`.
 | DELETE | `/meal-plans/{planId}/entries/{entryId}` | mealplan.write | `Idempotency-Key`; `If-Match` |
 | GET | `/shopping-lists?status=` | shoppinglist.read | Summaries (item and checked counts); optional `status=active\|archived` (case-insensitive, other values 400) |
 | GET | `/shopping-lists/{id}` | shoppinglist.read | |
+| POST | `/shopping-lists/active` | shoppinglist.write | *v1.1.* No body. Returns the user's active list: **200** if one exists (nothing written), else **201** with a new empty one + `Location: /integrations/v1/shopping-lists/{id}`. `ETag` on both. `Idempotency-Key` required. See [The active list](#the-active-list) |
 | POST | `/shopping-lists/{id}/items` | shoppinglist.write | `Idempotency-Key`; `If-Match`; 201 + `Location: /integrations/v1/shopping-lists/{id}/items/{itemId}` |
 | PATCH | `/shopping-lists/{id}/items/{itemId}` | shoppinglist.write | Body `{"checked": true\|false}`; `Idempotency-Key`; `If-Match` |
 | DELETE | `/shopping-lists/{id}/items/{itemId}` | shoppinglist.write | `Idempotency-Key`; `If-Match` |
@@ -167,6 +169,12 @@ gets **401**.
 
 // POST /shopping-lists/{id}/items
 { "name": "Bananer", "quantity": 6, "unit": "st" }
+
+// POST /shopping-lists/active   (Idempotency-Key: 2b7e…, no body), user has no active list
+// → 201, Location: /integrations/v1/shopping-lists/6720…, ETag: "1793873600123"
+{ "id": "6720…", "title": null, "status": "active", "items": [],
+  "updatedAt": "2026-11-05T10:13:20.123Z", "version": 1793873600123 }
+// Same call when an active list exists → 200, ETag as GET /shopping-lists/{id}, body exactly as that GET
 ```
 
 ### Field rules
@@ -207,6 +215,20 @@ Limits not repeated here are in the yaml.
   (case-insensitive); without it all lists are returned; any other value is 400.
 - New item: `name` required (not blank, max 80), `quantity` ≥ 0 optional, `unit` max 20 optional.
 
+#### The active list
+
+- A user has **at most one** list with `status: active`. It is the list the MealFlow app shows as
+  "current"; the others are archived. The app and this API keep that invariant: making a list active in
+  the app archives the previous active one, and archiving the active list creates a new empty one.
+- A user who never opened the shopping list in the app may have **no** list at all. Call
+  `POST /shopping-lists/active` before adding items when you don't hold a list id:
+  - an active list exists → **200**, its body and `ETag` exactly as `GET /shopping-lists/{id}`; nothing is written;
+  - no active list → **201**, a new empty active list (`title: null`, no items), `Location` and `ETag`.
+- Concurrent calls (any keys) never produce a second active list: one gets 201, the rest 200 with the same id.
+- A request body, if sent, is ignored. `If-Match` is not used.
+- The active list can change later (the user archives it in the app). On a 404 for a list id you held,
+  call `POST /shopping-lists/active` again.
+
 ### Idempotency
 
 - Every write (POST, PATCH, DELETE) must send `Idempotency-Key` (1–255 visible ASCII chars). A write without it gets
@@ -217,6 +239,8 @@ Limits not repeated here are in the yaml.
 - Same key with a different request: **422**.
 - Same key while the original request is still running: **409**. Retry later.
 - If the original attempt failed (non-2xx), the key is released and may be retried.
+- `POST /shopping-lists/active` follows the same rules: a replayed key returns the **first** response
+  (201 or 200, same body, `ETag`, `Location`), even if the list has changed since.
 
 ### Versions, ETag and If-Match
 
@@ -258,7 +282,7 @@ fields you don't know.
 | 404 | Not found, or not yours |
 | 405 | Method not supported on this path (`Allow` lists the supported ones) |
 | 406 | `Accept` excludes JSON (the API only produces `application/json` / `application/problem+json`) |
-| 409 | Idempotent request still in flight |
+| 409 | Idempotent request still in flight; or (`POST /shopping-lists/active`, rare) another change to the user's active list did not finish in time |
 | 412 | Version mismatch |
 | 415 | Request body is not `application/json` |
 | 422 | Idempotency key reused with a different request |
@@ -267,7 +291,20 @@ fields you don't know.
 All 4xx are final for the request as sent; only 409, 429 and 5xx are worth retrying (same
 `Idempotency-Key`).
 
-## Changes since v1 draft
+## Changes
+
+### v1.1 (2026-11-05, MF3)
+
+Additive. Nothing existing changes shape, status code or scope; older Personal OS builds keep working.
+
+| Area | Change |
+|---|---|
+| New route | `POST /integrations/v1/shopping-lists/active` (scope `shoppinglist.write`, `Idempotency-Key` required, no body): 200 with the existing active list, or 201 + `Location` with a new empty one. See [The active list](#the-active-list) |
+| One active list | Documented: at most one `active` list per user. App-side fix: `PATCH /api/shopping-lists/{id}` with `status: active` now archives the previous active list (it could leave two before) |
+| 409 | May also come from `POST /shopping-lists/active` when a concurrent change to the user's active list holds it for more than a few seconds. Retry with the same key |
+| yaml | `info.version` 1.1.0; path `/shopping-lists/active` |
+
+### Changes since v1 draft
 
 Corrections after QA MF1 (2026-10-11, `QA-MF1-2026-10-11.md`, drifts D1–D10). MealFlow's validation
 rules were kept; the contract now states them exactly. Where the contract's form was friendlier and

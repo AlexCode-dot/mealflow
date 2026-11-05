@@ -1,11 +1,12 @@
 openapi: 3.1.0
 info:
   title: MealFlow integration API for Personal OS
-  version: "1.0.1"
+  version: "1.1.0"
   description: |
     Narrow, versioned API for connected apps (Personal OS). See personal-os-v1.md for the OAuth flow,
     idempotency, ETag and isolation rules. All writes require `Idempotency-Key`.
     Changes since the v1 draft (MF1 QA, D1-D10) are listed in personal-os-v1.md, "Changes since v1 draft".
+    1.1.0 (MF3, additive): POST /shopping-lists/active. See personal-os-v1.md, "Changes" / "The active list".
 servers:
   - url: http://localhost:8082/integrations/v1
     description: Local app-api
@@ -46,7 +47,7 @@ components:
   headers:
     ETag: { description: Quoted resource version, schema: { type: string } }
     IdempotencyReplayed: { description: "true when this is a stored replay", schema: { type: string } }
-    Location: { description: Path of the created resource (recipe, meal-plan entry or shopping-list item), schema: { type: string } }
+    Location: { description: Path of the created resource (recipe, meal-plan entry, shopping list or shopping-list item), schema: { type: string } }
   responses:
     Problem:
       description: Error (problem+json)
@@ -326,6 +327,21 @@ paths:
           schema: { type: string, enum: [active, archived] }
       responses:
         "200": { description: Lists, content: { application/json: { schema: { type: array, items: { $ref: "#/components/schemas/ShoppingListSummary" } } } } }
+        default: { $ref: "#/components/responses/Problem" }
+  /shopping-lists/active:
+    post:
+      summary: Ensure the user has an active shopping list (v1.1)
+      description: |
+        Returns the user's single active list. If one exists: 200, body and ETag exactly as
+        GET /shopping-lists/{id}, nothing written. If none: a new empty active list (title null, no
+        items) is created, 201 with Location and ETag. Never more than one active list, also for
+        concurrent calls. A replayed Idempotency-Key returns the first response. No request body
+        (ignored if sent); If-Match is not used.
+      security: [{ mealflowOAuth: [shoppinglist.write] }]
+      parameters: [{ $ref: "#/components/parameters/IdempotencyKey" }]
+      responses:
+        "200": { description: The existing active list, headers: { ETag: { $ref: "#/components/headers/ETag" }, Idempotency-Replayed: { $ref: "#/components/headers/IdempotencyReplayed" } }, content: { application/json: { schema: { $ref: "#/components/schemas/ShoppingList" } } } }
+        "201": { description: A new empty active list, headers: { ETag: { $ref: "#/components/headers/ETag" }, Location: { $ref: "#/components/headers/Location" }, Idempotency-Replayed: { $ref: "#/components/headers/IdempotencyReplayed" } }, content: { application/json: { schema: { $ref: "#/components/schemas/ShoppingList" } } } }
         default: { $ref: "#/components/responses/Problem" }
   /shopping-lists/{id}:
     parameters: [{ $ref: "#/components/parameters/Id" }]
