@@ -36,11 +36,15 @@ public class IntegrationShoppingListController {
 
     private final IntegrationShoppingListService shoppingLists;
     private final IdempotencyService idempotency;
+    private final FromPlanRateLimiter fromPlanLimiter;
 
     public IntegrationShoppingListController(
-            IntegrationShoppingListService shoppingLists, IdempotencyService idempotency) {
+            IntegrationShoppingListService shoppingLists,
+            IdempotencyService idempotency,
+            FromPlanRateLimiter fromPlanLimiter) {
         this.shoppingLists = shoppingLists;
         this.idempotency = idempotency;
+        this.fromPlanLimiter = fromPlanLimiter;
     }
 
     @GetMapping
@@ -84,7 +88,9 @@ public class IntegrationShoppingListController {
      * Adds the week's plan to the user's single active list (created if missing), as the app does
      * (v1.2). Needs {@code mealplan.read} besides {@code shoppinglist.write}. 200 with the list, its
      * ETag and {@code added}/{@code merged}; 422 {@code plan_empty} writes nothing; a replayed
-     * Idempotency-Key returns the first response.
+     * Idempotency-Key returns the first response. Both scopes are enforced by IntegrationSecurityConfig;
+     * the check here is a second guard. Executions (not replays) are capped per user by {@link
+     * FromPlanRateLimiter} (429, the key is released).
      */
     @PostMapping("/active/from-plan")
     public ResponseEntity<Object> fromPlan(
@@ -97,6 +103,7 @@ public class IntegrationShoppingListController {
         }
         IntegrationTokenClaims token = IntegrationTokenClaims.from(auth);
         return idempotency.execute(token, idempotencyKey, request, body, () -> {
+            fromPlanLimiter.acquire(token.userId());
             IntegrationShoppingListService.FromPlan result = shoppingLists.addPlan(token.userId(), body.week());
             return ResponseEntity.ok()
                     .eTag(Versioning.etag(result.list().getUpdatedAt()))

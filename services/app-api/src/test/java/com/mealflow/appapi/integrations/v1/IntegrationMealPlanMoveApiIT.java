@@ -17,7 +17,13 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalAdjusters;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -197,6 +203,71 @@ class IntegrationMealPlanMoveApiIT extends IntegrationApiTestBase {
         assertThat(forbidden.statusCode(), is(403));
 
         assertThat(etag(get("/integrations/v1/meal-plans/current", p.token())), is(p.etag()));
+    }
+
+    @Test
+    void concurrentMoves_withTheSameEtag_oneIs200_theOtherIs412() throws Exception {
+        Planned p = plan("move-race");
+        CountDownLatch start = new CountDownLatch(1);
+        ExecutorService pool = Executors.newFixedThreadPool(2);
+        List<HttpResponse<String>> results = new ArrayList<>();
+        try {
+            List<Future<HttpResponse<String>>> calls = new ArrayList<>();
+            for (String day : List.of("WED", "THU")) {
+                calls.add(pool.submit(() -> {
+                    start.await();
+                    return move(p, p.tacosId(), "{\"day\":\"" + day + "\"}", p.etag());
+                }));
+            }
+            start.countDown();
+            for (Future<HttpResponse<String>> call : calls) {
+                results.add(call.get());
+            }
+        } finally {
+            pool.shutdownNow();
+        }
+
+        List<Integer> statuses =
+                results.stream().map(HttpResponse::statusCode).sorted().toList();
+        assertThat(statuses, is(List.of(200, 412)));
+        HttpResponse<String> winner =
+                results.stream().filter(r -> r.statusCode() == 200).findFirst().orElseThrow();
+        String winningDay = JsonPath.read(winner.body(), "$.entries[0].day");
+        HttpResponse<String> current = get("/integrations/v1/meal-plans/current", p.token());
+        assertThat(etag(current), is(etag(winner)));
+        assertThat(JsonPath.read(current.body(), "$.entries[0].day"), is(winningDay));
+    }
+
+    @Test
+    void storedNullItems_areLeftOut_neverA500() throws Exception {
+        String user = "dto-null-items";
+        String token = token(user, ALL_SCOPES);
+        String monday = LocalDate.now(ZoneId.of("Europe/Stockholm"))
+                .with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
+                .toString();
+        Instant at = Instant.now().minusSeconds(60).truncatedTo(ChronoUnit.MILLIS);
+        planRepository.save(new WeeklyPlan(
+                user,
+                monday,
+                List.of(new PlanEntry(
+                        "e-1",
+                        "WED",
+                        "Dinner",
+                        null,
+                        "Tacos",
+                        Arrays.asList("Tortillas", null),
+                        Arrays.asList(null, "Lime", null),
+                        null,
+                        null)),
+                List.of("Breakfast", "Lunch", "Dinner"),
+                at,
+                at));
+
+        HttpResponse<String> current = get("/integrations/v1/meal-plans/current", token);
+
+        assertThat(current.body(), current.statusCode(), is(200));
+        assertThat(JsonPath.read(current.body(), "$.entries[0].items"), is(List.of("Tortillas")));
+        assertThat(JsonPath.read(current.body(), "$.entries[0].extraItems"), is(List.of("Lime")));
     }
 
     @Test

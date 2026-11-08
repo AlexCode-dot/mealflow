@@ -17,6 +17,7 @@ import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.WeekFields;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -156,10 +157,46 @@ public class ShoppingListService {
      * fills in aisles (keywords, then at most one LLM call). Nothing is saved.
      */
     public ShoppingListGenerator.PlanMerge mergePrepared(PreparedPlan prepared, List<ShoppingListItem> existingItems) {
+        return mergePrepared(prepared, existingItems, null);
+    }
+
+    /**
+     * As {@link #mergePrepared(PreparedPlan, List)}, for a retry after the list changed underneath:
+     * the aisles an earlier attempt ({@code previous}) found are copied by name, and when the merged
+     * lines have the same names as in {@code previous} the category step (keywords + LLM) is not run
+     * again. Otherwise it runs for whatever is still uncategorised, as usual.
+     */
+    public ShoppingListGenerator.PlanMerge mergePrepared(
+            PreparedPlan prepared, List<ShoppingListItem> existingItems, ShoppingListGenerator.PlanMerge previous) {
         ShoppingListGenerator.PlanMerge merge =
                 generator.mergePlanCounting(existingItems, prepared.plan(), prepared.recipes(), prepared.names());
-        categoryResolver.applyCategories(merge.items());
+        if (previous == null) {
+            categoryResolver.applyCategories(merge.items());
+            return merge;
+        }
+        Map<String, ShoppingItemCategory> known = new HashMap<>();
+        for (ShoppingListItem item : previous.items()) {
+            if (item.getName() != null && item.getCategory() != ShoppingItemCategory.OTHER) {
+                known.putIfAbsent(item.getName(), item.getCategory());
+            }
+        }
+        for (ShoppingListItem item : merge.items()) {
+            ShoppingItemCategory category = known.get(item.getName());
+            if (item.getCategory() == ShoppingItemCategory.OTHER && category != null) {
+                item.setCategory(category);
+            }
+        }
+        if (!sameNames(previous.items(), merge.items())) {
+            categoryResolver.applyCategories(merge.items());
+        }
         return merge;
+    }
+
+    private static boolean sameNames(List<ShoppingListItem> a, List<ShoppingListItem> b) {
+        return a.stream()
+                .map(ShoppingListItem::getName)
+                .collect(Collectors.toSet())
+                .equals(b.stream().map(ShoppingListItem::getName).collect(Collectors.toSet()));
     }
 
     /** The title {@link #createOrMerge} gives a list merged from this plan without an explicit title. */

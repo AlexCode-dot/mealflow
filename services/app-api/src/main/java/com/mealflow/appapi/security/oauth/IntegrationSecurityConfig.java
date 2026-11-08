@@ -8,6 +8,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.authorization.AuthorityAuthorizationManager;
+import org.springframework.security.authorization.AuthorizationManagers;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -68,6 +70,12 @@ public class IntegrationSecurityConfig {
                         .hasAuthority("SCOPE_mealplan.read")
                         .requestMatchers(V1 + "/meal-plans", V1 + "/meal-plans/**")
                         .hasAuthority("SCOPE_mealplan.write")
+                        // v1.2: reads the plan and writes the list, so it needs both scopes. Must come
+                        // before the general /shopping-lists/** write matcher.
+                        .requestMatchers(HttpMethod.POST, V1 + "/shopping-lists/active/from-plan")
+                        .access(AuthorizationManagers.allOf(
+                                AuthorityAuthorizationManager.hasAuthority("SCOPE_shoppinglist.write"),
+                                AuthorityAuthorizationManager.hasAuthority("SCOPE_mealplan.read")))
                         .requestMatchers(HttpMethod.GET, V1 + "/shopping-lists", V1 + "/shopping-lists/**")
                         .hasAuthority("SCOPE_shoppinglist.read")
                         .requestMatchers(V1 + "/shopping-lists", V1 + "/shopping-lists/**")

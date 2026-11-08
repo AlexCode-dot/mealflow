@@ -130,7 +130,7 @@ errors are `application/problem+json`.
 | GET | `/shopping-lists?status=` | shoppinglist.read | Summaries (item and checked counts); optional `status=active\|archived` (case-insensitive, other values 400) |
 | GET | `/shopping-lists/{id}` | shoppinglist.read | |
 | POST | `/shopping-lists/active` | shoppinglist.write | *v1.1.* No body. Returns the user's active list: **200** if one exists (nothing written), else **201** with a new empty one + `Location: /integrations/v1/shopping-lists/{id}`. `ETag` on both. `Idempotency-Key` required. See [The active list](#the-active-list) |
-| POST | `/shopping-lists/active/from-plan` | shoppinglist.write **+** mealplan.read | *v1.2.* Body `{"week": "current"\|"next"}`. Adds the week's plan to the active list (created if missing) as the app does; 200 + the list + `ETag` + `added`/`merged`; 422 `plan_empty`. `Idempotency-Key` required. See [A list from the plan](#a-list-from-the-plan) |
+| POST | `/shopping-lists/active/from-plan` | shoppinglist.write **+** mealplan.read | *v1.2.* Body `{"week": "current"\|"next"}`. Adds the week's plan to the active list (created if missing) as the app does; 200 + the list + `ETag` + `added`/`merged`; 422 `plan_empty`; 429 over 5/min or 30/day per user. `Idempotency-Key` required. See [A list from the plan](#a-list-from-the-plan) |
 | POST | `/shopping-lists/{id}/items` | shoppinglist.write | `Idempotency-Key`; `If-Match`; 201 + `Location: /integrations/v1/shopping-lists/{id}/items/{itemId}` |
 | PATCH | `/shopping-lists/{id}/items/{itemId}` | shoppinglist.write | Body `{"checked": true\|false}`; `Idempotency-Key`; `If-Match` |
 | DELETE | `/shopping-lists/{id}/items/{itemId}` | shoppinglist.write | `Idempotency-Key`; `If-Match` |
@@ -231,7 +231,8 @@ Limits not repeated here are in the yaml.
     spelling is stored. Anything else is 400. Read the plan first and pick from its `sections`.
 - `portions`: 1–1000; `notes` up to 500 chars.
 - Entries in responses carry `items` and `extraItems` (v1.2): the entry's own shopping items as the app
-  stores them. Read-only: they cannot be set through this API. Never null (`[]` when there are none).
+  stores them. Read-only: they cannot be set through this API. Never null (`[]` when there are none), and
+  never contain `null` (stored null elements are left out).
 
 #### Moving an entry
 
@@ -276,7 +277,17 @@ Limits not repeated here are in the yaml.
 #### A list from the plan
 
 `POST /shopping-lists/active/from-plan` (v1.2), body `{"week": "current"|"next"}` (case-insensitive; other
-values **400**). Needs **both** `shoppinglist.write` and `mealplan.read` (either missing: **403**).
+values **400**). Needs **both** `shoppinglist.write` and `mealplan.read`. Either missing is the ordinary
+scope **403** (same problem as every other scope failure), answered before the body or `Idempotency-Key`
+is looked at.
+
+- **Cost cap (per user, all clients together):** at most **5 executions per minute** (clock minute)
+  and **30 per day** (calendar day, Europe/Stockholm). Over either limit: **429** problem with a
+  `Retry-After` header, `retryAfterSeconds` and `code: "from_plan_rate_limited"` (seconds to the next
+  minute or to midnight). Nothing is written and the `Idempotency-Key` is released, so retry later with
+  the same key. A replayed key is not an execution and never counts or gets 429. This is on top of the
+  general 60/min integration limit. Configurable: `INTEGRATIONS_FROM_PLAN_PER_MINUTE`,
+  `INTEGRATIONS_FROM_PLAN_PER_DAY`.
 
 - **Nothing to buy:** the week has no plan, or its entries put nothing on a list (e.g. only recipes
   without ingredients) → **422** with `code: "plan_empty"`. Nothing is written; the active list is not
@@ -297,7 +308,10 @@ values **400**). Needs **both** `shoppinglist.write` and `mealplan.read` (either
   pressing the button twice in the app does). Retry a failed or unanswered call with the **same**
   `Idempotency-Key`.
 - A concurrent change to the list while the plan is being merged is retried on a fresh read (up to 3
-  attempts, then **412**). `If-Match` is not used.
+  attempts, then **412**, nothing of the plan written, key released). `If-Match` is not used.
+- LLM use per execution: one name-normalization call, then at most one aisle call. A retry whose merged
+  lines have the same names reuses the aisles of the previous attempt and makes no aisle call; only when
+  the concurrent change brought new names does the aisle step run again (worst case 1 + 3 calls).
 - A plan entry whose recipe no longer exists answers **400** (as in the app), nothing written.
 
 ### Idempotency
@@ -338,6 +352,9 @@ values **400**). Needs **both** `shoppinglist.write` and `mealplan.read` (either
 
 - `/integrations/**` is limited to **60 requests per minute** per user and client
   (`RATE_LIMIT_INTEGRATIONS_PER_MINUTE`). Over the limit the API returns 429 with `Retry-After`.
+- `POST /shopping-lists/active/from-plan` (v1.2) additionally has a per-user cost cap: 5 per minute and 30
+  per day, 429 with `Retry-After` and `code: "from_plan_rate_limited"`. See
+  [A list from the plan](#a-list-from-the-plan).
 - Each request logs one `integration_audit` line with userId, clientId, gid, method, path and status. No
   token values or bodies are logged.
 
@@ -346,7 +363,8 @@ values **400**). Needs **both** `shoppinglist.write` and `mealplan.read` (either
 Problem JSON: `{ "type", "title", "status", "detail", "path", "timestamp" }`, always with
 `Content-Type: application/problem+json`. Some errors add fields: `errors[]` (`{field, message}`, bean
 validation), `param` and `value` (bad query or path parameter), `retryAfterSeconds` (429) and, since
-v1.2, `code` (a stable reason on some 422s: `plan_empty`, `unknown_section`). Ignore fields you don't know.
+v1.2, `code` (a stable reason on some errors: `plan_empty`, `unknown_section`, `from_plan_rate_limited`).
+Ignore fields you don't know.
 
 | Status | Meaning |
 |---|---|
@@ -360,7 +378,7 @@ v1.2, `code` (a stable reason on some 422s: `plan_empty`, `unknown_section`). Ig
 | 412 | Version mismatch |
 | 415 | Request body is not `application/json` |
 | 422 | Idempotency key reused with a different request; or (v1.2) `code: plan_empty` — the week has nothing to put on a list; or `code: unknown_section` — moving an entry to a section the plan doesn't have |
-| 429 | Rate limited |
+| 429 | Rate limited (general limit; or, v1.2, the from-plan cap with `code: from_plan_rate_limited`) |
 
 All 4xx are final for the request as sent; only 409, 429 and 5xx are worth retrying (same
 `Idempotency-Key`).
@@ -377,7 +395,10 @@ builds keep working (they ignore the new entry fields and the problem `code`).
 | New route | `POST /integrations/v1/shopping-lists/active/from-plan`, body `{"week": "current"\|"next"}`, scopes `shoppinglist.write` + `mealplan.read`, `Idempotency-Key` required: the week's plan added to the active list as the app does; 200 + list + `ETag` + `added`/`merged`; 422 `plan_empty`. See [A list from the plan](#a-list-from-the-plan) |
 | New route | `PATCH /integrations/v1/meal-plans/{planId}/entries/{entryId}`, body `{"day"?, "section"?}`, scope `mealplan.write`, `Idempotency-Key`, `If-Match`: moves an entry within its plan; 200 + plan + `ETag`; 412 stale; 404 unknown/foreign; 422 `unknown_section`. See [Moving an entry](#moving-an-entry) |
 | `MealPlanEntry` | New read-only fields `items` and `extraItems` (string arrays, never null) |
-| Problem | Optional `code` field on the new 422s (`plan_empty`, `unknown_section`) |
+| Problem | Optional `code` field on the new 422s (`plan_empty`, `unknown_section`) and the from-plan 429 (`from_plan_rate_limited`) |
+| Cost cap | from-plan: 5/min and 30/day per user, 429 + `Retry-After`; replays don't count. A CAS retry with unchanged names makes no second aisle (LLM) call |
+| Scopes | from-plan's two scopes are enforced in the security chain: a missing one is the standard 403, before body validation |
+| `items` | `items`/`extraItems` never contain null |
 | 422 | Also used for the two cases above (before: only idempotency-key reuse) |
 | yaml | `info.version` 1.2.0; the two paths; schemas `FromPlan`, `ShoppingListFromPlan`, `MoveMealPlanEntry`; `MealPlanEntry.items/extraItems`; `Problem.code` |
 

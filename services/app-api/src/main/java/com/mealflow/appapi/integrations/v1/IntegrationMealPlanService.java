@@ -249,8 +249,8 @@ public class IntegrationMealPlanService {
                 e.getRecipeId() != null ? titles.get(e.getRecipeId()) : e.getCustomTitle(),
                 e.getNotes(),
                 e.getPortions(),
-                e.getItems() == null ? List.of() : List.copyOf(e.getItems()),
-                e.getExtraItems() == null ? List.of() : List.copyOf(e.getExtraItems()));
+                nonNull(e.getItems()),
+                nonNull(e.getExtraItems()));
         return new MealPlanDto(
                 plan.getId(),
                 plan.getWeeklyStart(),
@@ -258,6 +258,13 @@ public class IntegrationMealPlanService {
                 plan.getEntries().stream().map(toEntry).toList(),
                 plan.getUpdatedAt(),
                 Versioning.version(plan.getUpdatedAt()));
+    }
+
+    /** The entry's items without null elements (stored data is not trusted to be clean). Never null. */
+    private static List<String> nonNull(List<String> items) {
+        return items == null
+                ? List.of()
+                : items.stream().filter(Objects::nonNull).toList();
     }
 
     /**

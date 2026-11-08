@@ -85,7 +85,8 @@ public class IntegrationShoppingListService {
      *
      * <p>Name normalization runs once; the merge itself is compare-and-set on the list's version and
      * is redone on a fresh read if the list changed meanwhile (at most {@value #FROM_PLAN_ATTEMPTS}
-     * attempts, then 412).
+     * attempts, then 412). A retry whose merged lines have the same names reuses the previous
+     * attempt's aisles and does not run the category step (no second LLM call).
      */
     public FromPlan addPlan(String userId, String week) {
         String weekStart = mealPlans.weekStart(requireWeek(week));
@@ -100,9 +101,12 @@ public class IntegrationShoppingListService {
         ShoppingListService.PreparedPlan prepared =
                 shoppingLists.preparePlan(userId, plan, current).orElseThrow(IntegrationShoppingListService::planEmpty);
 
+        ShoppingListGenerator.PlanMerge lastMerge = null;
         for (int attempt = 1; ; attempt++) {
             ShoppingList list = shoppingLists.ensureActive(userId).list();
-            ShoppingListGenerator.PlanMerge merge = shoppingLists.mergePrepared(prepared, copyOf(list.getItems()));
+            ShoppingListGenerator.PlanMerge merge =
+                    shoppingLists.mergePrepared(prepared, copyOf(list.getItems()), lastMerge);
+            lastMerge = merge;
             String title = shoppingLists.titleForPlan(list.getTitle(), plan);
             Instant previous = list.getUpdatedAt();
             Instant next = Versioning.next(previous, clock);

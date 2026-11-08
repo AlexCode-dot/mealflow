@@ -62,8 +62,8 @@ components:
       description: |
         RFC 9457 problem details. The first six fields are always present. Some errors add fields:
         `errors` (bean validation, 400), `param` / `value` (bad query or path parameter, 400) and
-        `retryAfterSeconds` (429) and, since v1.2, `code` (a stable reason on some 422s: `plan_empty`,
-        `unknown_section`). Clients must ignore fields they do not know.
+        `retryAfterSeconds` (429) and, since v1.2, `code` (a stable reason on some errors: `plan_empty`,
+        `unknown_section`, `from_plan_rate_limited`). Clients must ignore fields they do not know.
       additionalProperties: true
       properties:
         type: { type: string }
@@ -81,7 +81,7 @@ components:
               message: { type: string }
         param: { type: string }
         value: { type: string }
-        code: { type: string, description: "v1.2. Stable machine-readable reason, e.g. plan_empty, unknown_section" }
+        code: { type: string, description: "v1.2. Stable machine-readable reason: plan_empty, unknown_section, from_plan_rate_limited" }
         retryAfterSeconds: { type: integer }
     Ingredient:
       type: object
@@ -174,11 +174,12 @@ components:
           items: { type: string }
           description: |
             v1.2, read-only. The entry's own shopping items as stored by the app (what the meal needs
-            besides, or for a custom title instead of, a recipe's ingredients). Never null; [] if none.
+            besides, or for a custom title instead of, a recipe's ingredients). Never null; [] if none;
+            no null elements.
         extraItems:
           type: array
           items: { type: string }
-          description: v1.2, read-only. The entry's extra items as stored by the app. Never null; [] if none.
+          description: v1.2, read-only. The entry's extra items as stored by the app. Never null; [] if none; no null elements.
     MoveMealPlanEntry:
       type: object
       description: |
@@ -408,7 +409,10 @@ paths:
         title it gets the app's "Week N Shopping List". Calling it again with a new key adds the plan
         again (amounts are summed again). A week with no plan, or nothing on it to buy: 422 with
         `code: plan_empty`, nothing written (not even the active list). A replayed Idempotency-Key
-        returns the first response. If-Match is not used.
+        returns the first response. If-Match is not used. Both scopes are checked by the security
+        chain (a missing one is the standard 403, before body validation). Cost cap per user: 5 per
+        minute and 30 per day (Europe/Stockholm); over it 429 with Retry-After, `retryAfterSeconds`
+        and `code: from_plan_rate_limited`, nothing written, key released. Replays never count.
       security: [{ mealflowOAuth: [shoppinglist.write, mealplan.read] }]
       parameters: [{ $ref: "#/components/parameters/IdempotencyKey" }]
       requestBody: { required: true, content: { application/json: { schema: { $ref: "#/components/schemas/FromPlan" } } } }
