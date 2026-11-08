@@ -2,6 +2,7 @@ package com.mealflow.appapi.integrations.v1;
 
 import com.mealflow.appapi.integrations.v1.dto.AddMealPlanEntryBody;
 import com.mealflow.appapi.integrations.v1.dto.MealPlanDto;
+import com.mealflow.appapi.integrations.v1.dto.MoveMealPlanEntryBody;
 import com.mealflow.appapi.security.oauth.IntegrationTokenClaims;
 import com.mealflow.appapi.weeklyPlans.domain.WeeklyPlan;
 import jakarta.servlet.http.HttpServletRequest;
@@ -13,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -76,6 +78,28 @@ public class IntegrationMealPlanController {
         IntegrationTokenClaims token = IntegrationTokenClaims.from(auth);
         return idempotency.execute(token, idempotencyKey, request, null, () -> {
             WeeklyPlan plan = mealPlans.removeEntry(token.userId(), planId, entryId, ifMatch);
+            return ResponseEntity.ok()
+                    .eTag(Versioning.etag(plan.getUpdatedAt()))
+                    .body(mealPlans.toDto(token.userId(), plan.getWeeklyStart(), plan));
+        });
+    }
+
+    /**
+     * Moves an entry to another day and/or section of the same plan (v1.2). 200 with the plan and its
+     * new ETag; a replayed Idempotency-Key returns the first response.
+     */
+    @PatchMapping("/{planId}/entries/{entryId}")
+    public ResponseEntity<Object> moveEntry(
+            @PathVariable String planId,
+            @PathVariable String entryId,
+            @Valid @RequestBody MoveMealPlanEntryBody body,
+            @RequestHeader(name = IdempotencyService.HEADER, required = false) String idempotencyKey,
+            @RequestHeader(name = HttpHeaders.IF_MATCH, required = false) String ifMatch,
+            Authentication auth,
+            HttpServletRequest request) {
+        IntegrationTokenClaims token = IntegrationTokenClaims.from(auth);
+        return idempotency.execute(token, idempotencyKey, request, body, () -> {
+            WeeklyPlan plan = mealPlans.moveEntry(token.userId(), planId, entryId, body, ifMatch);
             return ResponseEntity.ok()
                     .eTag(Versioning.etag(plan.getUpdatedAt()))
                     .body(mealPlans.toDto(token.userId(), plan.getWeeklyStart(), plan));

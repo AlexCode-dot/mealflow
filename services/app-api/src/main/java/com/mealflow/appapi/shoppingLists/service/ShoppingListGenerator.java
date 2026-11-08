@@ -46,6 +46,22 @@ public class ShoppingListGenerator {
             WeeklyPlan plan,
             Map<String, Recipe> recipesById,
             Map<String, NormalizedItemName> normalizedNames) {
+        return mergePlanCounting(existingItems, plan, recipesById, normalizedNames)
+                .items();
+    }
+
+    /**
+     * The merged list and what the plan did to it: {@code added} new lines, and {@code merged}
+     * existing lines the plan's items went into (amounts summed, an amount given to a line that had
+     * none, or an amount-less duplicate absorbed). Same merge as {@link #mergePlan}.
+     */
+    public record PlanMerge(List<ShoppingListItem> items, int added, int merged) {}
+
+    public PlanMerge mergePlanCounting(
+            List<ShoppingListItem> existingItems,
+            WeeklyPlan plan,
+            Map<String, Recipe> recipesById,
+            Map<String, NormalizedItemName> normalizedNames) {
         Merger merger = new Merger(normalizedNames == null ? Map.of() : normalizedNames);
         for (ShoppingListItem item : existingItems == null ? List.<ShoppingListItem>of() : existingItems) {
             merger.addExisting(item);
@@ -53,7 +69,22 @@ public class ShoppingListGenerator {
         for (Incoming incoming : incomingItems(plan, recipesById)) {
             merger.addIncoming(incoming);
         }
-        return merger.result();
+        List<ShoppingListItem> items = merger.result();
+        int added = 0;
+        int merged = 0;
+        for (Row row : merger.rows) {
+            if (!row.existing) {
+                added++;
+            } else if (row.hit) {
+                merged++;
+            }
+        }
+        return new PlanMerge(items, added, merged);
+    }
+
+    /** Whether the plan puts anything on a list at all (no LLM call; recipes must be loaded). */
+    public boolean hasItems(WeeklyPlan plan, Map<String, Recipe> recipesById) {
+        return !incomingItems(plan, recipesById).isEmpty();
     }
 
     /**
@@ -168,6 +199,11 @@ public class ShoppingListGenerator {
     /** A line on the list being built, and the running total behind it. */
     private static final class Row {
         final ShoppingListItem item;
+        /** Already on the list before the merge. */
+        final boolean existing;
+        /** The plan's items went into this line. */
+        boolean hit;
+
         String familyKey;
         ShoppingUnits.Family family;
         ShoppingUnits.Unit firstUnit;
@@ -178,7 +214,12 @@ public class ShoppingListGenerator {
         boolean touched;
 
         Row(ShoppingListItem item) {
+            this(item, false);
+        }
+
+        Row(ShoppingListItem item, boolean existing) {
             this.item = item;
+            this.existing = existing;
         }
 
         void startTotal(double quantity, String rawUnit) {
@@ -225,13 +266,15 @@ public class ShoppingListGenerator {
         private final Map<String, Row> unquantified = new HashMap<>();
 
         private final Set<String> namesWithAmount = new HashSet<>();
+        /** The first line with an amount, by name — where an amount-less duplicate is absorbed. */
+        private final Map<String, Row> firstWithAmount = new HashMap<>();
 
         Merger(Map<String, NormalizedItemName> normalizedNames) {
             this.normalizedNames = normalizedNames;
         }
 
         void addExisting(ShoppingListItem item) {
-            Row row = new Row(item);
+            Row row = new Row(item, true);
             rows.add(row);
             if (item.isChecked()) {
                 return; // already bought; the plan's needs go on a fresh line
@@ -242,6 +285,7 @@ public class ShoppingListGenerator {
                 // The user may have two lines of the same thing; leave that alone, merge into the first.
                 quantified.putIfAbsent(nameKey + "|" + row.familyKey, row);
                 namesWithAmount.add(nameKey);
+                firstWithAmount.putIfAbsent(nameKey, row);
             } else {
                 unquantified.putIfAbsent(nameKey, row);
             }
@@ -256,6 +300,12 @@ public class ShoppingListGenerator {
             if (incoming.quantity() == null) {
                 // "Salt" with no amount says nothing a line of salt doesn't already say.
                 if (namesWithAmount.contains(nameKey) || unquantified.containsKey(nameKey)) {
+                    Row absorbedBy = unquantified.containsKey(nameKey)
+                            ? unquantified.get(nameKey)
+                            : firstWithAmount.get(nameKey);
+                    if (absorbedBy != null) {
+                        absorbedBy.hit = true;
+                    }
                     return;
                 }
                 Row row = new Row(newItem(displayName, category));
@@ -268,6 +318,7 @@ public class ShoppingListGenerator {
             Row existing = quantified.get(nameKey + "|" + familyKey);
             if (existing != null) {
                 existing.add(incoming.quantity(), incoming.unit());
+                existing.hit = true;
                 return;
             }
 
@@ -279,8 +330,10 @@ public class ShoppingListGenerator {
             }
             row.startTotal(incoming.quantity(), incoming.unit());
             row.touched = true;
+            row.hit = true;
             quantified.put(nameKey + "|" + familyKey, row);
             namesWithAmount.add(nameKey);
+            firstWithAmount.putIfAbsent(nameKey, row);
         }
 
         List<ShoppingListItem> result() {

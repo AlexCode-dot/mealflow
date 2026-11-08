@@ -2,9 +2,11 @@
 
 Status: implemented on branch `personal-os/mf1` (MF1), corrected after QA MF1 (2026-10-11); see
 [Changes since v1 draft](#changes-since-v1-draft). v1.1 (MF3, 2026-11-05) adds
-`POST /shopping-lists/active`, additively; see [v1.1](#v11-2026-11-05-mf3). Personal OS's MealFlow
+`POST /shopping-lists/active`, additively; see [v1.1](#v11-2026-11-05-mf3). v1.2 (MF4, 2026-11-08) adds
+`POST /shopping-lists/active/from-plan`, `PATCH /meal-plans/{planId}/entries/{entryId}` and the entries'
+`items`/`extraItems`, additively; see [v1.2](#v12-2026-11-08-mf4). Personal OS's MealFlow
 connector (C2) is written against this document. Machine-readable version:
-[`personal-os-v1.openapi.yaml`](personal-os-v1.openapi.yaml) (`info.version` 1.1.0).
+[`personal-os-v1.openapi.yaml`](personal-os-v1.openapi.yaml) (`info.version` 1.2.0).
 
 Two services take part:
 
@@ -123,10 +125,12 @@ errors are `application/problem+json`.
 | PATCH | `/recipes/{id}` | recipes.write | Partial update; `Idempotency-Key`; `If-Match` honoured |
 | GET | `/meal-plans/current` · `/meal-plans/next` | mealplan.read | Week starts Monday, Europe/Stockholm; an empty week returns a plan with no entries, `version` 0 and ETag `"0"` |
 | POST | `/meal-plans/{current\|next}/entries` | mealplan.write | `Idempotency-Key`; `If-Match` on the plan; 201 + `Location: /integrations/v1/meal-plans/{planId}/entries/{entryId}` |
+| PATCH | `/meal-plans/{planId}/entries/{entryId}` | mealplan.write | *v1.2.* Body `{"day"?, "section"?}` (at least one). Moves the entry within the same plan; 200 + the plan + `ETag`. `Idempotency-Key`; `If-Match`. See [Moving an entry](#moving-an-entry) |
 | DELETE | `/meal-plans/{planId}/entries/{entryId}` | mealplan.write | `Idempotency-Key`; `If-Match` |
 | GET | `/shopping-lists?status=` | shoppinglist.read | Summaries (item and checked counts); optional `status=active\|archived` (case-insensitive, other values 400) |
 | GET | `/shopping-lists/{id}` | shoppinglist.read | |
 | POST | `/shopping-lists/active` | shoppinglist.write | *v1.1.* No body. Returns the user's active list: **200** if one exists (nothing written), else **201** with a new empty one + `Location: /integrations/v1/shopping-lists/{id}`. `ETag` on both. `Idempotency-Key` required. See [The active list](#the-active-list) |
+| POST | `/shopping-lists/active/from-plan` | shoppinglist.write **+** mealplan.read | *v1.2.* Body `{"week": "current"\|"next"}`. Adds the week's plan to the active list (created if missing) as the app does; 200 + the list + `ETag` + `added`/`merged`; 422 `plan_empty`. `Idempotency-Key` required. See [A list from the plan](#a-list-from-the-plan) |
 | POST | `/shopping-lists/{id}/items` | shoppinglist.write | `Idempotency-Key`; `If-Match`; 201 + `Location: /integrations/v1/shopping-lists/{id}/items/{itemId}` |
 | PATCH | `/shopping-lists/{id}/items/{itemId}` | shoppinglist.write | Body `{"checked": true\|false}`; `Idempotency-Key`; `If-Match` |
 | DELETE | `/shopping-lists/{id}/items/{itemId}` | shoppinglist.write | `Idempotency-Key`; `If-Match` |
@@ -175,6 +179,26 @@ gets **401**.
 { "id": "6720…", "title": null, "status": "active", "items": [],
   "updatedAt": "2026-11-05T10:13:20.123Z", "version": 1793873600123 }
 // Same call when an active list exists → 200, ETag as GET /shopping-lists/{id}, body exactly as that GET
+
+// v1.2: GET /meal-plans/current — every entry also carries its own items (read-only, never null)
+{ …, "entries": [{ "id": "…", "day": "WED", "section": "Dinner", "recipeId": null,
+                   "customTitle": "Tacos", "title": "Tacos", "notes": null, "portions": 4,
+                   "items": ["Tortillas", "Köttfärs"], "extraItems": ["Lime"] }], … }
+
+// v1.2: PATCH /meal-plans/{planId}/entries/{entryId}   (Idempotency-Key: 9a1d…, If-Match: "1793873600123")
+{ "day": "thursday" }                       // or { "section": "Lunch" } or both
+// → 200, ETag: "1793873600456", body = the whole plan (as GET /meal-plans/{week}) with the entry moved
+
+// v1.2: POST /shopping-lists/active/from-plan   (Idempotency-Key: 4c0f…)
+{ "week": "current" }
+// → 200, ETag: "1793873600789"
+{ "id": "6720…", "title": "Week 46 Shopping List", "status": "active",
+  "items": [{ "id": "…", "name": "Köttfärs", "quantity": 900, "unit": "g", "checked": false, "category": "meat" }, …],
+  "updatedAt": "2026-11-08T10:13:20.789Z", "version": 1793873600789, "added": 3, "merged": 2 }
+// Nothing planned that week → 422
+{ "type": "about:blank", "title": "Unprocessable Content", "status": 422,
+  "detail": "The week's meal plan has nothing to put on a shopping list", "path": "…", "timestamp": "…",
+  "code": "plan_empty" }
 ```
 
 ### Field rules
@@ -206,6 +230,26 @@ Limits not repeated here are in the yaml.
   - Existing plan: `section` must match one of the plan's `sections`, case-insensitively; the plan's
     spelling is stored. Anything else is 400. Read the plan first and pick from its `sections`.
 - `portions`: 1–1000; `notes` up to 500 chars.
+- Entries in responses carry `items` and `extraItems` (v1.2): the entry's own shopping items as the app
+  stores them. Read-only: they cannot be set through this API. Never null (`[]` when there are none).
+
+#### Moving an entry
+
+`PATCH /meal-plans/{planId}/entries/{entryId}` (v1.2), body `{"day"?, "section"?}`:
+
+- At least one of `day` / `section`; an omitted or `null` field is unchanged. `{}` is **400**.
+- `day` follows the same rules as when adding (`thursday`, `Thu`, `THU`; stored and returned as `THU`);
+  anything else is **400**.
+- `section` must match one of the plan's `sections`, case-insensitively; the plan's spelling is stored. A
+  blank section is **400**; an unknown one is **422** with `code: "unknown_section"` (the `detail` lists
+  the plan's sections).
+- Only day and section change. The entry keeps its id, recipe, title, portions, notes, items and its
+  place in `entries`. Moving it where it already is writes nothing (same `ETag`).
+- Within the same plan (week) only; moving to another week is not supported.
+- `If-Match` with the plan's ETag, as for the other plan writes: a stale one is **412** and nothing is
+  written. Another user's plan or entry, or an unknown one: **404**. Order of checks: plan (404),
+  `If-Match` (412), entry (404), body (400/422).
+- Response: **200**, the whole plan (as `GET /meal-plans/{week}`) with its new `ETag`.
 
 **Shopping lists**
 
@@ -229,6 +273,33 @@ Limits not repeated here are in the yaml.
 - The active list can change later (the user archives it in the app). On a 404 for a list id you held,
   call `POST /shopping-lists/active` again.
 
+#### A list from the plan
+
+`POST /shopping-lists/active/from-plan` (v1.2), body `{"week": "current"|"next"}` (case-insensitive; other
+values **400**). Needs **both** `shoppinglist.write` and `mealplan.read` (either missing: **403**).
+
+- **Nothing to buy:** the week has no plan, or its entries put nothing on a list (e.g. only recipes
+  without ingredients) → **422** with `code: "plan_empty"`. Nothing is written; the active list is not
+  even created.
+- Otherwise the user's single active list is made sure of (as `POST /shopping-lists/active`) and the
+  week's plan is added to it **exactly as the MealFlow app's "shopping list from plan" adds it**:
+  - recipe ingredients scaled to the entry's portions (recipe portions → entry portions), plus each
+    entry's own `items`/`extraItems`; a custom-title entry without items adds its title;
+  - names normalized to product names (e.g. "Gul lök, hackad" → "Gul lök") and aisles assigned;
+  - a line whose (normalized) name is already on the list is **merged**: amounts are summed when the
+    units are of the same family (g/kg, dl/l, st/stycken), an amount-less line takes the amount, and an
+    amount-less duplicate ("salt") is absorbed. Different unit families (1 dl vs 100 g) and **checked**
+    lines are not merged into: the item goes on a new line beside;
+  - a list without a title gets the app's `"Week N Shopping List"`; an existing title is kept.
+- **Response:** **200**, the list exactly as `GET /shopping-lists/{id}` plus `added` (new lines) and
+  `merged` (existing lines the plan went into), with the list's `ETag`.
+- It **adds** the plan each time it succeeds: a second call with a new key sums the amounts again (as
+  pressing the button twice in the app does). Retry a failed or unanswered call with the **same**
+  `Idempotency-Key`.
+- A concurrent change to the list while the plan is being merged is retried on a fresh read (up to 3
+  attempts, then **412**). `If-Match` is not used.
+- A plan entry whose recipe no longer exists answers **400** (as in the app), nothing written.
+
 ### Idempotency
 
 - Every write (POST, PATCH, DELETE) must send `Idempotency-Key` (1–255 visible ASCII chars). A write without it gets
@@ -241,6 +312,9 @@ Limits not repeated here are in the yaml.
 - If the original attempt failed (non-2xx), the key is released and may be retried.
 - `POST /shopping-lists/active` follows the same rules: a replayed key returns the **first** response
   (201 or 200, same body, `ETag`, `Location`), even if the list has changed since.
+- So do `POST /shopping-lists/active/from-plan` and `PATCH /meal-plans/{planId}/entries/{entryId}` (v1.2):
+  a replayed key returns the first response and does not add the plan or move the entry again. A 422
+  `plan_empty` releases the key.
 
 ### Versions, ETag and If-Match
 
@@ -271,8 +345,8 @@ Limits not repeated here are in the yaml.
 
 Problem JSON: `{ "type", "title", "status", "detail", "path", "timestamp" }`, always with
 `Content-Type: application/problem+json`. Some errors add fields: `errors[]` (`{field, message}`, bean
-validation), `param` and `value` (bad query or path parameter) and `retryAfterSeconds` (429). Ignore
-fields you don't know.
+validation), `param` and `value` (bad query or path parameter), `retryAfterSeconds` (429) and, since
+v1.2, `code` (a stable reason on some 422s: `plan_empty`, `unknown_section`). Ignore fields you don't know.
 
 | Status | Meaning |
 |---|---|
@@ -285,13 +359,27 @@ fields you don't know.
 | 409 | Idempotent request still in flight; or (`POST /shopping-lists/active`, rare) another change to the user's active list did not finish in time |
 | 412 | Version mismatch |
 | 415 | Request body is not `application/json` |
-| 422 | Idempotency key reused with a different request |
+| 422 | Idempotency key reused with a different request; or (v1.2) `code: plan_empty` — the week has nothing to put on a list; or `code: unknown_section` — moving an entry to a section the plan doesn't have |
 | 429 | Rate limited |
 
 All 4xx are final for the request as sent; only 409, 429 and 5xx are worth retrying (same
 `Idempotency-Key`).
 
 ## Changes
+
+### v1.2 (2026-11-08, MF4)
+
+Additive. Nothing existing changes shape, status code or scope; no new OAuth scope; older Personal OS
+builds keep working (they ignore the new entry fields and the problem `code`).
+
+| Area | Change |
+|---|---|
+| New route | `POST /integrations/v1/shopping-lists/active/from-plan`, body `{"week": "current"\|"next"}`, scopes `shoppinglist.write` + `mealplan.read`, `Idempotency-Key` required: the week's plan added to the active list as the app does; 200 + list + `ETag` + `added`/`merged`; 422 `plan_empty`. See [A list from the plan](#a-list-from-the-plan) |
+| New route | `PATCH /integrations/v1/meal-plans/{planId}/entries/{entryId}`, body `{"day"?, "section"?}`, scope `mealplan.write`, `Idempotency-Key`, `If-Match`: moves an entry within its plan; 200 + plan + `ETag`; 412 stale; 404 unknown/foreign; 422 `unknown_section`. See [Moving an entry](#moving-an-entry) |
+| `MealPlanEntry` | New read-only fields `items` and `extraItems` (string arrays, never null) |
+| Problem | Optional `code` field on the new 422s (`plan_empty`, `unknown_section`) |
+| 422 | Also used for the two cases above (before: only idempotency-key reuse) |
+| yaml | `info.version` 1.2.0; the two paths; schemas `FromPlan`, `ShoppingListFromPlan`, `MoveMealPlanEntry`; `MealPlanEntry.items/extraItems`; `Problem.code` |
 
 ### v1.1 (2026-11-05, MF3)
 

@@ -133,6 +133,41 @@ public class ShoppingListService {
         return shoppingListRepository.save(active);
     }
 
+    /** A week's plan made ready to merge into a list: its recipes and the normalized item names. */
+    public record PreparedPlan(WeeklyPlan plan, Map<String, Recipe> recipes, Map<String, NormalizedItemName> names) {}
+
+    /**
+     * The first half of {@link #createOrMerge} for a plan, for callers that write the list themselves:
+     * loads the plan's recipes and normalizes the names exactly as the app does (at most one LLM call,
+     * none when nothing is planned). Empty when the plan puts nothing on a list.
+     */
+    public Optional<PreparedPlan> preparePlan(String userId, WeeklyPlan plan, List<ShoppingListItem> existingItems) {
+        Map<String, Recipe> recipes = loadRecipes(plan, userId);
+        if (!generator.hasItems(plan, recipes)) {
+            return Optional.empty();
+        }
+        Map<String, NormalizedItemName> names =
+                nameNormalizer.normalize(generator.collectNames(existingItems, plan, recipes));
+        return Optional.of(new PreparedPlan(plan, recipes, names));
+    }
+
+    /**
+     * The second half: merges the plan into {@code existingItems} as {@link #createOrMerge} does and
+     * fills in aisles (keywords, then at most one LLM call). Nothing is saved.
+     */
+    public ShoppingListGenerator.PlanMerge mergePrepared(PreparedPlan prepared, List<ShoppingListItem> existingItems) {
+        ShoppingListGenerator.PlanMerge merge =
+                generator.mergePlanCounting(existingItems, prepared.plan(), prepared.recipes(), prepared.names());
+        categoryResolver.applyCategories(merge.items());
+        return merge;
+    }
+
+    /** The title {@link #createOrMerge} gives a list merged from this plan without an explicit title. */
+    public String titleForPlan(String currentTitle, WeeklyPlan plan) {
+        String current = normalizeTitle(currentTitle);
+        return current != null ? current : defaultTitleForPlan(plan.getWeeklyStart());
+    }
+
     /**
      * Renames and/or changes the status of a list. A user has at most one active list: making a list
      * active archives the other active one (it becomes the app's "current" list); archiving the active

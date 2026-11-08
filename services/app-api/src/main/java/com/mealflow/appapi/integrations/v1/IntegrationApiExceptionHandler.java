@@ -2,6 +2,7 @@ package com.mealflow.appapi.integrations.v1;
 
 import com.mealflow.appapi.error.ProblemDetails;
 import jakarta.servlet.http.HttpServletRequest;
+import java.util.Map;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.MediaType;
@@ -29,6 +30,10 @@ public class IntegrationApiExceptionHandler {
     public ResponseEntity<ProblemDetail> handle(IntegrationApiException ex, HttpServletRequest req) {
         return ResponseEntity.status(ex.getStatus())
                 .contentType(MediaType.APPLICATION_PROBLEM_JSON)
-                .body(problems.build(ex.getStatus(), ex.getMessage(), req));
+                .body(problems.build(
+                        ex.getStatus(),
+                        ex.getMessage(),
+                        req,
+                        ex.getCode() == null ? null : Map.of("code", ex.getCode())));
     }
 }

@@ -1,12 +1,14 @@
 openapi: 3.1.0
 info:
   title: MealFlow integration API for Personal OS
-  version: "1.1.0"
+  version: "1.2.0"
   description: |
     Narrow, versioned API for connected apps (Personal OS). See personal-os-v1.md for the OAuth flow,
     idempotency, ETag and isolation rules. All writes require `Idempotency-Key`.
     Changes since the v1 draft (MF1 QA, D1-D10) are listed in personal-os-v1.md, "Changes since v1 draft".
     1.1.0 (MF3, additive): POST /shopping-lists/active. See personal-os-v1.md, "Changes" / "The active list".
+    1.2.0 (MF4, additive): POST /shopping-lists/active/from-plan, PATCH /meal-plans/{planId}/entries/{entryId},
+    MealPlanEntry.items / extraItems, Problem.code. See personal-os-v1.md, "Changes" / "v1.2".
 servers:
   - url: http://localhost:8082/integrations/v1
     description: Local app-api
@@ -60,7 +62,8 @@ components:
       description: |
         RFC 9457 problem details. The first six fields are always present. Some errors add fields:
         `errors` (bean validation, 400), `param` / `value` (bad query or path parameter, 400) and
-        `retryAfterSeconds` (429). Clients must ignore fields they do not know.
+        `retryAfterSeconds` (429) and, since v1.2, `code` (a stable reason on some 422s: `plan_empty`,
+        `unknown_section`). Clients must ignore fields they do not know.
       additionalProperties: true
       properties:
         type: { type: string }
@@ -78,6 +81,7 @@ components:
               message: { type: string }
         param: { type: string }
         value: { type: string }
+        code: { type: string, description: "v1.2. Stable machine-readable reason, e.g. plan_empty, unknown_section" }
         retryAfterSeconds: { type: integer }
     Ingredient:
       type: object
@@ -165,6 +169,26 @@ components:
         title: { type: [string, "null"] }
         notes: { type: [string, "null"] }
         portions: { type: [integer, "null"] }
+        items:
+          type: array
+          items: { type: string }
+          description: |
+            v1.2, read-only. The entry's own shopping items as stored by the app (what the meal needs
+            besides, or for a custom title instead of, a recipe's ingredients). Never null; [] if none.
+        extraItems:
+          type: array
+          items: { type: string }
+          description: v1.2, read-only. The entry's extra items as stored by the app. Never null; [] if none.
+    MoveMealPlanEntry:
+      type: object
+      description: |
+        v1.2. At least one of `day` / `section` (an omitted or null field is unchanged; `{}` answers 400).
+        `day` as in AddMealPlanEntry (other values 400). `section` must match one of the plan's
+        `sections`, case-insensitively (the plan's spelling is stored); a blank one is 400, an unknown
+        one **422** with `code: unknown_section`.
+      properties:
+        day: { type: string, maxLength: 12, examples: [thursday, THU] }
+        section: { type: string, maxLength: 40 }
     MealPlan:
       type: object
       description: |
@@ -233,6 +257,23 @@ components:
         items: { type: array, items: { $ref: "#/components/schemas/ShoppingListItem" } }
         updatedAt: { type: string, format: date-time }
         version: { type: integer, format: int64 }
+    ShoppingListFromPlan:
+      type: object
+      description: v1.2. The active list (exactly the ShoppingList fields) plus what the plan did to it.
+      properties:
+        id: { type: string }
+        title: { type: string }
+        status: { type: string, enum: [active, archived] }
+        items: { type: array, items: { $ref: "#/components/schemas/ShoppingListItem" } }
+        updatedAt: { type: string, format: date-time }
+        version: { type: integer, format: int64 }
+        added: { type: integer, minimum: 0, description: New lines the plan put on the list }
+        merged: { type: integer, minimum: 0, description: Existing lines the plan's items were merged into }
+    FromPlan:
+      type: object
+      required: [week]
+      properties:
+        week: { type: string, enum: [current, next], description: Case-insensitive; other values 400 }
     AddShoppingItem:
       type: object
       required: [name]
@@ -308,6 +349,18 @@ paths:
     parameters:
       - { name: planId, in: path, required: true, schema: { type: string } }
       - { name: entryId, in: path, required: true, schema: { type: string } }
+    patch:
+      summary: Move a meal-plan entry to another day and/or section of the same plan (v1.2)
+      description: |
+        Recipe, title, portions, notes and items stay unchanged, and so does the entry's id and place
+        in `entries`. Moving it where it already is writes nothing (same ETag). Moving across weeks is
+        not supported. Another user's plan or entry, or an unknown one: 404. Stale If-Match: 412.
+      security: [{ mealflowOAuth: [mealplan.write] }]
+      parameters: [{ $ref: "#/components/parameters/IdempotencyKey" }, { $ref: "#/components/parameters/IfMatch" }]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: "#/components/schemas/MoveMealPlanEntry" } } } }
+      responses:
+        "200": { description: Updated plan, headers: { ETag: { $ref: "#/components/headers/ETag" }, Idempotency-Replayed: { $ref: "#/components/headers/IdempotencyReplayed" } }, content: { application/json: { schema: { $ref: "#/components/schemas/MealPlan" } } } }
+        default: { $ref: "#/components/responses/Problem" }
     delete:
       summary: Remove a meal-plan entry
       security: [{ mealflowOAuth: [mealplan.write] }]
@@ -342,6 +395,25 @@ paths:
       responses:
         "200": { description: The existing active list, headers: { ETag: { $ref: "#/components/headers/ETag" }, Idempotency-Replayed: { $ref: "#/components/headers/IdempotencyReplayed" } }, content: { application/json: { schema: { $ref: "#/components/schemas/ShoppingList" } } } }
         "201": { description: A new empty active list, headers: { ETag: { $ref: "#/components/headers/ETag" }, Location: { $ref: "#/components/headers/Location" }, Idempotency-Replayed: { $ref: "#/components/headers/IdempotencyReplayed" } }, content: { application/json: { schema: { $ref: "#/components/schemas/ShoppingList" } } } }
+        default: { $ref: "#/components/responses/Problem" }
+  /shopping-lists/active/from-plan:
+    post:
+      summary: Add a week's meal plan to the active shopping list (v1.2)
+      description: |
+        Needs `shoppinglist.write` **and** `mealplan.read`. Makes sure the active list exists (as
+        POST /shopping-lists/active), then adds the week's plan to it exactly as the MealFlow app's
+        "shopping list from plan" does: portion scaling, name normalization, aisles; same-named lines
+        are merged (amounts summed when the units are of the same family, e.g. g/kg or dl/l), otherwise
+        the item goes on a new line beside. Checked lines are never merged into. If the list has no
+        title it gets the app's "Week N Shopping List". Calling it again with a new key adds the plan
+        again (amounts are summed again). A week with no plan, or nothing on it to buy: 422 with
+        `code: plan_empty`, nothing written (not even the active list). A replayed Idempotency-Key
+        returns the first response. If-Match is not used.
+      security: [{ mealflowOAuth: [shoppinglist.write, mealplan.read] }]
+      parameters: [{ $ref: "#/components/parameters/IdempotencyKey" }]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: "#/components/schemas/FromPlan" } } } }
+      responses:
+        "200": { description: The active list with the plan added, headers: { ETag: { $ref: "#/components/headers/ETag" }, Idempotency-Replayed: { $ref: "#/components/headers/IdempotencyReplayed" } }, content: { application/json: { schema: { $ref: "#/components/schemas/ShoppingListFromPlan" } } } }
         default: { $ref: "#/components/responses/Problem" }
   /shopping-lists/{id}:
     parameters: [{ $ref: "#/components/parameters/Id" }]

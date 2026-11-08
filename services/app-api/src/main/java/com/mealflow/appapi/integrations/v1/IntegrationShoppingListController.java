@@ -1,7 +1,9 @@
 package com.mealflow.appapi.integrations.v1;
 
 import com.mealflow.appapi.integrations.v1.dto.AddShoppingItemBody;
+import com.mealflow.appapi.integrations.v1.dto.FromPlanBody;
 import com.mealflow.appapi.integrations.v1.dto.ShoppingListDto;
+import com.mealflow.appapi.integrations.v1.dto.ShoppingListFromPlanDto;
 import com.mealflow.appapi.integrations.v1.dto.ShoppingListSummaryDto;
 import com.mealflow.appapi.integrations.v1.dto.UpdateShoppingItemBody;
 import com.mealflow.appapi.security.oauth.IntegrationTokenClaims;
@@ -29,6 +31,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/integrations/v1/shopping-lists")
 public class IntegrationShoppingListController {
+
+    private static final String MEALPLAN_READ = "SCOPE_mealplan.read";
 
     private final IntegrationShoppingListService shoppingLists;
     private final IdempotencyService idempotency;
@@ -73,6 +77,31 @@ public class IntegrationShoppingListController {
                             "/integrations/v1/shopping-lists/" + active.list().getId()))
                     .eTag(Versioning.etag(active.list().getUpdatedAt()))
                     .body(IntegrationShoppingListService.toDto(active.list()));
+        });
+    }
+
+    /**
+     * Adds the week's plan to the user's single active list (created if missing), as the app does
+     * (v1.2). Needs {@code mealplan.read} besides {@code shoppinglist.write}. 200 with the list, its
+     * ETag and {@code added}/{@code merged}; 422 {@code plan_empty} writes nothing; a replayed
+     * Idempotency-Key returns the first response.
+     */
+    @PostMapping("/active/from-plan")
+    public ResponseEntity<Object> fromPlan(
+            @Valid @RequestBody FromPlanBody body,
+            @RequestHeader(name = IdempotencyService.HEADER, required = false) String idempotencyKey,
+            Authentication auth,
+            HttpServletRequest request) {
+        if (auth.getAuthorities().stream().noneMatch(a -> MEALPLAN_READ.equals(a.getAuthority()))) {
+            throw IntegrationApiException.forbidden("Token missing required scope: mealplan.read");
+        }
+        IntegrationTokenClaims token = IntegrationTokenClaims.from(auth);
+        return idempotency.execute(token, idempotencyKey, request, body, () -> {
+            IntegrationShoppingListService.FromPlan result = shoppingLists.addPlan(token.userId(), body.week());
+            return ResponseEntity.ok()
+                    .eTag(Versioning.etag(result.list().getUpdatedAt()))
+                    .body(ShoppingListFromPlanDto.of(
+                            IntegrationShoppingListService.toDto(result.list()), result.added(), result.merged()));
         });
     }
 

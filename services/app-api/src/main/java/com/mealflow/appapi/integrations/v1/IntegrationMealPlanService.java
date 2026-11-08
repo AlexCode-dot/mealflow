@@ -3,6 +3,7 @@ package com.mealflow.appapi.integrations.v1;
 import com.mealflow.appapi.integrations.v1.dto.AddMealPlanEntryBody;
 import com.mealflow.appapi.integrations.v1.dto.MealPlanDto;
 import com.mealflow.appapi.integrations.v1.dto.MealPlanEntryDto;
+import com.mealflow.appapi.integrations.v1.dto.MoveMealPlanEntryBody;
 import com.mealflow.appapi.recipes.domain.Recipe;
 import com.mealflow.appapi.recipes.repository.RecipeRepository;
 import com.mealflow.appapi.weeklyPlans.domain.PlanEntry;
@@ -177,6 +178,55 @@ public class IntegrationMealPlanService {
         return plan;
     }
 
+    /**
+     * Moves an entry to another day and/or section of the same plan. Recipe, title, portions, notes
+     * and items are kept, and so is its place in the plan's entry list. Moving it where it already is
+     * writes nothing. Order of checks: plan (404), If-Match (412), entry (404), day (400), section (422).
+     */
+    public WeeklyPlan moveEntry(
+            String userId, String planId, String entryId, MoveMealPlanEntryBody body, String ifMatch) {
+        if (body == null || (body.day() == null && body.section() == null)) {
+            throw IntegrationApiException.badRequest("Provide day and/or section");
+        }
+        if (body.section() != null && body.section().isBlank()) {
+            throw IntegrationApiException.badRequest("section must not be blank");
+        }
+        WeeklyPlan plan = weeklyPlanService.getForUser(userId, planId);
+        Versioning.checkIfMatch(ifMatch, plan.getUpdatedAt());
+        List<PlanEntry> entries = new ArrayList<>(plan.getEntries());
+        PlanEntry entry = entries.stream()
+                .filter(e -> Objects.equals(e.getId(), entryId))
+                .findFirst()
+                .orElseThrow(() -> new WeeklyPlanNotFoundException("Meal plan entry not found"));
+
+        String day = body.day() == null ? entry.getDay() : normalizeDay(body.day());
+        String section = body.section() == null
+                ? entry.getSection()
+                : plan.getSections().stream()
+                        .filter(s -> s.equalsIgnoreCase(body.section().trim()))
+                        .findFirst()
+                        .orElseThrow(() -> IntegrationApiException.unprocessable(
+                                "section must be one of: " + String.join(", ", plan.getSections()), "unknown_section"));
+        if (Objects.equals(day, entry.getDay()) && Objects.equals(section, entry.getSection())) {
+            return plan;
+        }
+
+        entry.setDay(day);
+        entry.setSection(section);
+        Instant previous = plan.getUpdatedAt();
+        Instant next = Versioning.next(previous, clock);
+        Versioning.compareAndSet(
+                mongo,
+                WeeklyPlan.class,
+                plan.getId(),
+                userId,
+                previous,
+                new Update().set("entries", entries).set("updatedAt", next));
+        plan.setEntries(entries);
+        plan.setUpdatedAt(next);
+        return plan;
+    }
+
     public MealPlanDto toDto(String userId, String weekStart, WeeklyPlan plan) {
         if (plan == null) {
             return new MealPlanDto(null, weekStart, DEFAULT_SECTIONS, List.of(), null, Versioning.EMPTY_VERSION);
@@ -198,7 +248,9 @@ public class IntegrationMealPlanService {
                 e.getCustomTitle(),
                 e.getRecipeId() != null ? titles.get(e.getRecipeId()) : e.getCustomTitle(),
                 e.getNotes(),
-                e.getPortions());
+                e.getPortions(),
+                e.getItems() == null ? List.of() : List.copyOf(e.getItems()),
+                e.getExtraItems() == null ? List.of() : List.copyOf(e.getExtraItems()));
         return new MealPlanDto(
                 plan.getId(),
                 plan.getWeeklyStart(),
